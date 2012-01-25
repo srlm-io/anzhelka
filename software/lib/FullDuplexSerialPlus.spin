@@ -11,6 +11,8 @@ folder with modified documentation and methods for converting text strings
 into numeric values in several bases.
 
 ────────────────────────────────────────────────────────────────────────────────────────
+
+Note: used by Anzhelka project
 }}
   
 CON                                          ''
