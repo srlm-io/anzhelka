@@ -7,6 +7,7 @@ Desktop="Desktop"
 
 [Globals]
 AutoSaveProject=1
+UsedLibrary="C:/Program Files (x86)/EAGLE-6.1.0/lbr/microchip_mb.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-6.1.0/lbr/parallax_propeller.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-5.11.0/lbr/19inch.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-5.11.0/lbr/40xx.lbr"
@@ -331,11 +332,12 @@ UsedLibrary="C:/Program Files (x86)/EAGLE-5.11.0/lbr/xilinx-xc9.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-5.11.0/lbr/xilinx-xcv.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-5.11.0/lbr/zetex.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-5.11.0/lbr/zilog.lbr"
-UsedLibrary="C:/Program Files (x86)/EAGLE-6.1.0/lbr/microchip_mb.lbr"
+UsedLibrary="C:/Program Files (x86)/EAGLE-6.1.0/lbr/Microchip (2).lbr"
+UsedLibrary="C:/Program Files (x86)/EAGLE-6.1.0/lbr/SparkFun.lbr"
 
 [Win_1]
 Type="Control Panel"
-Loc="317 190 916 589"
+Loc="0 0 943 1001"
 State=0
 Number=0
 
