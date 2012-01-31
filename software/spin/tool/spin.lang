@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ This file is part of GtkSourceView
+
+ Authors: SRLM
+ Copyright (C) 2012   SRLM <srlm@srlmproductions.com
+-->
+<language id="spin" _name="Spin" version="2.0" _section="Sources">
+
+  <metadata>
+    <!--<property name="mimetypes">text/plain</property>-->
+    <property name="globs">*.spin</property>
+    <!-- Note: comment property ordering in this file matters! Gedit will (apparently) use the last line-comment-start defined for the comment/uncomment feature. -->
+    <property name="line-comment-start">''</property>
+    <property name="block-comment-start">{</property>
+    <property name="block-comment-end">}</property>
+    <property name="line-comment-start">'</property>
+    <property name="block-comment-start">{{</property>
+    <property name="block-comment-end">}}</property>
+  </metadata>
+
+
+
+  <styles>
+    <style id="comment" _name="Comment" map-to="def:comment"/>
+    <style id="error" _name="Error" map-to="def:error"/>
+    <style id="keyword" _name="Keyword" map-to="def:keyword"/>
+    <style id="string" _name="String" map-to="def:string"/>
+    <style id="type" _name="Data Type" map-to="def:type"/>
+    <style id="operator" _name="Operator" map-to="def:operator"/>
+    <style id="number" _name="Number" map-to="def:decimal"/>
+    <style id="char" _name="Character" map-to="def:character"/>
+    <style id="escaped-character" _name="Escaped Character" map-to="def:special-char"/>
+    <style id="declaration" _name="Declaration" map-to="def:type"/>
+    <style id="constant" _name="Constant" map-to="def:special-constant"/>
+    <style id="variable" _name="Variable" map-to="def:identifier"/>
+    <!-- Used just for array [] markers?-->
+    <style id="binary" _name="Binary number" map-to="def:base-n-integer"/>
+    <style id="hexadecimal" _name="Hexadecimal number" map-to="def:base-n-integer"/>
+    <style id="operator" _name="Operator" map-to="def:operator"/>
+  </styles>
+
+
+
+  <default-regex-options case-sensitive="false"/>
+
+
+
+  <definitions>
+    <context id="spin-proper">
+      <include>
+
+        <context id="cpp-line-comment" style-ref="comment" end-at-line-end="true" extend-parent="false" class="comment" class-disabled="no-spell-check">
+          <start>'</start>
+          <include>
+            <context ref="def:in-line-comment"/>
+          </include>
+        </context>
+
+        <!-- Note: the double {{ context must come before the single { context in order to do proper highlighting... -->
+        <context id="c-block-comment1" style-ref="comment" class="comment" class-disabled="no-spell-check">
+          <start>{{</start>
+          <end>}}</end>
+          <include>
+            <context ref="def:in-line-comment"/>
+          </include>
+        </context>
+
+        <context id="close-comment-outside-comment1" style-ref="error">
+          <match>{{(?!}})</match>
+        </context>
+
+        <context id="c-block-comment" style-ref="comment" class="comment" class-disabled="no-spell-check">
+          <start>{</start>
+          <end>}</end>
+          <include>
+            <context ref="def:in-line-comment"/>
+          </include>
+        </context>
+
+        <context id="close-comment-outside-comment" style-ref="error">
+          <match>{(?!})</match>
+        </context>
+
+        <define-regex id="escaped-character" extended="true">
+      \(               # leading backslash
+      [\"'nrbtf] |   # escaped character
+      [0-9]{1,3}    |   # latin encoded char
+      u[0-9]{1,4}       # unicode char
+      )
+    </define-regex>
+
+        <!-- Does a string have to end at the end of the line? -->
+        <context id="string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
+          <start>"</start>
+          <end>"</end>
+          <include>
+            <context id="escaped-character" style-ref="escaped-character">
+              <match>%{escaped-character}</match>
+            </context>
+          </include>
+        </context>
+
+        <context id="declarations" style-ref="declaration">
+          <keyword>CON</keyword>
+          <keyword>VAR</keyword>
+          <keyword>PUB</keyword>
+          <keyword>PRI</keyword>
+          <keyword>OBJ</keyword>
+          <keyword>DAT</keyword>
+        </context>
+
+        <context id="primitive-types" style-ref="type">
+          <keyword>byte</keyword>
+          <keyword>word</keyword>
+          <keyword>long</keyword>
+        </context>
+
+        <context id="flow" style-ref="keyword">
+          <keyword>if</keyword>
+          <keyword>elseif</keyword>
+          <keyword>elseifnot</keyword>
+          <keyword>else</keyword>
+          <keyword>ifnot</keyword>
+          <keyword>case</keyword>
+          <keyword>other</keyword>
+          <keyword>repeat</keyword>
+          <keyword>from</keyword>
+          <keyword>to</keyword>
+          <keyword>step</keyword>
+          <keyword>until</keyword>
+          <keyword>while</keyword>
+          <keyword>next</keyword>
+          <keyword>quit</keyword>
+          <keyword>return</keyword>
+          <keyword>abort</keyword>
+        </context>
+
+        <context id="memory" style-ref="keyword">
+          <keyword>bytefill</keyword>
+          <keyword>wordfill</keyword>
+          <keyword>longfill</keyword>
+          <keyword>bytemove</keyword>
+          <keyword>wordmove</keyword>
+          <keyword>longmove</keyword>
+          <keyword>lookup</keyword>
+          <keyword>lookupz</keyword>
+          <keyword>lookdown</keyword>
+          <keyword>lookdownz</keyword>
+          <keyword>strsize</keyword>
+          <keyword>strcomp</keyword>
+        </context>
+
+        <context id="numeric" style-ref="number">
+          <match extended="true">
+	(b([0-9])+)
+	<!--This one below matched 0xFFF style numbers... -->
+        <!--(b([0-9]+|0[xX][0-9a-fA-F]+)[Ll]?b|
+         b(([0-9]+[Ee][-]?[0-9]+|
+            ([0-9]*.[0-9]+|[0-9]+.)([Ee][-]?[0-9]+)?)[fFdD]?|
+            [0-9]+[FfDd]))-->
+          </match>
+        </context>
+
+        <context id="contants" style-ref="constant">
+          <keyword>true</keyword>
+          <keyword>false</keyword>
+          <keyword>posx</keyword>
+          <keyword>negx</keyword>
+          <keyword>pi</keyword>
+          <!--Configuration keywords are going to be constant marked...-->
+          <keyword>chipver</keyword>
+          <keyword>clkmode</keyword>
+          <keyword>_clkmode</keyword>
+          <keyword>clkfreq</keyword>
+          <keyword>_clkfreq</keyword>
+          <keyword>clkset</keyword>
+          <keyword>_xinfreq</keyword>
+          <keyword>_stack</keyword>
+          <keyword>_free</keyword>
+          <keyword>rcfast</keyword>
+          <keyword>rcslow</keyword>
+          <keyword>xinput</keyword>
+          <keyword>xtal1</keyword>
+          <keyword>xtal2</keyword>
+          <keyword>xtal3</keyword>
+          <keyword>pll1x</keyword>
+          <keyword>pll2x</keyword>
+          <keyword>pll4x</keyword>
+          <keyword>pll8x</keyword>
+          <keyword>pll16x</keyword>
+        </context>
+
+        <context id="array-operators" style-ref="variable">
+          <match>([|])</match>
+        </context>
+
+        <!--Need to update the accepted operators -->
+        <!--Bug: character ":" is recognized... -->
+        <context id="operators" style-ref="operator" extend-parent="false">
+          <match>[-.~^@:#/|=+*!?&amp;&lt;&gt;]</match>
+          <!--<match>([-*]|(+=))</match>-->
+        </context>
+
+        <!--Is this correct? -->
+        <context id="hexadecimal-number" style-ref="hexadecimal">
+          <match extended="true">
+        (?&lt;![w.])
+        [+-]?$[0-9a-fA-F]+
+        (?![w.])
+          </match>
+        </context>
+
+        <context id="binary-number" style-ref="binary">
+          <match extended="true">
+        (?&lt;![w.])
+        [+-]?%[0-1]+
+        (?![w.])
+          </match>
+        </context>
+
+        <context id="keywords" style-ref="keyword">
+          <!--Cog Control Keywords -->
+          <keyword>cogid</keyword>
+          <keyword>cognew</keyword>
+          <keyword>coginit</keyword>
+          <keyword>cogstop</keyword>
+          <keyword>reboot</keyword>
+          <!--Process Control -->
+          <keyword>locknew</keyword>
+          <keyword>lockret</keyword>
+          <keyword>lockclr</keyword>
+          <keyword>lockset</keyword>
+          <keyword>waitcnt</keyword>
+          <keyword>waitpeq</keyword>
+          <keyword>waitpne</keyword>
+          <keyword>waitvid</keyword>
+          <!--Directives -->
+          <keyword>string</keyword>
+          <keyword>constant</keyword>
+          <keyword>float</keyword>
+          <keyword>round</keyword>
+          <keyword>trunc</keyword>
+          <keyword>file</keyword>
+          <!--Registers -->
+          <keyword>dira</keyword>
+          <keyword>dirb</keyword>
+          <keyword>ina</keyword>
+          <keyword>inb</keyword>
+          <keyword>outa</keyword>
+          <keyword>outb</keyword>
+          <keyword>cnt</keyword>
+          <keyword>ctra</keyword>
+          <keyword>ctrb</keyword>
+          <keyword>frqa</keyword>
+          <keyword>frqb</keyword>
+          <keyword>phsa</keyword>
+          <keyword>phsb</keyword>
+          <keyword>vcfg</keyword>
+          <keyword>vscl</keyword>
+          <keyword>par</keyword>
+          <keyword>spr</keyword>
+          <!-- Special Variable -->
+          <keyword>result</keyword>
+          <!-- Operators -->
+          <keyword>and</keyword>
+          <keyword>or</keyword>
+          <keyword>not</keyword>
+          <!-- Bug: assembly specific keywords are highlighted in the spin area (may create conflict if you name a variable wc, for example... -->
+          <!--Assembly Conditions -->
+          <keyword>if_always</keyword>
+          <keyword>if_never</keyword>
+          <keyword>if_e</keyword>
+          <keyword>if_ne</keyword>
+          <keyword>if_a</keyword>
+          <keyword>if_b</keyword>
+          <keyword>if_ae</keyword>
+          <keyword>if_be</keyword>
+          <keyword>if_c</keyword>
+          <keyword>if_nc</keyword>
+          <keyword>if_z</keyword>
+          <keyword>if_nz</keyword>
+          <keyword>if_c_eq_z</keyword>
+          <keyword>if_c_ne_z</keyword>
+          <keyword>if_c_and_z</keyword>
+          <keyword>if_c_and_nz</keyword>
+          <keyword>if_nc_and_z</keyword>
+          <keyword>if_nc_and_nz</keyword>
+          <keyword>if_c_or_z</keyword>
+          <keyword>if_c_or_nz</keyword>
+          <keyword>if_nc_or_z</keyword>
+          <keyword>if_nc_or_nz</keyword>
+          <keyword>if_z_eq_c</keyword>
+          <keyword>if_z_ne_c</keyword>
+          <keyword>if_z_and_c</keyword>
+          <keyword>if_z_and_nc</keyword>
+          <keyword>if_nz_and_c</keyword>
+          <keyword>if_nz_and_nc</keyword>
+          <keyword>if_z_or_c</keyword>
+          <keyword>if_z_or_nc</keyword>
+          <keyword>if_nz_or_c</keyword>
+          <keyword>if_nz_or_nc</keyword>
+          <!-- Assembly Directives -->
+          <keyword>fit</keyword>
+          <keyword>org</keyword>
+          <keyword>res</keyword>
+          <!-- Assembly Effects -->
+          <keyword>wc</keyword>
+          <keyword>wz</keyword>
+          <keyword>wr</keyword>
+          <keyword>nr</keyword>
+          <!-- Assembly Instructions -->
+          <keyword>wrbyte</keyword>
+          <keyword>rdbyte</keyword>
+          <keyword>wrword</keyword>
+          <keyword>rdword</keyword>
+          <keyword>wrlong</keyword>
+          <keyword>rdlong</keyword>
+          <keyword>hubop</keyword>
+          <keyword>clkset</keyword>
+          <keyword>cogid</keyword>
+          <keyword>coginit</keyword>
+          <keyword>cogstop</keyword>
+          <keyword>locknew</keyword>
+          <keyword>lockret</keyword>
+          <keyword>lockset</keyword>
+          <keyword>lockclr</keyword>
+          <keyword>mul</keyword>
+          <keyword>muls</keyword>
+          <keyword>enc</keyword>
+          <keyword>ones</keyword>
+          <keyword>ror</keyword>
+          <keyword>rol</keyword>
+          <keyword>shr</keyword>
+          <keyword>shl</keyword>
+          <keyword>rcr</keyword>
+          <keyword>rcl</keyword>
+          <keyword>sar</keyword>
+          <keyword>rev</keyword>
+          <keyword>mins</keyword>
+          <keyword>maxs</keyword>
+          <keyword>min</keyword>
+          <keyword>max</keyword>
+          <keyword>movs</keyword>
+          <keyword>movd</keyword>
+          <keyword>movi</keyword>
+          <keyword>jmpret</keyword>
+          <keyword>jmp</keyword>
+          <keyword>call</keyword>
+          <keyword>ret</keyword>
+          <keyword>test</keyword>
+          <keyword>testin</keyword>
+          <keyword>and</keyword>
+          <keyword>andn</keyword>
+          <keyword>or</keyword>
+          <keyword>xor</keyword>
+          <keyword>muxc</keyword>
+          <keyword>muxnc</keyword>
+          <keyword>muxz</keyword>
+          <keyword>muxnz</keyword>
+          <keyword>add</keyword>
+          <keyword>sub</keyword>
+          <keyword>cmp</keyword>
+          <keyword>addabs</keyword>
+          <keyword>subabs</keyword>
+          <keyword>sumc</keyword>
+          <keyword>sumz</keyword>
+          <keyword>sumnz</keyword>
+          <keyword>mov</keyword>
+          <keyword>neg</keyword>
+          <keyword>abs</keyword>
+          <keyword>absneg</keyword>
+          <keyword>negc</keyword>
+          <keyword>negnc</keyword>
+          <keyword>negz</keyword>
+          <keyword>negnz</keyword>
+          <keyword>cmps</keyword>
+          <keyword>cmpsx</keyword>
+          <keyword>addx</keyword>
+          <keyword>subx</keyword>
+          <keyword>cmpx</keyword>
+          <keyword>adds</keyword>
+          <keyword>subs</keyword>
+          <keyword>addsx</keyword>
+          <keyword>subsx</keyword>
+          <keyword>cmpsub</keyword>
+          <keyword>djnz</keyword>
+          <keyword>tjnz</keyword>
+          <keyword>tjz</keyword>
+          <keyword>waitpeq</keyword>
+          <keyword>waitpne</keyword>
+          <keyword>waitcnt</keyword>
+          <keyword>waitvid</keyword>
+          <keyword>nop</keyword>
+        </context>
+
+      </include>
+    </context>
+
+    <!-- actual language definition: C++-specific stuff plus everything from C -->
+    <context id="spin">
+      <include>
+        <context ref="spin-proper"/>
+      </include>
+    </context>
+  </definitions>
+</language>
+

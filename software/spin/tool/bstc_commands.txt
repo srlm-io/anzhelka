@@ -1,0 +1,3 @@
+bstc.linux -f -p0 -w2 -Oa -L ../../libs  MPU-60X0-PASM.spin
+picocom -b 57600 /dev/ttyUSB0
+
