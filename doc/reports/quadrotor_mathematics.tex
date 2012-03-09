@@ -1,0 +1,771 @@
+%Cody Lewis, 2012
+%Visit anzhelka.com for all the latest
+%
+% CTRL+SPACE to switch panes
+%
+
+
+% Note: blank lines indicate a new paragraph
+% Note: \left( and \right) cannot break lines.
+
+\documentclass{article}
+
+\usepackage{amsmath}
+\numberwithin{equation}{section} %change the numbering to have something like 1.1 and 3.15, etc.
+
+%Format of macro:
+%\newcommand{\NAME}[ARGUMENT NUMBER (OPTIONAL)]{ stuff to include, arguments denoted #1, #2, etc. }
+\newcommand{\vect}[1]{\boldsymbol{#1^2}}
+\newcommand{\bigvect}[3]{\boldsymbol{#1^#2^#3}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+
+\begin{document}
+
+\title{Quadrotor Mathematics for Simpletons}
+\author{Cody Lewis\\
+	Anzhelka Project\\
+	\texttt{srlm@anzhelka.com}}
+\date{\today}
+\maketitle
+\begin{verse}\textit{
+And when he [Herod] had apprehended him [Peter], he put him in prison, and delivered him to four quaternions of soldiers to keep him; intending after Easter to bring him forth to the people.} \\
+\hfill --Acts 12:14, King James Bible, Cambridge Edition
+\end{verse}
+
+\begin{abstract}
+This paper describes in detail the dynamics of a quadrotor platform. Most current research papers simply explain the equations without explaining derivations or reasoning behind the numbers. This paper will explain and derive the equations for a quadrotor aircraft based an the system found in \cite{stingu09}.
+\end{abstract}
+
+\section{Introduction}
+A quadrotor is a simple aerial vehicle much like a helicopter, but instead of a single main rotor a quadrotor has four rotors. This allows for a much simpler mechanical system, since each rotor can be directly mounted to it's motor without any linkages to change the pitch of a rotor.
+
+Quadrotor dynamics are very complex. It's difficult because you have four motors, all pointed in the same direction, and that's it. But yet the vehicle can move on three axes in translational motion, and can rotate about another three axes. A quadrotor must be able to convert the four motor inputs into a these six different (and often conflicting) motions.
+
+The simplest case is hovering in a single location, and will be dealt with in this paper. Initially it is assumed that the quadrotor will have negligable translational motion, although eventually the translational equations may be added to this paper.
+
+The quadrotor used in this paper is assumed to be fairly simple. The platform must be able to measure the following components:
+\begin{list}{*}{}
+	\item rotation (direction and velocity)
+	\item translational (velocity and accleration)
+	\item motor rotational speed
+	\item air density
+\end{list}
+Note that if air density is assumed to be constant than performance may suffer at different altitudes or weather. In addition, the following constants must be emperically measured for each quadrotor:
+\begin{list}{*}{}
+	\item mass ($kg$)
+	\item moment of inertia tensor ($kg \cdot m^2$)
+	\item offset of each rotor from the center of mass ($m$)
+	\item thrust coefficient (see --CITE)
+	\item torque coefficient (see --CITE)
+	\item rotor diameter ($m$)
+\end{list}
+
+The system is complicated by the fact that a quadrotor will need to be able to balance itself in flight. If a gust of wind blows from the side and rolls the quadrotor, it will no longer be a stable hover. The vehicle will need to increase the speed of some motors and decrease the speed of others so that the vehicle is rotated back into a vertical hovering state.
+
+There is still a problem: each motor is producing torque on the body as well as thrust. This is manifested by the motor "attempting" to rotate the body due to the spinning mass of the motor and propeller, and the air resistance the propeller encounters. On a quadrotor frame we have two motors spinning clockwise and two spinning counter clockwise, and the torques cancel each other out. But if a motor speed in increased to account for a tilt, then it's torque on the frame will increase as well, causing the whole body to rotate.
+
+And so now, when a gust of wind blows on the frame, we have to somehow correct the tilt without allowing the torque to yaw the frame. At other times we may want to yaw without tilting, and sometimes we want to do both simultaneously.  But there is so much more beyond just the basic thrust, tilt, and yaw: we have to account for many factors such as free stream velocity (or air, in layman's terms) through the propellers, blade flapping, sensor failure, and the many small equations that support the main equations.
+
+\section{Symbols Used}
+
+\subsection{Variables}
+Variables with the subscript $i$ denote association with motor $i$.\\
+\begin{tabular}{l l}
+ 	$ \bs{\omega}_{b} $ 	& angular velocity in the body frame ($rad/s$) \\
+ 	$ \mathbf{q} $ 			& attitude quaternion \\
+ 	$ \tilde{\mathbf{q}} $	& error quaternion \\
+ 	$ \mathbf{q}_d $		& desired quaternion \\
+ 	$ \boldsymbol{V}_{b} $ 	& velocity in the body frame ($m/s$) \\
+ 	$ \boldsymbol{R}_{e} $	& position in the inertial frame ($m$) \\
+ 	$ F_{z} $				& total force of the rotors on the z axis ($N$) \\
+ 	$ M_{x} - M_{z} $		& total rotor moments along each axis ($N \cdot m$) \\
+ 	$ F_{1} - F_{4} $		& thrust force of each rotor ($N$) \\
+ 	$ Q $					& rotor torque ($N \cdot m$) \\
+ 	$ T $					& rotor thrust force ($N$) \\
+ 	$ n_i $					& rotation frequency of the rotors ($Hz$) \\
+ 	$ \Omega_i $			& rotation speed of the rotors ($rad / s$) \\	
+ 	$ \Omega_{di} $			& desired rotation speed of the rotors ($rad / s$) \\
+ 	$ \Omega_{imeas} $		& measured rotation speed of the rotors ($rad / s$) \\
+ 	$ \hat{\Omega}_i $		& expected speed ($rad / s$) \\
+ 	$ u_i $					& motor command ($???$) \\
+ 	$ a_i $					& motor gain (no units) \\
+ 	$ \psi $				& yaw angle ($???$) \\
+ 	$ \gamma_H $			& tilt direction in the x-y plane ($???$) \\
+ 	$ \alpha_H $			& tilt amount around $\gamma_H$ ($???$) \\
+ 	$ \bs{q}_V$				& yaw error \\
+ 	$ \bs{q}_H$				& tilt error \\
+ 	$ \begin{bmatrix}
+ 		r_x \\
+ 		r_y \end{bmatrix}$	& tilt axis in the $x-y$ plane ($???$) \\
+ 	$ \beta_H $				& direction of the tilt axis in the $x-y$ plane ($???$) \\
+	$ K_{tilt} $			& amount of tilt in the system? (from altitude controller) \\
+	 	
+ 	
+ 	
+
+ 	
+\end{tabular}
+
+\subsection{Constants}
+\begin{tabular}{l l}
+ 	$ \bs{I}_{nb} $			& moment of inertia tensor ($kg \cdot m^{2}$) \\
+ 	$ D $ 					& rotor diameter ($m$) \\
+ 	$ d $					& offset of each rotor from the center of mass ($m$) \\
+ 	$ \rho $				& air density ($???$) \\
+ 	$ K_t $					& thrust coefficient ($???$) \\
+ 	$ K_q $					& torque coefficient ($???$) \\
+ 	$ K_g $					& the speed adaptable gain for $a_i$ ($???$) \\
+ 	$ f_{mot}( \cdot ) $	& motor response function ($???$) \\
+ 	$ \tau $				& time constant, step ($???$) \\
+ 	$K_{PH} $				& tilt moment proportional constant \\
+ 	$K_{DH} $				& tilt moment derivative constant \\
+ 	$K_{Pz} $				& yaw moment proportional constant \\
+ 	$K_{Dz} $				& yaw moment derivative constant \\
+ 	$F_{PIDz} $				& proportional altitude controller ($N$ ?) \\
+ 	$m$						& quadrotor mass ($kg$ ?) \\
+	
+ 	
+\end{tabular}
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Introduction to Quaternions}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+This paper represents orientation using quaternions. There are other methods of representing rotation, but a quaternion has several advantages that lend it well to use on the quadrotor:
+\begin{list}{*}{}
+	\item Quaternions avoid gimbal lock (where two rotation axes align on each other during the course of a rotation, producing unnatural results)
+	\item Quaternions have smaller memory requirements (4 floats) than other representations
+	\item Quaternions have much more efficient mathematical operations, and don't require orthonormalization (making the axes orthogonal after an imprecise computation) like a rotation matrix does.
+	\item Quaternions allow for smooth interpolation between two orientations.
+	\item Orientation updates (updating a refernce orientation with $\omega$, for example) do not require trigonometric functions.
+\end{list}
+
+A quaternion is a way of representing a rotation. This is similar to Euler angles, but has the advantage of a more concise notation (and math), and not having singularities like Euler angles have. Quaternions are difficult to visualize from the numbers, but are easy enough to understand and use.
+
+A quaternion is defined as follows:
+
+$$ \boldsymbol{q} = 
+	\left[ 
+		\begin{array}{c}
+			q_0 \\
+			q_1 \\
+			q_2 \\
+			q_3 \\
+		\end{array}
+	\right]	
+	=	
+	\left[
+		\begin{array}{c}
+			\cos \left( \alpha / 2 \right) \\
+			\sin \left( \alpha / 2 \right) \cdot \boldsymbol{r}
+		\end{array}
+	\right]	
+$$
+
+This means that the rotation is around the axis $\boldsymbol{r}$ and by amount $\alpha$. Note that in the second representation the second element is $q_1$, $q_2$, and $q_3$ (it's three because of the $\cdot \boldsymbol{r}$, which is a three element vector). To add some terminology, the first term $q_0$ is called the scalar part, while $q_1$ through $q_3$ is called the vector part.
+
+A quaternion can be thought of a number, just like any other. So, we can do several operations such as add, multiply, invert (divide), take the norm, and of course test for equality. We'll be focusing on rotation quaternions for the rest of this paper. A rotation quaternion is the specific form of quaternion used to represent rotation, and must have a norm equal to one. We define the norm of quaternion as
+
+$$ \lVert q \rVert = \sqrt{q_0^2 + q_1^2 + q_2^2 + q_3^2} $$
+
+The norm can be thought of as the "length" of a quaternion (or vector, etc). A $ \lVert q \rVert $ value of 1 is called a unit quaternion. In quaternion literature there seems to be a discrepency: some authors define the quaternion norm as above, with a square root (---Citations---), while others omit the square root (\cite{shoemake69} ---CITE---). In this paper we will use the norm with a square root. This is called the L2-norm, or more commonly the Euclidean norm. I couldn't find anything on a norm that squared it's components but had no root, so we'll ignore it (for more information on norms, see \cite{malek09}).
+
+We also define the conjugate and inverse of a rotation quaternion as
+
+$$ q' = \left(q_0, -q_1, -q_2, -q_3 \right) = q^{-1} $$
+
+Note this equality is only true for unit quaternions (rotation quaternions), and does not hold for other quaternions.
+
+The only binary operation that we will be using for rotation quaternions is multiplication, denoted by $ \otimes$. Note that quaternion multiplication is not commutative. Multiplying $q_1 \otimes q_2 \neq q_2 \otimes q_1 $. Multiplying rotation quaternions produces a third rotation quaternion that is the result of rotating each quaternion in reverse order starting with the right hand side quaternion. To rotate a standard vector from one coordinate system to another simply place it into the vector part of the quaternion and set the scalar part to zero. Then, for transforming the vector $r_e$ to the vector $r_b$:
+
+\begin{align}
+	\begin{bmatrix}
+		0 \\
+		r_b \\
+	\end{bmatrix}
+	&=
+	\bs{q}^* \otimes 
+	\begin{bmatrix}
+		0 \\
+		r_e \\
+	\end{bmatrix}
+	\otimes \bs{q}	\\
+	\begin{bmatrix}
+		0 \\
+		r_e \\
+	\end{bmatrix}
+	&=
+	\bs{q} \otimes 
+	\begin{bmatrix}
+		0 \\
+		r_b \\
+	\end{bmatrix}
+	\otimes \bs{q}^*	\\	
+\end{align}	
+		
+For the rest of this paper, if a vector is rotated by a quaternion it will  be written as a vector but assumed to be in the vector part of a quaternion. For example,
+
+\begin{equation}
+	\dot{\bs{q}} = \frac{1}{2} \bs{q} \otimes \omega_b, \qquad 	\textrm{where} \quad
+	\omega_b =	
+	\begin{bmatrix}
+		0 \\
+		\omega_b \\
+	\end{bmatrix}
+\end{equation}
+Does the above actually make sense?... Need to clarify
+
+The product of two quaternions is another quaternion and is defined as:
+\begin{equation}
+	\begin{split}
+		%Note that \left( and \right) did not seem to work...
+		p \otimes q =	( & p_0 q_0 - p_1 q_1 - p_2 q_2 - p_3 q_3, \\
+							& p_0 q_1 + p_1 q_0 + p_2 q_3 - p_3 q_2,  \\
+							& p_0 q_2 + p_2 q_0 + p_3 q_1 - p_1 q_3,  \\
+							& p_0 q_3 + p_3 q_0 + p_1 q_2 - p_2 q_1 ) \\
+	\end{split}
+\end{equation}
+
+Question: Order of the component multiplication doesn't matter, right? Also, double check the correct multiplication... \\
+
+One thing to note is that a quaternion multiplication has 12 scalar additions and 16 scalar multiplies. Since the components are floating point, each quaternion multiplication consumes 28 floating point operations. \\
+
+
+----A bunch more stuff to define------ \\
+----Need to define the fact that two quaternions can represent the same space \\
+----Need to define quaternion derivatives ---- \\
+----What is $q^*$?---- \\
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Basic Equations}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Quadrotor Model}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{equation}
+\dot{\boldsymbol{V}}_b = \frac{1}{m} 
+	\left[
+		\begin{array}{c}
+			0 \\
+			0 \\
+			F_z \\
+		\end{array}
+	\right]
+	+ \boldsymbol{q}^* \otimes
+		\left[
+			\begin{array}{c}
+				0 \\
+				0 \\
+				g \\
+			\end{array}
+		\right]
+	\otimes \boldsymbol{q} - \boldsymbol{\omega}_b \times \boldsymbol{V}_b
+\end{equation}
+
+\begin{equation}
+\dot{\boldsymbol{\omega}}_b = \boldsymbol{I}^{-1}_{nb}
+	\left(
+		\left[
+			\begin{array}{c}
+				M_x \\
+				M_y \\
+				M_z \\
+			\end{array}
+		\right]
+		- \boldsymbol{\omega_b} \times \left( \boldsymbol{I}_{nb} \boldsymbol{\omega}_b \right)
+	\right)
+\end{equation}
+
+\begin{equation}
+\dot{\boldsymbol{R}}_e = \boldsymbol{q} \otimes \boldsymbol{V}_b \otimes \boldsymbol{q}^*
+\end{equation}
+
+\begin{equation}
+\dot{\boldsymbol{q}} = \frac{1}{2} \boldsymbol{q} \otimes \boldsymbol{\omega}_b
+\end{equation}
+Question: Is the above equation for quaternion derivatives?...
+
+Next, in equation \eqref{eq:rpm_to_Omega} we have a standard conversion from rotational frequency (in RPM -- CHECK!) to angular frequency (in radians/second -- CHECK!).
+ 
+\begin{equation} \label{eq:rpm_to_Omega}
+\Omega_i = 2 \pi n_i
+\end{equation}
+
+Each motor generates a thrust in the direction of the motor shaft axis, and a torque around the motor shaft axis. Equations \eqref{eq:motor_thrust} and \eqref{eq:motor_torque} are derived from --WHAT???
+
+\begin{equation} \label{eq:motor_thrust}
+K_T = \frac{T}{\rho n^2 D^4}
+\end{equation}
+
+\begin{equation} \label{eq:motor_torque}
+K_Q = \frac{Q}{\rho n^2 D^5}
+\end{equation}
+
+These two equations are used to define $K_T$ and $K_Q$, which are determined experimentally. A motor test stand must be able to measure the components on the right hand side and generate the constants for a particular motor and propeller combination. For use onboard the quadrotor, equation \eqref{eq:motor_thrust} will be used with equation \eqref{eq:rpm_to_Omega} to connect thrust to rotational speed in equation \eqref{eq:thrust_to_Omega}. By this combination we will be able to determine what rotational speed we need to run the motors at to achieve a specified thrust. From equations \eqref{eq:motor_thrust} and \eqref{eq:rpm_to_Omega} we rewrite and combine:
+\begin{align}
+	n^2 	&= \frac{T}{\rho K_T D^4} \notag \\
+	n		&= \frac{1}{D^2} \sqrt{\frac{T}{\rho K_T}} \notag \\
+	\Omega_{di}	&= 2 \pi n \notag \\	
+	\Omega_{di}	&= \frac{2 \pi}{D^2} \sqrt{\frac{T}{\rho K_T}} \label{eq:thrust_to_Omega}
+\end{align}
+
+Now, with equation \eqref{eq:thrust_to_Omega} we have an equation that will tie the thrust required to how fast the rotors must spin. This can later be fed into a PI controller for each motor, described in -----SECTION CITATION----.
+
+
+
+\begin{equation}
+\begin{bmatrix}
+	F_z \\
+	M_x \\
+	M_y \\
+	M_z \\
+\end{bmatrix}
+=
+\begin{bmatrix}
+	1 & 1 & 1 & 1 \\
+	0 &-d & 0 & d \\
+   -d & 0 & d & 0 \\
+	c &-c & c &-c \\
+\end{bmatrix}
+\cdot
+\begin{bmatrix}
+	F_1 \\
+	F_2 \\
+	F_3 \\
+	F_4 \\
+\end{bmatrix}
+\end{equation}
+where
+\begin{equation}
+c = \frac{Q}{T}
+\end{equation}
+
+
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Yaw and Tilt Errors}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{eqnarray}
+\bs{q}_d = \tilde{\bs{q}} \otimes \bs{q} \\
+\tilde{\bs{q}} = \bs{q}_d \otimes \bs{q}^*
+\end{eqnarray}
+
+\begin{equation}
+\tilde{\bs{q}} = 
+\begin{bmatrix}
+	\cos \left( \alpha / 2 \right) \\
+	\sin \left( \alpha / 2 \right) \cdot \bs{r}_e
+\end{bmatrix}
+\end{equation}
+Question: should $\alpha$ in the equations above and below have the subscript $\alpha_h$ like later in this section?
+
+
+\begin{equation}
+\bs{r}_b = q^* \otimes \bs{r}_e \otimes \bs{q}
+\end{equation}
+
+\begin{equation}
+\tilde{\bs{q}}_b = 
+\begin{bmatrix}
+	\cos \left( \alpha / 2 \right) \\
+	\sin \left( \alpha / 2 \right) \cdot \bs{r}_b
+\end{bmatrix}
+\end{equation}
+
+Question: are $\beta_H$ and $\Gamma_H$ perpendicular or somehow constant relative to one another?
+
+\begin{equation}
+\tilde{\bs{q}}_b = \bs{q}_H \otimes \bs{q}_V
+\end{equation}
+
+\begin{equation}
+	\begin{bmatrix}
+		q_0 \\
+		q_1 \\
+		q_2 \\
+		q_3 \\
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		\cos \left( \alpha_H / 2 \right) \\
+		\sin \left( \alpha_H / 2 \right) \cdot r_x \\
+		\sin \left( \alpha_H / 2 \right) \cdot r_y \\
+		\sin \left( \alpha_H / 2 \right) \cdot 0 \\
+	\end{bmatrix}
+	\otimes
+	\begin{bmatrix}
+		\cos \left( \psi / 2 \right) \\
+		\sin \left( \psi / 2 \right) \cdot 0 \\
+		\sin \left( \psi / 2 \right) \cdot 0 \\
+		\sin \left( \psi / 2 \right) \cdot 1 \\
+	\end{bmatrix}
+\end{equation}
+
+\begin{equation}
+	\alpha_H = \arccos \left[1 - 2 \left( q_1^2 + q_2^2 \right) \right]	\qquad 0 \leq \alpha_H < \pi	
+\end{equation}
+
+\begin{equation}
+	\psi = 2 \arctan_2 \left( q_3, q_0 \right) \qquad -\pi \leq \psi < \pi
+\end{equation}
+
+\begin{equation}
+	r_x =   \frac{\cos \left( \psi / 2 \right) q_1 - \sin \left( \psi / 2 \right) q_2}
+	{ \sin \left( \alpha_H / 2 \right) }
+\end{equation}
+
+\begin{equation}
+	r_y =   \frac{\sin \left( \psi / 2 \right) q_1 - \cos \left( \psi / 2 \right) q_2}
+	{ \sin \left( \alpha_H / 2 \right) }
+\end{equation}
+
+\begin{equation}
+	\beta_H = \arctan_2 \left(r_y, r_x \right)
+\end{equation}
+
+\begin{equation}
+	\psi_H = \arctan_2 \left(r_x, r_y \right)
+\end{equation}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Motor control}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+This subsection describes the equations used to set the rotational speed of the motors. Note that this differs from \cite{stingu09}: in that paper the authors used an empirically measured function ($f_{mot}$) to determine the rotational speed based on the voltage of the motor and the command given. This required a dynamically adjustable constant $a_i$ to calibrate each motor for small differences in manufacturing. In this paper it is assumed that actual motor rotational speed is able to be measured. By measuring the rotational speed of the motors we are able to ignore the manufacturing differences between motors. If a motor is not spinning at the correct speed the the PI control loop described next will be able to correct until the desired rotation is achieved.
+
+The following two equations are explicitly defined a discrete time $t$. For clarity, the subscript $i$ denoting a specific motor is not written but is implied:
+\begin{equation}
+	\Omega \left(t \right)_{ Ierror} = \Omega \left(t-1 \right)_{ Ierror} + \left( \Omega_{d} - \Omega_i \right)
+\end{equation}
+\begin{equation}
+	u_i = K_{P} \left( \Omega_{d} - \Omega_i \right) + K_{I} \Omega \left(t \right) _{Ierror}
+\end{equation}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Attitude stabilization}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{align}
+	M_x &= K_{PH} \alpha_H \cos \beta_H - K_{DH} \omega_x \\
+	M_y &= K_{PH} \alpha_H \sin \beta_H - K_{DH} \omega_y \\
+	M_z &= K_{Pz} \psi - K_{Dz} \omega_z \\
+\end{align}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Altitude Control}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{equation}
+	F_z = \frac{mg + F_{PIDz}} {K_{tilt}}
+\end{equation}
+
+\begin{equation}
+	K_{tilt} = 
+	\begin{bmatrix}
+		0 & 0 & 1 \\	
+	\end{bmatrix}
+	\cdot
+	\left(
+		q \otimes
+			\begin{bmatrix}
+				0 \\
+				0 \\
+				-1 \\
+			\end{bmatrix}
+		\otimes q^*
+	\right)
+\end{equation}
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Basic Equations from \cite{stingu09}}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+The follow equations are exactly as written in \cite{stingu09}. They are here for reference only.
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Quadrotor Model}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{equation}
+\dot{\boldsymbol{V}}_b = \frac{1}{m} 
+	\left[
+		\begin{array}{c}
+			0 \\
+			0 \\
+			F_z \\
+		\end{array}
+	\right]
+	+ \boldsymbol{q}^* \otimes
+		\left[
+			\begin{array}{c}
+				0 \\
+				0 \\
+				g \\
+			\end{array}
+		\right]
+	\otimes \boldsymbol{q} - \boldsymbol{\omega}_b \times \boldsymbol{V}_b
+\end{equation}
+
+\begin{equation}
+\dot{\boldsymbol{\omega}}_b = \boldsymbol{I}^{-1}_{nb}
+	\left(
+		\left[
+			\begin{array}{c}
+				M_x \\
+				M_y \\
+				M_z \\
+			\end{array}
+		\right]
+		- \boldsymbol{\omega_b} \times \left( \boldsymbol{I}_{nb} \boldsymbol{\omega}_b \right)
+	\right)
+\end{equation}
+
+\begin{equation}
+\dot{\boldsymbol{R}}_e = \boldsymbol{q} \otimes \boldsymbol{V}_b \otimes \boldsymbol{q}^*
+\end{equation}
+
+\begin{equation}
+\dot{\boldsymbol{q}} = \frac{1}{2} \boldsymbol{q} \otimes \boldsymbol{\omega}_b
+\end{equation}
+
+\begin{equation}
+K_T = \frac{T}{\rho n^2 D^4}
+\end{equation}
+
+\begin{equation}
+K_Q = \frac{Q}{\rho n^2 D^5}
+\end{equation}
+
+\begin{equation}
+\Omega_i = 2 \pi n_i
+\end{equation}
+
+\begin{equation}
+\tau \dot{\Omega}_i + \Omega_i = a_i f_{mot} \left(u_i, V_{batt} \right)
+\end{equation}
+
+\begin{equation}
+\begin{bmatrix}
+	F_z \\
+	M_x \\
+	M_y \\
+	M_z \\
+\end{bmatrix}
+=
+\begin{bmatrix}
+	1 & 1 & 1 & 1 \\
+	0 &-d & 0 & d \\
+   -d & 0 & d & 0 \\
+	c &-c & c &-c \\
+\end{bmatrix}
+\cdot
+\begin{bmatrix}
+	F_1 \\
+	F_2 \\
+	F_3 \\
+	F_4 \\
+\end{bmatrix}
+\end{equation}
+where
+\begin{equation}
+c = \frac{Q}{T}
+\end{equation}
+
+\begin{equation}
+\Omega_{di}=\frac{2 \pi}{D^2} \sqrt{ \frac{-F_{di}}{K_T \rho}}
+\end{equation}
+
+\begin{equation}
+u_i = f_{mot}^{-1} \left( \frac{1}{a_i} \Omega_{di}, V_{batt} \right)
+\end{equation}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Motor Gain Estimation}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{equation}
+\dot{a}_i = K_g \left( \Omega_{imeas} - \hat{\Omega}_i \right)
+\end{equation}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Yaw and Tilt Errors}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{eqnarray}
+\bs{q}_d = \tilde{\bs{q}} \otimes \bs{q} \\
+\tilde{\bs{q}} = \bs{q}_d \otimes \bs{q}^*
+\end{eqnarray}
+
+\begin{equation}
+\tilde{\bs{q}} = 
+\begin{bmatrix}
+	\cos \left( \alpha / 2 \right) \\
+	\sin \left( \alpha / 2 \right) \cdot \bs{r}_e
+\end{bmatrix}
+\end{equation}
+
+Question: should $\alpha$ in the equations above and below have the subscript $\alpha_h$ like later in this section?
+
+\begin{equation}
+\bs{r}_b = q^* \otimes \bs{r}_e \otimes \bs{q}
+\end{equation}
+
+\begin{equation}
+\tilde{\bs{q}}_b = 
+\begin{bmatrix}
+	\cos \left( \alpha / 2 \right) \\
+	\sin \left( \alpha / 2 \right) \cdot \bs{r}_b
+\end{bmatrix}
+\end{equation}
+
+Question: are $\beta_H$ and $\Gamma_H$ perpendicular or somehow constant relative to one another?
+
+\begin{equation}
+\tilde{\bs{q}}_b = \bs{q}_H \otimes \bs{q}_V
+\end{equation}
+
+\begin{equation}
+	\begin{bmatrix}
+		q_0 \\
+		q_1 \\
+		q_2 \\
+		q_3 \\
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		\cos \left( \alpha_H / 2 \right) \\
+		\sin \left( \alpha_H / 2 \right) \cdot r_x \\
+		\sin \left( \alpha_H / 2 \right) \cdot r_y \\
+		\sin \left( \alpha_H / 2 \right) \cdot 0 \\
+	\end{bmatrix}
+	\otimes
+	\begin{bmatrix}
+		\cos \left( \psi / 2 \right) \\
+		\sin \left( \psi / 2 \right) \cdot 0 \\
+		\sin \left( \psi / 2 \right) \cdot 0 \\
+		\sin \left( \psi / 2 \right) \cdot 1 \\
+	\end{bmatrix}
+\end{equation}
+
+\begin{equation}
+	\alpha_H = \arccos \left[1 - 2 \left( q_1^2 + q_2^2 \right) \right]	\qquad 0 \leq \alpha_H < \pi	
+\end{equation}
+
+\begin{equation}
+	\psi = 2 \arctan_2 \left( q_3, q_0 \right) \qquad -\pi \leq \psi < \pi
+\end{equation}
+
+\begin{equation}
+	r_x =   \frac{\cos \left( \psi / 2 \right) q_1 - \sin \left( \psi / 2 \right) q_2}
+	{ \sin \left( \alpha_H / 2 \right) }
+\end{equation}
+
+\begin{equation}
+	r_y =   \frac{\sin \left( \psi / 2 \right) q_1 - \cos \left( \psi / 2 \right) q_2}
+	{ \sin \left( \alpha_H / 2 \right) }
+\end{equation}
+
+\begin{equation}
+	\beta_H = \arctan_2 \left(r_y, r_x \right)
+\end{equation}
+
+\begin{equation}
+	\psi_H = \arctan_2 \left(r_x, r_y \right)
+\end{equation}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Attitude stabilization}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{align}
+	M_x &= K_{PH} \alpha_H \cos \beta_H - K_{DH} \omega_x \\
+	M_y &= K_{PH} \alpha_H \sin \beta_H - K_{DH} \omega_y \\
+	M_z &= K_{Pz} \psi - K_{Dz} \omega_z \\
+\end{align}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Altitude Control}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+\begin{equation}
+	F_z = \frac{mg + F_{PIDz}} {K_{tilt}}
+\end{equation}
+
+\begin{equation}
+	K_{tilt} = 
+	\begin{bmatrix}
+		0 & 0 & 1 \\	
+	\end{bmatrix}
+	\cdot
+	\left(
+		q \otimes
+			\begin{bmatrix}
+				0 \\
+				0 \\
+				-1 \\
+			\end{bmatrix}
+		\otimes q^*
+	\right)
+\end{equation}
+
+\begin{equation}
+	F_{PIDz} = ???
+\end{equation}
+
+
+
+
+
+%To make really long equations:
+%\begin{eqnarray*}
+%  \lefteqn{\left(1+x\right)^n = } \\
+%  & & 1 + nx + \frac{n\left(n-1\right)}{2!}x^2 + \\
+%  & & \frac{n\left(n-1\right)\left(n-2\right)}{3!}x^3 + \\
+%  & & \frac{n\left(n-1\right)\left(n-2\right)\left(n-3\right)}{4!}x^4 + \\
+%  & & \ldots
+%\end{eqnarray*}
+
+
+\begin{thebibliography}{99}
+
+%Use postfix of 69 to indicate unknown year
+
+	\bibitem{stingu09}
+	E. Stingu, F. Lewis, 
+	"Design and Implementation of a Structured Flight Controller for a 6DoF Quadrotor Using Quaternions," 
+Mediterranean Conference on Control \& Automation, pp. 1233-1238, June 2009.
+
+
+	% Justifies the use of a square root in quaternion norm
+	\bibitem{malek09} % www.mcs.csueastbay.edu/~malek/Class/norm.pdf
+	M. Malek,
+	"Vector and Matrix Norms", California State University, East Bay, May 2009.
+	
+	\bibitem{shoemake69} % www.cs.ucr.edu/~vbz/resources/quatut.pdf
+	K. Shoemake,
+	"Quaternions", Department of Computer and Information Science, University of Pennsylvania.
+	
+	
+	
+\end{thebibliography}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
