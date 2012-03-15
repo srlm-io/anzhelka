@@ -39,18 +39,18 @@ This paper describes in detail the dynamics of a quadrotor platform. Most curren
 \section{Introduction}
 A quadrotor is a simple aerial vehicle much like a helicopter, but instead of a single main rotor a quadrotor has four rotors. This allows for a much simpler mechanical system, since each rotor can be directly mounted to it's motor without any linkages to change the pitch of a rotor.
 
-Quadrotor dynamics are very complex. It's difficult because you have four motors, all pointed in the same direction, and that's it. But yet the vehicle can move on three axes in translational motion, and can rotate about another three axes. A quadrotor must be able to convert the four motor inputs into a these six different (and often conflicting) motions.
+Quadrotor dynamics are very complex. It's difficult because you have four motors, all pointed in the same direction, and that's it. But yet the vehicle can move on three axes in translational motion, and can rotate about another three axes. A quadrotor must be able to convert the four motor inputs into these six different (and often conflicting) motions.
 
 The simplest case is hovering in a single location, and will be dealt with in this paper. Initially it is assumed that the quadrotor will have negligable translational motion, although eventually the translational equations may be added to this paper.
 
 The quadrotor used in this paper is assumed to be fairly simple. The platform must be able to measure the following components:
 \begin{list}{*}{}
 	\item rotation (direction and velocity)
-	\item translational (velocity and accleration)
+	\item translation (velocity and accleration)
 	\item motor rotational speed
 	\item air density
 \end{list}
-Note that if air density is assumed to be constant than performance may suffer at different altitudes or weather. In addition, the following constants must be emperically measured for each quadrotor:
+Note that if air density is assumed to be constant than performance may suffer at different altitudes or weather (--- Can this be quantified?). In addition, the following constants must be empirically measured for each quadrotor vehicle:
 \begin{list}{*}{}
 	\item mass ($kg$)
 	\item moment of inertia tensor ($kg \cdot m^2$)
@@ -62,9 +62,9 @@ Note that if air density is assumed to be constant than performance may suffer a
 
 The system is complicated by the fact that a quadrotor will need to be able to balance itself in flight. If a gust of wind blows from the side and rolls the quadrotor, it will no longer be a stable hover. The vehicle will need to increase the speed of some motors and decrease the speed of others so that the vehicle is rotated back into a vertical hovering state.
 
-There is still a problem: each motor is producing torque on the body as well as thrust. This is manifested by the motor "attempting" to rotate the body due to the spinning mass of the motor and propeller, and the air resistance the propeller encounters. On a quadrotor frame we have two motors spinning clockwise and two spinning counter clockwise, and the torques cancel each other out. But if a motor speed in increased to account for a tilt, then it's torque on the frame will increase as well, causing the whole body to rotate.
+There is still a problem: each motor is producing torque on the body as well as thrust. This is manifested by the motor "attempting" to rotate the body due to the spinning mass of the motor and propeller, and the air resistance the propeller encounters. On a quadrotor frame we have two motors spinning clockwise and two spinning counter clockwise, and the torques cancel each other out. But if a motor's speed in increased to account for a tilt, then it's torque on the frame will increase as well, causing the whole body to rotate.
 
-And so now, when a gust of wind blows on the frame, we have to somehow correct the tilt without allowing the torque to yaw the frame. At other times we may want to yaw without tilting, and sometimes we want to do both simultaneously.  But there is so much more beyond just the basic thrust, tilt, and yaw: we have to account for many factors such as free stream velocity (or air, in layman's terms) through the propellers, blade flapping, sensor failure, and the many small equations that support the main equations.
+And so now, when a gust of wind blows on the frame, we have to somehow correct the tilt without allowing the torque to yaw the frame. At other times we may want to yaw without tilting, and sometimes we want to do both simultaneously.  There is so much more beyond just the basic thrust, tilt, and yaw: we have to account for many factors such as free stream velocity (or air, in layman's terms) through the propellers, blade flapping, sensor failure, and the many small equations required to support the main equations.
 
 \section{Symbols Used}
 
@@ -163,7 +163,9 @@ $$
 
 This means that the rotation is around the axis $\boldsymbol{r}$ and by amount $\alpha$. Note that in the second representation the second element is $q_1$, $q_2$, and $q_3$ (it's three because of the $\cdot \boldsymbol{r}$, which is a three element vector). To add some terminology, the first term $q_0$ is called the scalar part, while $q_1$ through $q_3$ is called the vector part.
 
-A quaternion can be thought of a number, just like any other. So, we can do several operations such as add, multiply, invert (divide), take the norm, and of course test for equality. We'll be focusing on rotation quaternions for the rest of this paper. A rotation quaternion is the specific form of quaternion used to represent rotation, and must have a norm equal to one. We define the norm of quaternion as
+A quaternion can be thought of a number, just like any other. So, we can do several operations such as add, multiply, invert (divide), take the norm, and of course test for equality. We'll be focusing on rotation quaternions for the rest of this paper. A rotation quaternion is the specific form of quaternion used to represent rotation, and must have a norm equal to one. It should be noted here that a rotation quaternion is of length one (unit) only by convention and because it simplifies some proofs, but that any non-zero real multiple of $q$ gives the the same rotation (although the interpretation of rotating by $\Omega$ about $v$ is lost for non-unit quaternions).
+
+We define the norm of quaternion as
 
 $$ \lVert q \rVert = \sqrt{q_0^2 + q_1^2 + q_2^2 + q_3^2} $$
 
@@ -171,7 +173,9 @@ The norm can be thought of as the "length" of a quaternion (or vector, etc). A $
 
 We also define the conjugate and inverse of a rotation quaternion as
 
-$$ q' = \left(q_0, -q_1, -q_2, -q_3 \right) = q^{-1} $$
+$$ q^* = q' = \left(q_0, -q_1, -q_2, -q_3 \right) = q^{-1} $$
+
+--- IS $q^*$ notation for conjugate?
 
 Note this equality is only true for unit quaternions (rotation quaternions), and does not hold for other quaternions.
 
@@ -228,6 +232,7 @@ The product of two quaternions is another quaternion and is defined as:
 Question: Order of the component multiplication doesn't matter, right? Also, double check the correct multiplication... \\
 
 One thing to note is that a quaternion multiplication has 12 scalar additions and 16 scalar multiplies. Since the components are floating point, each quaternion multiplication consumes 28 floating point operations. \\
+
 
 
 ----A bunch more stuff to define------ \\
@@ -302,7 +307,7 @@ K_T = \frac{T}{\rho n^2 D^4}
 K_Q = \frac{Q}{\rho n^2 D^5}
 \end{equation}
 
-These two equations are used to define $K_T$ and $K_Q$, which are determined experimentally. A motor test stand must be able to measure the components on the right hand side and generate the constants for a particular motor and propeller combination. For use onboard the quadrotor, equation \eqref{eq:motor_thrust} will be used with equation \eqref{eq:rpm_to_Omega} to connect thrust to rotational speed in equation \eqref{eq:thrust_to_Omega}. By this combination we will be able to determine what rotational speed we need to run the motors at to achieve a specified thrust. From equations \eqref{eq:motor_thrust} and \eqref{eq:rpm_to_Omega} we rewrite and combine:
+These two equations are used to define $K_T$ and $K_Q$, which are determined experimentally. A motor test stand must be able to measure the components on the right hand side and generate the constants for a particular motor and propeller combination. For use onboard the quadrotor, equation \eqref{eq:motor_thrust} will be used with equation \eqref{eq:rpm_to_Omega} to connect thrust to rotational speed. This is done in equation \eqref{eq:thrust_to_Omega}. By this combination we will be able to determine what rotational speed we need to run the motors at to achieve a specified thrust. From equations \eqref{eq:motor_thrust} and \eqref{eq:rpm_to_Omega} we rewrite and combine:
 \begin{align}
 	n^2 	&= \frac{T}{\rho K_T D^4} \notag \\
 	n		&= \frac{1}{D^2} \sqrt{\frac{T}{\rho K_T}} \notag \\
@@ -310,7 +315,7 @@ These two equations are used to define $K_T$ and $K_Q$, which are determined exp
 	\Omega_{di}	&= \frac{2 \pi}{D^2} \sqrt{\frac{T}{\rho K_T}} \label{eq:thrust_to_Omega}
 \end{align}
 
-Now, with equation \eqref{eq:thrust_to_Omega} we have an equation that will tie the thrust required to how fast the rotors must spin. This can later be fed into a PI controller for each motor, described in -----SECTION CITATION----.
+With equation \eqref{eq:thrust_to_Omega} we have an equation that will tie the thrust required to how fast the rotors must spin. This can later be fed into a PI controller for each motor, described in -----SECTION CITATION----.
 
 
 
@@ -433,9 +438,9 @@ Question: are $\beta_H$ and $\Gamma_H$ perpendicular or somehow constant relativ
 \subsection{Motor control}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
-This subsection describes the equations used to set the rotational speed of the motors. Note that this differs from \cite{stingu09}: in that paper the authors used an empirically measured function ($f_{mot}$) to determine the rotational speed based on the voltage of the motor and the command given. This required a dynamically adjustable constant $a_i$ to calibrate each motor for small differences in manufacturing. In this paper it is assumed that actual motor rotational speed is able to be measured. By measuring the rotational speed of the motors we are able to ignore the manufacturing differences between motors. If a motor is not spinning at the correct speed the the PI control loop described next will be able to correct until the desired rotation is achieved.
+This subsection describes the equations used to set the rotational speed of the motors. Note that this differs from \cite{stingu09}: in that paper the authors used an empirically measured function ($f_{mot}$) to estimate the rotational speed based on the voltage of the motor and the command given. This required a dynamically adjustable constant $a_i$ to calibrate each motor for small differences in manufacturing. In this paper it is assumed that actual motor rotational speed is able to be measured. By measuring the rotational speed of the motors we are able to ignore the manufacturing differences between motors. If a motor is not spinning at the correct speed the PI control loop described next will be able to correct until the desired rotation is achieved.
 
-The following two equations are explicitly defined a discrete time $t$. For clarity, the subscript $i$ denoting a specific motor is not written but is implied:
+The following two equations are explicitly defined a discrete time $t$. For clarity, the subscript $i$ denoting a specific motor is implied but not written:
 \begin{equation}
 	\Omega \left(t \right)_{ Ierror} = \Omega \left(t-1 \right)_{ Ierror} + \left( \Omega_{d} - \Omega_i \right)
 \end{equation}
@@ -476,6 +481,10 @@ The following two equations are explicitly defined a discrete time $t$. For clar
 			\end{bmatrix}
 		\otimes q^*
 	\right)
+\end{equation}
+
+\begin{equation}
+	F_{PIDz} = ???
 \end{equation}
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -710,9 +719,7 @@ Question: are $\beta_H$ and $\Gamma_H$ perpendicular or somehow constant relativ
 	\right)
 \end{equation}
 
-\begin{equation}
-	F_{PIDz} = ???
-\end{equation}
+
 
 
 
@@ -726,6 +733,25 @@ Question: are $\beta_H$ and $\Gamma_H$ perpendicular or somehow constant relativ
 %  & & \frac{n\left(n-1\right)\left(n-2\right)\left(n-3\right)}{4!}x^4 + \\
 %  & & \ldots
 %\end{eqnarray*}
+
+\section{Stuff I still need to address}
+\begin{list}{*}{}
+	\item Add tables with acronyms, abbreviations, and units
+	\item Add information on how to calculate moment of inertia tensor (make note of parallel axes theorem)
+	\item I made a note of "Origin at CoM, axes of inertia". What does it mean?
+	\item What is static / dynamic range (tracking)? In reference to yaw/roll/pitch error
+	\item Discuss kinematics vs. Dynamics
+	\item Add the derivation from brushless DC motor to brushed DC motor, specifically for thrust/torque
+	\item Add information about calculating "linear regression" to calculate motor constants from test date.
+	\item Add step by step information for testing thrust/torque
+	\item Check: when rolling/pitching/yawing, do these equations hold only for small differences in rotor speed? (source: the masters paper from Asia...)
+	\item I'm told that since the big matrix only has four possible inputs (4 motors), we can only control four things. But what about hex/octo rotors?
+	\item What about motor saturation? Should priority be given to attitude over altitude?
+	\item From the motor control section, "Does the system take into account that these are rotations, so that several values can represent the same rotation? eg $3\pi$ and $-\pi$.
+	\item Add a PID tutorial (how to prevent integral wind up; derivative impulse (that saturates))
+	\item 
+	
+\end{list}
 
 
 \begin{thebibliography}{99}
