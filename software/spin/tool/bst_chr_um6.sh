@@ -14,7 +14,7 @@
 echo
 echo
 
-bstc.linux -f -p0 -L lib  src/mpu6050.spin > output.txt
+bstc.linux -f -p0 -L lib  src/chr_um6.spin > output.txt
 cat output.txt
 
 grep -q "Error" output.txt
@@ -34,10 +34,11 @@ else
       echo To exit picocom, type C-A the C-X
       echo
    
-      picocom -b 57600 /dev/ttyUSB0
+      picocom -b 115200 /dev/ttyUSB0
    fi
 fi
 
+rm output.txt
 
 
 
