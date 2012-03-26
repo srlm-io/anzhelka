@@ -14,7 +14,7 @@
 echo
 echo
 
-../../software/spin/tool/bstc.linux -f -p0 -L lib  test_stand.spin > output.txt
+../../software/spin/tool/bstc.linux -f -p0 -L ../../software/spin/lib  test_stand.spin > output.txt
 cat output.txt
 
 grep -q "Error" output.txt
@@ -34,7 +34,7 @@ else
       echo To exit picocom, type C-A the C-X
       echo
    
-      picocom -b 57600 /dev/ttyUSB0
+      picocom -b 115200 /dev/ttyUSB0
    fi
 fi
 
