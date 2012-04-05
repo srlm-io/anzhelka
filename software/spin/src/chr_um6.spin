@@ -31,8 +31,8 @@ CON
 	DEBUG_TX_PIN  = 30
 	DEBUG_RX_PIN  = 31
 	
-	IMU_RX_PIN = 19 'Note: direction is from Propeller IO port
-	IMU_TX_PIN = 18 'Note: direction is form Propeller IO port
+	IMU_RX_PIN = 26 'Note: direction is from Propeller IO port
+	IMU_TX_PIN = 25 'Note: direction is form Propeller IO port
 	
 'Settings
 
@@ -53,18 +53,20 @@ PUB Main | i, t1, addr
 	debug.str(string("Starting"))
 	debug.tx(10)
 	debug.tx(13)
-	
-	AppendChecksum(@UM6_GET_FW_VERSION)
-	repeat i from 0 to 6
-		imu.tx(byte[@UM6_GET_FW_VERSION][i])
+'	
+'	AppendChecksum(@UM6_GET_FW_VERSION)
+'	repeat i from 0 to 7
+'		imu.tx(byte[@UM6_GET_FW_VERSION][i])
 		
-	repeat 100
-		repeat 20
+	imu.str(@UM6_GET_FW_VERSION)
+	repeat 75
+		repeat 40
 			debug.hex(imu.rx, 2)
 			debug.tx(" ")
 		debug.tx(10)
 		debug.tx(13)
 	
+	debug.str(string("Stopping output"))
 	repeat
 	
 	repeat
@@ -176,7 +178,9 @@ This function will block until data is received...
 	repeat 
 		debug.tx("*")
 		if imu.rx == "s"
+			debug.tx("+")
 			if imu.rx == "n"
+				debug.tx("=")
 				if imu.rx == "p"
 					quit 'break from loop
 	
@@ -320,7 +324,8 @@ DAT
 	APPEND_CHECKSUM_ERROR byte 10, 13, "ERROR: in string passed to AppendChecksum", 10, 13, 0
 	RECEIVE_PACKET_ERROR  byte 10, 13, "ERROR: in receiving a packet from UM6", 10, 13, 0
 	
-	UM6_GET_FW_VERSION byte "snp", %0_0_0000_0_0, $AA, 0, 0, 0   '0 here, but should have a checksum of $1FB
+	UM6_GET_FW_VERSION byte "snp", %0_0_0000_0_0, $AA, $01, $FB, 0   '0 here, but should have a checksum of $1FB
+'	UM6_GET_FW_VERSION byte "snp", %0_0_0000_0_0, $AA, 0, 0, 0   '0 here, but should have a checksum of $1FB
 	
 	
 		  

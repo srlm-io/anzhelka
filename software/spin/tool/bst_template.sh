@@ -31,7 +31,7 @@ else
    
       echo
       echo
-      echo To exit picocom, type C-A the C-X
+      echo To exit picocom, type C-A then C-X
       echo
    
       picocom -b 115200 /dev/ttyUSB0
