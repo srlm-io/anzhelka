@@ -46,7 +46,7 @@ OBJ
 
 PUB Main | i, t1, addr
 
-	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 115200)
+	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 230400)
 	imu.start(IMU_RX_PIN, IMU_TX_PIN, 0, 115200)
 	waitcnt(clkfreq + cnt)
 	

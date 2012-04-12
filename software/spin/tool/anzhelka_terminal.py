@@ -1,7 +1,37 @@
 #!/usr/bin/python
-#import wx
+import wx
 #from anzhelka_terminal_gui import MyFrame
 
+
+
+import os
+import pprint
+import random
+import sys
+import wx
+
+
+
+# The recommended way to use wx with mpl is with the WXAgg
+# backend. 
+#
+
+
+
+#Data comes from here
+#from Arduino_Monitor import SerialData as DataGen
+from anzhelka_terminal_serial import *
+from anzhelka_terminal_gui_extra import *
+
+
+
+
+def reverseenum(string, l):
+	#returns the index value based on the string passed in
+	for i in range(len(l)):
+		if string == l[i]:
+			return i
+	return -1 #no match
 
 def handler_terminal_pause_main(self, event):
 	print("I'm handling the event!")
