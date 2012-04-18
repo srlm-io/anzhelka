@@ -26,6 +26,8 @@ from anzhelka_terminal_gui_extra import *
 
 
 
+
+
 def reverseenum(string, l):
 	#returns the index value based on the string passed in
 	for i in range(len(l)):
