@@ -68,20 +68,24 @@ class RxParser(object):
 
 def receiving(ser):
 	global rx_buffer
-
+	global threadkillall
+#	global threadkillall
+	
 	buffer = ''
+#	while not threadkillall:
 	while True:
 		buffer = buffer + ser.read(ser.inWaiting())
 		if '\n' in buffer:
 			lines = buffer.split('\n') # Guaranteed to have at least 2 entries
-			
+#			print "len(lines) == ", len(lines)
 			if not rx_buffer_lock.acquire(False):
 #				print "Could not get lock..."
 				pass
 			else:
 #				print "Got lock..."
 				try:
-					rx_buffer.append(lines[-2])
+					for i in range(len(lines)-1):
+						rx_buffer.append(lines[i])
 #					last_received = lines[-2]
 				finally:
 					rx_buffer_lock.release()
@@ -89,21 +93,25 @@ def receiving(ser):
 			#last filled line, so you could make the above statement conditional
 			#like so: if lines[-2]: last_received = lines[-2]
 			buffer = lines[-1]
+		else:
+			time.sleep(.01)
+	print "closing..."
+	ser.close()
 
 
 class DataGen(object):
 	def __init__(self, init=50):
 		try:
 			self.ser = ser = serial.Serial(
-				port='/dev/ttyUSB0',
-				baudrate=230400,
+				port='/dev/ttyUSB2',
+				baudrate=115200,
 				bytesize=serial.EIGHTBITS,
 				parity=serial.PARITY_NONE,
 				stopbits=serial.STOPBITS_ONE,
 				timeout=0.1,
 				xonxoff=0,
 				rtscts=0,
-				interCharTimeout=None
+#				interCharTimeout=None
 			)
 		except serial.serialutil.SerialException:
 			#no serial connection

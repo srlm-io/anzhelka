@@ -55,28 +55,28 @@ PUB Main | i, j, counter
 
 '		j := cnt
 '		i := cnt
-'		rps[0]++
-'		if rps[0] > 100
-'			rps[0] := 0
-'		
-'		motordesiredrps[0] := rps[0] + 27
-'			
-'		random(@motoramp, 4)
-'		random(@motorvolt, 8)
-'		random(@motorpwm, 12)
-'		random(@motorkp, 14)
-'		random(@motorki, 17)
-'		random(@motorkd, 22)
-'		random(@motorthrust, 24)
-'		random(@motortorque, 26)
-'		
+		rps[0]++
+		if rps[0] > 100
+			rps[0] := 0
+		
+		motordesiredrps[0] := rps[0] + 27
+			
+		random(@motoramp, 4)
+		random(@motorvolt, 8)
+		random(@motorpwm, 12)
+		random(@motorkp, 14)
+		random(@motorki, 17)
+		random(@motorkd, 22)
+		random(@motorthrust, 24)
+		random(@motortorque, 26)
+		
 '		i := cnt - i
 '		debug.str(0, string("Calculate clock cycles: "))
 '		debug.dec(0, i)
 '		debug.str(0, string(10,13))
 		i := cnt
 		
-'		printMotorList(string("$ADRPS "), @rps)
+		printMotorList(string("$ADRPS "), @rps)
 '		printMotorList(string("$ADMIA "), @motoramp)
 '		printMotorList(string("$ADMVV "), @motorvolt)
 '		printMotorList(string("$ADPWM "), @motorpwm)
@@ -95,17 +95,17 @@ PUB Main | i, j, counter
 		
 '		debug.tx_test0(0, "*")
 
-		repeat 100
-			debug.dec(0, 123)
+'		repeat 100
+'			debug.dec(0, 123)
 
 
 
-		i := cnt - i
-		debug.str(0, string(10,13,10,13))
-		debug.str(0, string("Transmit clock cycles: "))
-		debug.dec_full(0, i)
-		debug.str(0, string(10,13,10,13))
-		
+'		i := cnt - i
+'		debug.str(0, string(10,13,10,13))
+'		debug.str(0, string("Transmit clock cycles: "))
+'		debug.dec_full(0, i)
+'		debug.str(0, string(10,13,10,13))
+'		
 		
 		
 		
@@ -125,7 +125,7 @@ PUB Main | i, j, counter
 '		debug.str(0, string(10,13,10,13))
 		
 		
-		'waitcnt(clkfreq/100 +cnt)
+		waitcnt(clkfreq/100 +cnt)
 			
 			
 PUB random(variable_addr, offset)
@@ -150,7 +150,7 @@ PUB printMotorList(name_str_addr, variable_addr) | i
 PUB init_uarts | extra
 	extra := debug.init
 	
-	debug.AddPort(0, 31, 30, -1, -1, 0, 0, 230400)
+	debug.AddPort(0, 31, 30, -1, -1, 0, 0, 115200)
 	
 	debug.Start
 	

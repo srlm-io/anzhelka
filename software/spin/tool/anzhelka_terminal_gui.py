@@ -4,15 +4,17 @@
 
 import wx
 
+threadkillall = False #If true signals threads to kill themselves
+
 # begin wxGlade: extracode
 from anzhelka_terminal_serial import *
 datagen = DataGen()
 from anzhelka_terminal import *
 from anzhelka_terminal_gui_extra import *
-from anzhelka_terminal_serial import *
-#datagen = DataGen()
-from anzhelka_terminal import *
-from anzhelka_terminal_gui_extra import *
+#from anzhelka_terminal_serial import *
+##datagen = DataGen()
+#from anzhelka_terminal import *
+#from anzhelka_terminal_gui_extra import *
 # end wxGlade
 
 

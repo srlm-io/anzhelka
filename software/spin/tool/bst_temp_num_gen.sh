@@ -14,7 +14,7 @@
 echo
 echo
 
-bstc.linux -f -p0 -L lib  src/temp_num_gen.spin > bstoutput.txt
+./tool/bstc.linux -f -p0 -L lib  src/temp_num_gen.spin > bstoutput.txt
 cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt
@@ -35,7 +35,7 @@ else
       echo
       rm bstoutput.txt
    
-      picocom -b 230400 /dev/ttyUSB0
+      picocom -b 115200 /dev/ttyUSB2
    fi
 fi
 
