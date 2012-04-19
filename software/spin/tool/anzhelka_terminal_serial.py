@@ -103,7 +103,7 @@ class DataGen(object):
 	def __init__(self, init=50):
 		try:
 			self.ser = ser = serial.Serial(
-				port='/dev/ttyUSB2',
+				port='/dev/ttyUSB0',
 				baudrate=115200,
 				bytesize=serial.EIGHTBITS,
 				parity=serial.PARITY_NONE,

@@ -14,29 +14,34 @@
 echo
 echo
 
-../../software/spin/tool/bstc.linux -f -p0 -L ../../software/spin/lib  test_stand.spin > output.txt
-cat output.txt
+../../software/spin/tool/bstc.linux -f -p0 -L ../../software/spin/lib  test_stand.spin > bstoutput.txt
+cat bstoutput.txt
 
-grep -q "Error" output.txt
+grep -q "Error" bstoutput.txt
 if [ $? -eq 0 ]; then
    echo Found Error!
 else
    echo ----------------------------------------------------------
    echo No compiler errors...
    
-   grep -q "No Propeller detected on" output.txt
+   grep -q "No Propeller detected on" bstoutput.txt
    if [ $? -eq 0 ]; then
       echo Could not find Propeller chip...
    else
    
       echo
       echo
-      echo To exit picocom, type C-A the C-X
+      echo To exit picocom, type C-A then C-X
       echo
-   
-      picocom -b 115200 /dev/ttyUSB0
+      rm bstoutput.txt
+      
+      port=$(ls /dev/*USB*)
+      #echo $port
+      picocom -b 115200 $port
    fi
 fi
+
+rm bstoutput.txt
 
 
 

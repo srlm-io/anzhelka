@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+#To profile code use the following command:
+# python -m cProfile -s calls ./tool/anzhelka_terminal_gui.py
 
 
 
@@ -25,7 +27,7 @@ import pylab
 import numpy as np
 from anzhelka_terminal_serial import *
 
-REFRESH_INTERVAL_MS = 250
+REFRESH_INTERVAL_MS = 50
 paused = False
 
 motor_num = 4
@@ -247,12 +249,12 @@ class RPMGraph(wx.Panel):
 		pylab.setp(self.axes.get_xticklabels(), 
 			visible=self.cb_xlab.IsChecked())
 		
-		temp = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+#		temp = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 		
-#		self.plot_data.set_xdata(np.arange(len(self.data)))
-#		self.plot_data.set_ydata(np.array(self.data))
-		self.plot_data.set_xdata(np.arange(temp))
-		self.plot_data.set_ydata(np.array(temp))
+		self.plot_data.set_xdata(np.arange(len(self.data)))
+		self.plot_data.set_ydata(np.array(self.data))
+#		self.plot_data.set_xdata(np.arange(len(temp)))
+#		self.plot_data.set_ydata(np.array(temp))
 		
 		
 		self.canvas.draw()
@@ -425,7 +427,6 @@ class MotorTable(wx.Panel):
 	
 		
 	def update_field(self, code, enum_field):
-		
 		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
 		for i in range(len(matchlist)): # != 0:
 			self.motor_table[i+1][reverseenum(enum_field, motor_settings)].SetValue(str(matchlist[i]))

@@ -34,8 +34,10 @@ else
       echo To exit picocom, type C-A then C-X
       echo
       rm bstoutput.txt
-   
-      picocom -b 115200 /dev/ttyUSB2
+      
+      port=$(ls /dev/*USB*)
+      #echo $port
+      picocom -b 115200 $port
    fi
 fi
 

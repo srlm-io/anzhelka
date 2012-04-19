@@ -35,7 +35,9 @@ else
       echo
       rm bstoutput.txt
    
-      picocom -b 115200 /dev/ttyUSB0
+      port=$(ls /dev/*USB*)
+      #echo $port
+      picocom -b 115200 $port
    fi
 fi
 
