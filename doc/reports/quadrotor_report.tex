@@ -36,7 +36,8 @@ And when he [Herod] had apprehended him [Peter], he put him in prison, and deliv
 \addcontentsline{toc}{section}{Revisions}
 \begin{paragraph}{Revions}
 {
-Here is where you will place the revisions of this document.
+Here is where you will place the revisions of this document. \\ \\
+9:55pm - All of the spelling was checked and fixed for the first 2 secitions writen by Luke.
 }
 \end{paragraph}
 %% REV REV REV REV REV REV REV REV REV REV REV REV REV
@@ -61,25 +62,25 @@ Here is where you will place the revisions of this document.
 \subsection{Executive Summary}
 
 This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimble that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.\\ \\
-Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Acelerometer \textcolor{red}{CHECK SPELLING}, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to controll up to 8 Servos, able to track the exact speed and possition of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
-This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior desing project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that messures in at 4inches by 3inches. \\ \\
-Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the controll algorithims is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor. \\ \\
-The project was started without any expertiese or experiance with autonomous flying or quadrotors, but with will to learn, create and develope a system that could even be understood by people with experince in these fields. Software is one of the groups expertese. Both team members have had years of experence in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experence with designing PCB's and curcuits, however nothing to the extent of this project. The team believed that this project was worth aprroximently 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximently 30 hours per person per week were devoted to this project. \\ \\
+Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Accelerometer, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to control up to 8 Servos, able to track the exact speed and position of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
+This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior design project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that measures in at 4inches by 3inches. \\ \\
+Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the control algorithms is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor. \\ \\
+The project was started without any expertise or experiance with autonomous flying or quadrotors, but with will to learn, create and develop a system that could even be understood by people with experience in these fields. Software is one of the groups expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experience with designing PCB's and circuits, however nothing to the extent of this project. The team believed that this project was worth aprroximately 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximately 30 hours per person per week were devoted to this project. \\ \\
 \textcolor{red}{NEEDS ACHIEVEMENTS}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Design Objectives and System Overview}
 
-This project was designed to be open ended and to be used in an unpresisented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unatainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gritter from traditional methods.\\ \\
-The quadrotor will have atleast a 15minute run time, with the ablitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The controll loop to keep the platform stable will run at 300Hz and be asyncronous. \\ \\
-On this project the team members of Anzhelka decided to keep responsiblities as open as possible, however SRLM did most of the coding and wood working while ILUKESTER did most of the embeded hardware and wiring. Everything else was either split evenly or worked on jointly.
+This project was designed to be open ended and to be used in an unprecedented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unattainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gitter from traditional methods.\\ \\
+The quadrotor will have at least a 15minute run time, with the abilitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The control loop to keep the platform stable will run at 300Hz and be \textcolor{red}{asynchronous}. \\ \\
+On this project the team members of Anzhelka decided to keep responsibilities as open as possible, however SRLM did most of the coding and wood working while ILUKESTER did most of the embedded hardware and wiring. Everything else was either split evenly or worked on jointly.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Background and Prior Art}
 
-There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Oject tracking, and Open.
+There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -96,8 +97,9 @@ There have been several different renditions of this project but to the best of 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Definitions and Acronyms}
-ESC - Electronics Speed Control
-IMU - Inertial Messurement Unit
+\textcolor{red}{Needs lots more of deffinitions}\\
+ESC - Electronics Speed Control\\
+IMU - Inertial Messurement Unit\\
 PWM - Pulse Width Modulation
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
@@ -108,22 +110,22 @@ This section describes issues that need to be addressed or resolved prior or whi
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Assumptions}
-Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video of the activity that you have recorded usually turns out shakey and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be acomplished while being as simple as powering on a couple of devices. 
+Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video usually turns out shaky and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be accomplished while being as simple as powering on a couple of devices. 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Realistic Constraints}
-Every system has contraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefor it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalcuated problems.
+Every system has constraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefore it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalculated problems.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{System Environment and External Interfaces}
-To be able to acomplish all of these tasks there is alot of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must becontrolled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
+To be able to accomplish all of these tasks there is a lot of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must be controlled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2   
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Budget and Cost Analysis}
-Unfortantly there was no money that was given to the team in order to support the project. All of the funding had come from the teammembers own personal accounts. Below is a excert from our spreadsheet with the cost analyis and money spent on this project.\\ \\
+Unfortunately there was no money that was given to the team in order to support the project. All of the funding had come from the team members own personal accounts. Below is an exert from our spreadsheet with the cost analysis and money spent on this project.\\ \\
 \textcolor{red}{INSERT COST TABLE HERE}\\ \\
 \textcolor{blue}{Update table before adding}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
@@ -131,8 +133,8 @@ Unfortantly there was no money that was given to the team in order to support th
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Safety}
 When dealing with any autonomous system one must take extreme cautions in order to insure the safety of everyone. Autonomous systems are dangerous because there is no one behind the controls of the system and can become unpredictable in the event of a system failure. \\ \\ 
-During the design process of the frame the team made sure to use proper spec fasteners, washers, and nuts. Also, all threaded components were secured using blue locktight to ensure that nothing would lossen on its own. \\ \\
-Whenever flying an arial vehicle be sure to wear saftey glasses to protect your eyes in the event that the propeller has a failure and is detached/released from the motor(s).
+During the design process of the frame the team made sure to use proper spec fasteners, washers, and nuts. Also, all threaded components were secured using blue lock tight to ensure that nothing would loosen on its own. \\ \\
+Whenever flying an aerial vehicle be sure to wear safety glasses to protect your eyes in the event that the propeller has a failure and is detached/released from the motor(s).
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -143,7 +145,7 @@ Whenever flying an arial vehicle be sure to wear saftey glasses to protect your 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Importance of Team Work}
-Being able to work in a team is both a skill and a challenge. Working on a project in a group helps you split up the work load and possiably get more work done in less time, however being able to work together with others on the project could pressent a greater challenge than the project itself. This was a forseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and we had yet to complete. With these two resources set up and with the help of keeping an open schedual the team has come to realize how important team work really is.
+Being able to work in a team is both a skill and a challenge. Working on a project in a group helps you split up the work load and possibly get more work done in less time, however being able to work together with others on the project could present a greater challenge than the project itself. This was a foreseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and we had yet to complete. With these two resources set up and with the help of keeping an open schedule the team has come to realize how important team work really is.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
