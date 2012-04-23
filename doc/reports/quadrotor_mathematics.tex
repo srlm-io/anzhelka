@@ -12,6 +12,7 @@
 
 \usepackage{amsmath}
 \usepackage{longtable} %for tables that can break across pages
+\usepackage{graphicx}
 
 
 %\usepackage{hyperref} %Must be at the end of use package but befor "other settings". Used to make links of all references.
@@ -26,6 +27,9 @@
 \newcommand{\vect}[1]{\boldsymbol{#1^2}}
 \newcommand{\bigvect}[3]{\boldsymbol{#1^#2^#3}}
 \newcommand{\bs}[1]{\boldsymbol{#1}}
+
+\graphicspath{{../figures/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
+
 
 \begin{document}
 
@@ -45,6 +49,12 @@ This paper describes in detail the dynamics of a quadrotor platform. Most curren
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Introduction}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.05]{reference_frame_diagram.jpg}
+  \caption{Orientation of the body axis with respect to the motor numbers and rotations.}
+\end{figure}  
 
 A quadrotor is a simple aerial vehicle much like a helicopter, but instead of a single main rotor a quadrotor has four rotors. This allows for a much simpler mechanical system, since each rotor can be directly mounted to it's motor without any linkages to change the pitch of a rotor.
 
@@ -193,8 +203,6 @@ We also define the conjugate and inverse of a rotation quaternion as
 
 $$ q^* = q' = \left(q_0, -q_1, -q_2, -q_3 \right) = q^{-1} $$
 
---- IS $q^*$ notation for conjugate?
-
 Note this equality is only true for unit quaternions (rotation quaternions), and does not hold for other quaternions.
 
 The only binary operation that we will be using for rotation quaternions is multiplication, denoted by $ \otimes$. Note that quaternion multiplication is not commutative. Multiplying $q_1 \otimes q_2 \neq q_2 \otimes q_1 $. Multiplying rotation quaternions produces a third rotation quaternion that is the result of rotating each quaternion in reverse order starting with the right hand side quaternion. To rotate a standard vector from one coordinate system to another simply place it into the vector part of the quaternion and set the scalar part to zero. Then, for transforming the vector $r_e$ to the vector $r_b$:
@@ -252,7 +260,7 @@ One thing to note is that a quaternion multiplication has 12 scalar additions an
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Basic Equations}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
-  
+In this section we will cover in detail all of the equations necessary to fly. This section explains the derivation and reasoning behind each equation used, and any assumptions that are made.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Roll, Pitch, and Yaw Errors} \label{subsec:rollpitchyawerrors}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -402,7 +410,7 @@ Attitude is controlled via a very simple PID loop. The main thing to note here i
 \subsection{Altitude Stabilization} \label{subsec:altitudestabilization}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 The current altitude can be measured in any number of ways. Many quadrotors use an ultrasonic sensor mounted on the bottom of the platform to measure distance to the ground. Alternatively, a system could use an IR sensor, altimeter module, precision differential GPS, or any system that gives a single scalar number as the altitude. This section assumes that whatever measurement was used, the current altitude can be represented a scalar number.
-
+\\ \\
 To stabilize the altitude, we define the altitude error as
 \begin{equation}
 \tilde{\bs{R}}_{e_z} = \bs{R}_{e_z} - desired \left( \bs{R}_{e_z} \right)
@@ -439,14 +447,14 @@ With these equations, the more the body is tilted the $F_z$ will become and the 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Forces to Motor Speeds} \label{subsec:forcestomotorspeeds}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
-In previous sections we have calculated the desired moments $M_x$, $M_y$, and $M_z$, and the desired force $F_z$. In this section we will take those and convert it to the desired RPM of each motor.
-
-First, in equation \eqref{eq:rpm_to_Omega} we have a standard conversion from rotational frequency (in RPM --CHECK!) to angular frequency (in radians/second -- CHECK!).
+In previous sections we have calculated the desired moments $M_x$, $M_y$, and $M_z$, and the desired force $F_z$. In this section we will take those moments and convert it to the desired rotation speed of each motor.
+\\ \\
+First, in equation \eqref{eq:rpm_to_Omega} we have a standard conversion from rotational frequency to angular frequency .
  
 \begin{equation} \label{eq:rpm_to_Omega}
 \Omega_i = 2 \pi n_i
 \end{equation}
-
+\\ \\
 Each motor generates a thrust in the direction of the motor shaft axis, and a torque around the motor shaft axis. The calculation of $K_T$ and $K_Q$ is discussed in subsection \ref{subsec:thrustandtorquecoefficientmeasurements}.
 
 
@@ -467,7 +475,7 @@ Q = K_Q\rho n^2 D^5
 %\end{equation}
 
 These two equations are used to define $T$ and $Q$. The constants $K_T$ and $K_Q$ are determined experimentally. A motor test stand must be able to measure $T$, $Q$, $\rho$, $n$, and $D$, and generate the constants for a particular motor and propeller combination. Note the exponents in the equations: rotational speed and propeller diameter have a significant effect on the thrust and torque.
-
+\\ \\
 For use onboard the quadrotor, equation \eqref{eq:motor_thrust} will be used with equation \eqref{eq:rpm_to_Omega} to connect thrust to rotational speed. This derivation is done in equation \eqref{eq:thrust_to_Omega}. By this combination we will be able to determine what rotational speed we need to run the motors at to achieve a specified thrust. From equations \eqref{eq:motor_thrust} and \eqref{eq:rpm_to_Omega} we rewrite and combine:
 \begin{align}
 	n^2 	&= \frac{T}{\rho K_T D^4} \notag \\
@@ -475,9 +483,9 @@ For use onboard the quadrotor, equation \eqref{eq:motor_thrust} will be used wit
 	\Omega_{di}	&= 2 \pi n \notag \\	
 	\Omega_{di}	&= \frac{2 \pi}{D^2} \sqrt{\frac{T}{\rho K_T}} \label{eq:thrust_to_Omega}
 \end{align}
-
+\\ \\
 With equation \eqref{eq:thrust_to_Omega} we have an equation that will tie the thrust required to how fast the rotors must spin. This can later be fed into a PI controller for each motor, described in section \ref{subsec:motorcontrol} .
-
+\\ \\
 Finally, we need to determine what the thrust and torque of each motor for the given $M$ and $F_z$:
 
 \begin{align}
@@ -536,7 +544,7 @@ where
 \begin{equation}
 c = \frac{K_Q D}{K_T}
 \end{equation}
-
+\\
 Solving the matrix inversion and multiplication, we arrive at the final four equations:
 \begin{align}
 F_1 &= +\frac{M_z}{4c} - \frac{M_y}{2d} + \frac{F_z}{4} \\
@@ -553,7 +561,7 @@ Now, we have the force (thrust) that each motor must produce in order to maintai
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 This subsection describes the equations used to set the rotational speed of the motors. Note that this differs from \cite{stingu09}: in that paper the authors used an empirically measured function ($f_{mot}$) to estimate the rotational speed based on the voltage of the motor and the command given. This required a dynamically adjustable constant $a_i$ to calibrate each motor for small differences in manufacturing. In this paper it is assumed that actual motor rotational speed is able to be measured. By measuring the rotational speed of the motors we are able to ignore the manufacturing differences between motors, and create a closed loop control. If a motor is not spinning at the correct speed the PI control loop described next will be able to correct until the desired rotation is achieved.
-
+\\ \\
 The following two equations are explicitly defined a discrete time $t$. For clarity, the subscript $i$ denoting a specific motor is implied but not written:
 \begin{equation}
 	\Omega \left(t \right)_{ Ierror} = \Omega \left(t-1 \right)_{ Ierror} + \left( \Omega_{d} - \Omega_i \right)
@@ -587,7 +595,7 @@ The equations in this section describe the motion of the quadrotor body through 
 		\right]
 	\otimes \boldsymbol{q} - \boldsymbol{\omega}_b \times \boldsymbol{V}_b
 \end{equation}
-
+\\ \\
 Equation \eqref{eq:body_acceleration} describes the body acceleration of the quadrotor. The equation follows the form of $F = ma$ from traditional physics (rewritten for $a = \frac{F}{m}$). The first accounts for the acceleration due to the force of the motors. The second term accounts for the acceleration due to gravity, rotated based on the vehicle orientation. The third term accounts for fictitious forces (forces due to the non-inertial reference frame of the body).
 
 \begin{equation} \label{eq:body_angular_acceleration}
@@ -603,13 +611,13 @@ Equation \eqref{eq:body_acceleration} describes the body acceleration of the qua
 		- \boldsymbol{\omega_b} \times \left( \boldsymbol{I}_{nb} \boldsymbol{\omega}_b \right)
 	\right)
 \end{equation}
-
+\\ \\
 Equation \eqref{eq:body_angular_acceleration} describes the angular acceleration of the quadrotor. The equation follows the form of $\tau = I \alpha$ from traditional physics (rewritten for $\alpha = \frac{\tau}{I}$. The first term (with the moments $M_{xyz}$) accounts for the rotational force of the propellers. The second term accounts for the fictitious forces.
 
 \begin{equation} \label{eq:earth_velocity}
 \dot{\boldsymbol{R}}_e = \boldsymbol{q} \otimes \boldsymbol{V}_b \otimes \boldsymbol{q}^*
 \end{equation}
-
+\\ \\
 Equation \eqref{eq:earth_velocity} relates velocity in the body reference frame to velocity in the earth reference frame.
 
 
@@ -620,12 +628,20 @@ Equation \eqref{eq:earth_velocity} relates velocity in the body reference frame 
 \end{equation}
 Note that equation \eqref{eq:omega_b_derivative} describes the derivative of a quaternion.
 
-
+\clearpage %make room for the picture
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Implementation Details}
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
+%\begin{center}\caption{The Elev-8 quadrotor frame.}\end{center}
+\begin{figure}
+  \centering
+    \includegraphics[scale=.07]{basic_quadrotor_platform.JPG}
+  \caption{The Elev-8 quadrotor frame.}
+\end{figure}  
+  
+  
 This section describes all the equations necessary to have a stable hovering platform, and their order of implementation. It is broken down into three logical blocks: moment calculations (\ref{subsec:momentcalculations}), z axis force calculations (\ref{subsec:zaxisforcecalculations}), and motor speed calculations (\ref{subsec:motorspeedcalculations}). 
-
+\\ \\
 It is assumed that all math is done with floating point operations, and that the variables $t_i$ are temporary variables that can be used to hold a value for a short duration of time.
 
 
@@ -642,10 +658,8 @@ K_T = \frac{T}{\rho n^2 D^4}
 \begin{equation} %\label{eq:motor_torque}
 K_Q = \frac{Q}{\rho n^2 D^5}
 \end{equation}
-
+\\ \\
 Our test stand must be able measure thrust, torque, rotational speed, rotor diameter, and air density.
-
-More details will be forthcomming.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Moment Calculations} \label{subsec:momentcalculations}
@@ -831,12 +845,9 @@ u_2 &= K_{P2} \left( \Omega_{d2} - \Omega_{i2} \right) + K_{I2} \Omega \left(t \
 u_3 &= K_{P3} \left( \Omega_{d3} - \Omega_{i3} \right) + K_{I3} \Omega \left(t \right) _{Ierror3} \\
 u_4 &= K_{P4} \left( \Omega_{d4} - \Omega_{i4} \right) + K_{I4} \Omega \left(t \right) _{Ierror4}
 \end{align}}
-
+\\ \\
 From here, we are able to send the command $u_i$ to the motor ESCs via a standard PWM signal. Note that the $u_i$ will have to be adjusted to fit within the standard servo type PWM signal standard. Typically, this means that the signal is set so that a motor speed of 0 corresponds to 1000uS, and a full motor speed corresponds to 2000uS, with a pulse every 20mS (approximately).
 
-Should this subsection have something in here where it converts $n_i$ to $omega_i$? Ie, from RPM to rad/s?
-
-Should this subsection have something in the PID where it uses the measured speed of the propellers?
 
 
 
@@ -989,8 +1000,6 @@ u_i = f_{mot}^{-1} \left( \frac{1}{a_i} \Omega_{di}, V_{batt} \right)
 \end{bmatrix}
 \end{equation}
 
-Question: are $\beta_H$ and $\gamma_H$ perpendicular or somehow constant relative to one another?
-
 \begin{equation}
 \tilde{\bs{q}}_b = \bs{q}_H \otimes \bs{q}_V
 \end{equation}
@@ -1116,6 +1125,12 @@ Question: are $\beta_H$ and $\gamma_H$ perpendicular or somehow constant relativ
 	\item Equations \eqref{eq:motor_thrust} and \eqref{eq:motor_torque} are derived from --WHAT???.
 	\item Talk about quaternion derivatives, and equation \eqref{eq:omega_b_derivative}
 	\item Quantify by how much performance will suffer if air density is assumed to be constant.
+	\item Should this subsection (\ref{subsec:motorspeedcalculations}) have something in here where it converts $n_i$ to $omega_i$? Ie, from RPM to rad/s?
+	\item Should this subsection (\ref{subsec:motorspeedcalculations}) have something in the PID where it uses the measured speed of the propellers?
+	\item  Is $q^*$ the correct notation for conjugate?
+	\item Is it a conversion between RPM and Rad/S in section \ref{subsec:forcestomotorspeeds}?
+
+
 \end{list}
 
 Specifically, with quaternions:

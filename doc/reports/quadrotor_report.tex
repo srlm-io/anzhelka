@@ -19,6 +19,8 @@
 %\usepackage{verbatim} % used to display code
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage{subfigure}
+
 
 \usepackage{hyperref} %Must be at the end of use package but befor "other settings". Used to make links of all references.
 
@@ -80,13 +82,25 @@ And when he [Herod] had apprehended him [Peter], he put him in prison, and deliv
 %% REV REV REV REV REV REV REV REV REV REV REV REV REV
 \newpage
 \addcontentsline{toc}{section}{Revisions}
-\begin{paragraph}{Revions}
-{
-Here is where you will place the revisions of this document. \\ \\
-9:55pm - All of the spelling was checked and fixed for the first 2 secitions writen by Luke.
-5:01am - Needs to be proof read in some areas. Needs tables, conclusions, High level, references, appendices, acknowledgements
-}
-\end{paragraph}
+%\begin{paragraph}{Revisions}
+%{
+%Here is where you will place the revisions of this document. \\ \\
+%9:55pm - All of the spelling was checked and fixed for the first 2 sections written by Luke.
+%5:01am - Needs to be proof read in some areas. Needs tables, conclusions, High level, references, appendices, acknowledgements
+%}
+%\end{paragraph}
+\begin{longtable}{l | p{5cm} | l}
+\hline
+\textbf{Version} & \textbf{Changes} & \textbf{Commiter}\\
+\hline
+v0.01 & All of the spelling was checked and fixed for the first 2 sections. & Luke \\
+\hline
+v0.02 & Needs to be proof read in some areas. Needs tables, conclusions, High level, references, appendices, acknowledgements & Luke \\
+\hline
+v0.03 & Cleaned up the document some, anded images and tables. & Cody \\
+\hline
+\end{longtable}
+
 %% REV REV REV REV REV REV REV REV REV REV REV REV REV
 
 %% TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC
@@ -153,6 +167,7 @@ There have been several different renditions of this project but to the best of 
 
 The Anzhelka project software was developed for the most part using a Linux system. All code and other project files are hosted on the project Git repository (code.anzhelka.com). The Propeller code was written in Gedit, compiled and downloaded with the BSTC compiler, and interfaced with using picocom.
 
+
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 \subsubsection{Directory Structure}
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
@@ -186,39 +201,48 @@ The project uses the following directory structure:
 \end{lstlisting} 
  
  
-\texttt{Hardware}
-Subfolders will store the major components of the project. For example, the frame has several .dxf files that are sent to the laser cutter, so that will all go into a subfolder called frame. The project may have several PCBs made as well, and so each should go into a subfolder under pcb. 
+\texttt{hardware}:
+Subfolders will store the major components of the project. For example, the frame has several .dxf files that are sent to the laser cutter, so that will all go into a subfolder called \texttt{frame}. The project may have several PCBs made as well, and so each should go into a subfolder under \texttt{pcb}. 
 
-\texttt{Software}
+\texttt{software}:
 The software is separated by language into separate folders. This makes sense because each processor in the project will have only one language running, but separate processors that are running the same language may share components (library files, for example). Each language has a number of subfolders: 
 
 \begin{list}{*}{}
-	\item src is where the source code for the project is stored. Subfolders as appropriate. 
-	\item lib stores all general purpose library files (code) such as Propeller Obex objects. 
-	\item test stores the test harnesses such as unit tests and Spin code to test a particular module (the latter case would have a 'main' type method and would be self supporting when running on the Propeller). 
-	\item tool holds all the relevant development tools for that language (bstc for Spin, for example). 
-	\item config stores any sort of relevant compile time or testing configuration files. 
+	\item \texttt{src} is where the source code for the project is stored. Subfolders as appropriate. 
+	\item \texttt{lib} stores all general purpose library files (code) such as Propeller Obex objects. 
+	\item \texttt{test} stores the test harnesses such as unit tests and Spin code to test a particular module (the latter case would have a 'main' type method and would be self supporting when running on the Propeller). 
+	\item \texttt{tool} holds all the relevant development tools for that language (bstc for Spin, for example). 
+	\item \texttt{config} stores any sort of relevant compile time or testing configuration files. 
 \end{list}
-The files that are in the Software folder should be used only for what runs onboard the quadrotor. Test programs or desktop PC client programs should instead go into the Extra folder. Note that these programs may still access the lib and tool subfolders in the software directory. 
+The files that are in the \texttt{software} folder should be used only for what runs onboard the quadrotor. Test programs or desktop PC client programs should instead go into the \texttt{extra} folder. Note that these programs may still access the \texttt{lib} and \texttt{tool} subfolders in the software directory. 
 
-\texttt{Documentation}
+\texttt{documentation}:
 This folder stores all the relevant datasheets in the datasheet subdirectory, and any other project documentation that is deemed to fit. Note that most documentation probably belongs in the anzhelka wiki. 
 
-The datasheet and reports folder contain the reference datasheets for each component and the various generated reports of the project, respectively. The figures folder holds an images that is used in the documentation. The notes folders holds papers that are interesting and relevant to the project, such as the cited research papers. The tests folder holds the test results data, and any associated data processing scripts. The extra folder holds other documentation material such as project logos and fonts. 
+The \texttt{datasheet} and \texttt{reports} folders contain the reference datasheets for each component and the various generated reports of the project, respectively. The \texttt{figures} folder holds an images that is used in the documentation. The \texttt{notes} folders holds papers that are interesting and relevant to the project, such as the cited research papers. The \texttt{tests} folder holds the test results data, and any associated data processing scripts. The \texttt{extra} folder holds other documentation material such as project logos and fonts. 
 
-\texttt{Extra}
-This folder contains other associated programs for the project. Since the Software folder is dedicated exclusively to software that is intended to fly the quadrotor other programs need to be stored in the Extra folder. This folder stores the Anzhelka Terminal files and the Thrust/Torque test stand files for example.
+\texttt{extra}:
+This folder contains other associated programs for the project. Since the \texttt{software} folder is dedicated exclusively to software that is intended to fly the quadrotor other programs need to be stored in the \texttt{extra} folder. This folder stores the Anzhelka Terminal files and the Thrust/Torque test stand files for example.
 
-All code is compiled with the BSTC compiler. This is available in \cite{campbell09}. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
+
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 \subsubsection{Development Cycle}
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 To facilitate the development cycle a simple compilation script was developed. A template form of this script can be found in $/software/spin/tool/bst_template.sh$. This script will compile the Spin program, and if no errors are found it will attempt to download to the Propeller. If successful it will open picocom (terminal program) on the USB port to listen for data. Using this script while programming dramatically decreases the write-compile-test debug cycle.
 
+%\clearpage %make room for the picture
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.]{gedit_spin_screenshot.png}
+  \caption{A screenshot of an open Spin file in Gedit showing syntax highlighting.}
+\end{figure}  
+
 All code was written in Gedit. Gedit is a simple text editor with a few features built in, including syntax highlighting. For most of the languages in this project, Gedit has provided suitable syntax highlighting. Propeller Spin, however, is not available by default. Syntax highlighting was accomplished by writing a language definition file ($/software/spin/tool/spin.lang$) and placing it in $/usr/share/gtksourceview-3.0/language-specs$. Gedit will then automatically highlight the Spin files.
 
 %%TODO: update the file path typesetting.
+
+All code is compiled with the BSTC compiler. This is available in \cite{campbell09}. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
 
 All project files are hosted on the project Git repository, hosted by Google Code at code.anzhelka.com. A Git repository was selected so that all developers would have equal access to the source files, changes would be logged and trackable, issues would be trackable, and so that concurrent work on files  could be easily merged. All project files are open source under the MIT license and can be downloaded freely.
 
@@ -241,6 +265,7 @@ All project files are hosted on the project Git repository, hosted by Google Cod
 	EEPROM & Electrically Erasable Programmable Read-Only Memory \\
 	PID & Proportional-Integral-Derviavtive \\
 	UART & Universal Asynchronous Receiver /Transmitter (serial) \\
+	UAV & Unmanned Aerial Vehicle \\
 \end{tabular}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
@@ -272,9 +297,56 @@ To be able to accomplish all of these tasks there are many of interfacing betwee
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Budget and Cost Analysis}
-Unfortunately there was no money that was given to the team in order to support the project. All of the funding had come from the team members own personal accounts. Below is an exert from our spreadsheet with the cost analysis and money spent on this project.
-\textcolor{red}{INSERT COST TABLE HERE}\\ \\
-\textcolor{blue}{Update table before adding}
+Unfortunately there was no money that was given to the team in order to support the project. All of the funding had come from the team members own personal accounts. Below is an excerpt from our spreadsheet with the cost analysis and money spent on this project.
+
+\begin{longtable}{l l l l l}
+	\textbf{Supplier}		&	\textbf{Name}	&	\textbf{Unit}	&	\textbf{Qty}	&	\textbf{Total}		 \\
+	\hline
+	Parallax		&	Altimeter	&	\$29.99	&	1	&	\$29.99		 \\
+	\hline
+	Parallax		&	Propeller Chip QFP	&	\$7.99	&	1	&	\$7.99		 \\
+	\hline
+	Parallax		&	64KB EEPROM	&	\$1.99	&	1	&	\$1.99		 \\
+	\hline
+	Parallax		&	5 MHz Crystal	&	\$1.10	&	1	&	\$1.10		 \\
+	\hline
+	Sparkfun		&	Radio Modem UM96	&	\$44.95	&	2	&	\$89.90		 \\
+	\hline
+	Hobby King		&	450 Outrunner Motor - Trinigy	&	\$14.04	&	4	&	\$56.16		 \\
+	\hline
+	Hobby King		&	30A ESC	&	\$5.99	&	4	&	\$23.96		 \\
+	\hline
+	Hobby King		&	3S 30C 1000mAh Battery	&	\$8.99	&	1	&	\$8.99		 \\
+	\hline
+	Hobby King		&	3S 30C 8000mAh Battery	&	\$44.11	&	1	&	\$44.11		 \\
+	\hline
+	Hobby King		&	Deans XT Plugs (10 pairs)	&	\$3.08	&	2	&	\$6.16		 \\
+	\hline
+	Hobby King		&	12 AWG 1 meter wire BLACK	&	\$2.49	&	3	&	\$7.47		 \\
+	\hline
+	Hobby King		&	12 AWG 1 meter wire RED	&	\$2.49	&	3	&	\$7.47		 \\
+	\hline
+	McMaster-Carr	&	5/8" Aluminum Tubing 6'	&	\$16.38	&	1	&	\$16.38		 \\
+	\hline
+	McMaster-Carr	&	3/32" Delrin 24"x48"	&	\$70.67	&	1	&	\$70.67		 \\
+	\hline
+	McMaster-Carr	&	1/4" Delrin 12"x12"	&	\$27.87	&	1	&	\$27.87		 \\
+	\hline
+	McMaster-Carr	&	4-40 5/8" Standoff	&	\$0.46	&	12	&	\$5.52		 \\
+	\hline
+	DIY Drones		&	Propellers 10x4.5 1 push 1 pull	&	\$6.00	&	2	&	\$12.00		 \\
+	\hline
+	Pololu			&	CHR-UM6-LT IMU Sensor	&	\$149.99	&	1	&	\$149.99		 \\
+	\hline
+	Anzhelka		&	Power control board	&	\$166.60	&	1	&	\$166.60		 \\
+	\hline
+	Tower Hobbies	&	Eagle Tree RPM sensor	&	\$13.79	&	4	&	\$55.16		 \\
+	\hline
+	\textbf{Total}	&		&		&		&	\textbf{\$789.48}
+\end{longtable}
+
+
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -296,10 +368,20 @@ This was a foreseen challenge and the team set up a Git repository for all code,
 \textcolor{red}{Cody's Input}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
+
+\clearpage %make room for the picture
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{System Design}
 \textcolor{green}{\bf System Design—this level of design includes the entire system, including the people and processes involved, and not just the software architecture.}
 \textcolor{red}{Cody}
+
+%\clearpage %make room for the picture
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.22]{system_architecture.png}
+  \caption{The layout of the devices in the system at a hardware level.}
+\end{figure}  
+
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -320,6 +402,13 @@ This was a foreseen challenge and the team set up a Git repository for all code,
 \subsubsection{Architecture}
 
 The Anzhelka project uses the Propeller P8X32A microcontroller from Parallax. This microcontroller is a 8 core 32 bit RISC processor. The Propeller is \$8 per chip, plus approximately \$2 for support components. For this project the Propeller has been overclocked from the default 80MHz to 100MHz. This additional speed facilitates more complex computations without sacrificing output rate. Each core, called a COG, is identical with equal access to all chip resources. The Propeller has a central RAM area called the HUB which is COG accessible in a round robin fashion.
+
+%\clearpage %make room for the picture
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.17]{PropellerArchitecture.jpg}
+  \caption{The functional architecture of the Parallax Propeller (courtesy of Parallax).}
+\end{figure}  
 
 The Propeller is distinctly different from most other microcontrollers by it's lack of built in hardware. The Propeller does not have any hardware level serial ports, analog to digital or digital to analog ports, or any pulse width modulation ports. Instead, the Propeller is designed to be able to use software for these common interfaces. This is typically done through what is known as “bit banging.” The only exception is the built in video generation hardware that assists in creating NSTC, PAL, or VGA signals. To make development easier for the programmer, Parallax hosts a source code website that provides code for common tasks such as serial or PWM.
 
@@ -370,27 +459,95 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{Frame}
-The plastic frame is constucted out of a material called Derilin\textregistered\cite{dupontderlin} made by DuPont\texttrademark. We had this material laser cut for us by \textcolor{red}{Do we put his name? Do we put his SN?}. The booms of the Frame are made out of 1/4" thin wall aluminum tubing. 
+The plastic frame is constructed out of a material called Derilin\textregistered\cite{dupontderlin} made by DuPont\texttrademark. We had this material laser cut for us by a W9GFO from the Parallax forums. The booms of the Frame are made out of 1/4" thin wall aluminium tubing. 
 
-For the screws we are using hex pan head and hex socket cap screws. These type of screws are very common throughout the hobbiest community. For all of the screws we are using blue lock tight to insure that the screws dont loosen from their secured possition. 
+For the screws we are using hex pan head and hex socket cap screws. These screws are very common in the industrial supply industry. For all of the screws we are using blue LocTite or a nylon locknut to ensure that the screws do not loosen from their secured position. Lockwashers are not used due to being completely ineffective and, in fact, worse than nothing at all.
 
-Diagrams for the frame parts have been included in the appendices.
+Diagrams for the frame components have been included in the appendices.
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{Motors/Propellers}
 
-Since neither one of the team members has any experience with quadrotors, we had choosen to pickout two different motors for the testing of our platform. To match up to these two motors we picked out two different brands of ESCs in order to determine which would would be best with out platform.
+Since neither one of the team members has any experience with quadrotors, we have selected two different motors for the testing of our platform. To match up to these two motors we picked out two different brands of ESCs in order to determine which would would be best with out platform.
 
-We also decided on a 10inch rotor with a 4.5degree pitch. We decided on 10inches because it gave us plenty of clearance between the rotors and should not produce and turbulences between each other. As for pitch, if you want a very stable take off and land quadrotor you would go with less of a pitch, however if you want to be able to translate rather quickly you want more of a pitch. After reading many different blog posts on the subject we decided that we should stay below 5degrees whenever possiable.
+We also decided on a 10 inch rotor with a 4.5 degree pitch. We decided on 10 inches because it gave us plenty of clearance between the rotors and should not produce and turbulences between each other. As for pitch, if you want a very stable take off and land quadrotor you would go with less of a pitch, however if you want to be able to translate rather quickly you want more of a pitch. After reading many different blog posts on the subject we decided that we should stay below 5 degrees whenever possible.
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{PCBs}
 PCBs are very difficult in the ways of being able to produce something that will be small enough to fit on your platform and large enough for you to solder the components onto. The PCB design for the prototype took over a month to organize and route. Even though this seems like a long time, it is not unordinary when dealing with lots of new components.
+\clearpage %make room for the picture
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.23]{revA_both.png}
+  \caption{The developed Power Board, REV A. This figure shows both sides of the PCB, along with the silkscreen.}
+\end{figure}  
+Once the board was designed and ready for production a fabrication house had to be selected. Choosing a fabrication house in the United States provides for a great turn around time, but at a much larger cost. Choosing one in China provides for a much cheaper product, but at a slower turn around time. The fabrication house in China that we selected took nearly a month for a full turn around. This is not typical.
 
-Once the board was designed and ready for production a fabrication house had to be choosen. Choosing a fabrication house in the United States provides for a great turn around time, but at a huge cost. Choosing one in China provides for a much cheaper product, but at a slower turn around time. The Fabrication house that we had choosen in China took nearly a month for a full turn around. This is not typical.
+%\clearpage %make room for the picture
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.2]{populated_pcb_revA.JPG}
+  \caption{The finished PCB, populated with components. The Propeller is the rotated chip in the upper left. The red connectors are the Deans plugs for high current connections. On the bottom left are the 3.3v to 5v level shifters.}
+\end{figure}  
+
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+
+\subsection{Software}
+
+\subsubsection{Rotation Speed}
+In order to determine the amount of thrust that a motor is producing the platform must be able to measure the RPM of the motor. For a normal two wire DC motor the only solution would be to use some sort of optical sensor to watch the motor rotate and to count the number of rotations. Usually this is done with an IR sensor that either senses a black stripe on the can of the motor, or watches the propeller and detects as it passes over a sensor. 
+
+With a brushless motor, another option is available: monitoring the control pulses. A brushless motor has three control lines that go into the motor, and to make the motor spin the lines are pulsed in a specific order. The  timing of the pulses determine the speed of the motor, and the pulses must match the position of the motor rotor. Modern brushless motor controller chips (ESCs: Electronic Speed Controllers) have circuitry built into them that can automatically sense the position of the motor rotor and which could, in theory, be used by a host microcontroller to determine motor rotation speed. Unfortunately, most ESCs don't provide this sort of information to a host, so it is necessary to measure the pulses directly and infer from the control pulses instead. 
+
+A brushless motor sensor has several advantages over other methods:
+\begin{list}{*}{}
+	\item It is unaffected by optical conditions
+	\item Mounting the sensor is considerably easier
+	\item The sensor can give the true no-load rotation speed
+	\item No modification to the existing motor or it's circuits is necessary
+\end{list}
+
+The Eagle Tree Brushless RPM sensor (\cite{eaglerpm}) is the only ready made solution on the market to measure the brushless motor control pulses. It is a very small device, priced at about \$12 a piece, and it can sense the rotation rate of a single motor. The sensor converts the brushless motor signals to a series of pulses where each pulse is proportional to a rotation. The Propeller does not measure the signal directly from a brushless motor control line because there are very high voltages and back EMF from the motor which creates a very nasty environment for the 3.3v microcontroller.
+
+The Propeller object for this sensor is based on code provided by Tim Moore \cite{eaglerpmobject} . For this project, interface modifications to the object were made to the code in order to permit the reading of rotations per second. The object can support up to eight brushless motor sensors. 
+
+\begin{figure}[ht]
+\centering
+\subfigure[The Eagle Tree brushless RPM sensor]{
+\includegraphics[scale=.1]{eagle_tree_sensor.JPG}
+\label{fig:subfig1}
+}
+\subfigure[Motor connection of the sensor.]{
+\includegraphics[scale=.1]{eagle_tree_connection.JPG}
+\label{fig:subfig2}
+}
+\label{fig:subfigureExample}
+\caption[Optional caption for list of figures]{The Eagle Tree sensor}
+\end{figure}
+
+
+
+Connection of the Eagle Tree sensor is straightforward. The two single wires from the Eagle Tree are connected to any two leads of the brushless motor. Connecting only one lead would still allow the sensor to function, but it results in slightly larger errors (15 rps errors, instead of 10 rps errors with both). On the microcontroller side the black line goes to 3.3V, red to Gnd, white to the Propeller I/O pin. Despite going against standard color coding conventions, the red line is connected to ground and the black is to 3.3v (the Propeller VDD). 
+
+The Propeller object for interfacing with the sensor counts the number of clock cycles between rising edges of a pulse, and uses this to calculate the rotations per second.
+
+\subsubsection{Pulse Width Modulation}
+Pulse width modulation is the technique of toggling a digital I/O pin high and low in a repeating pattern. We use PWM in this project to interface the the electronic speed controllers (ESC). The ESCs use servo type PWM signals: a 1000 us to 2000 us pulse every 20 ms. The width of the pulse is relative  to the commanded speed. 
+
+
+\subsubsection{UART Serial Communication}
+Serial communication in this project uses the FullDuplexSerial4portPlus v3 object. This object can support up to four full duplex serial ports, although currently only one port is being used. The Propeller uses serial communication to interface to several devices:
+\begin{list}{*}{}
+	\item Host computer via USB
+	\item Wireless modem (such as Xbee)
+	\item GPS
+	\item Other microcontrollers
+	\item UART sensors
+\end{list}
+When communicating with a host computer or other microcontrollers, the Propeller uses the \$ATXXX communications protocol described elsewhere in this document.
+
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Constant Identification}
@@ -431,7 +588,7 @@ For motor speed we will be using a Eagle Tree brushless RPM sensors \cite{eagler
 
 \subsection{Anzhelka Data and Command Exchange Protocol}
 
-\subsubsection{Introduction}
+%\subsubsection{Introduction}
 The Anzhelka project uses a protocol called \$ATXXX to facilitate data and command exchange between different subsystems. \$ATXXX is very similar to NMEA-0183 where data is exchanged via sentences prefaced with a sentence code. This allows for the Propeller to send real time information about the running state to other onboard processors or to offboard computers, and to receive commands. The protocol was developed to facilitate predictable and reliable exchanges.
 
 \subsubsection{Implementation Details}
@@ -443,7 +600,7 @@ Data strings are prefaced with \$ADxxx (short for Anzhelka Data type xxx).
 
 Note that the only defined whitespace in a string is a single space after the sentence code, and a newline (ASCII characters LF and CR) after each string. For clarity of notation the newline is not written in the string lists below.
 
-\subsubsection{Example Usage}
+\subsubsection{Example Usages}
 This protocol is used in the thrust/torque test stand. The test stand measures the thrust and torque using force sensors, and measures the rotations per second of the motor. The test stand then outputs the \$ADRPS, \$ADPWM, \$ADMTH, and \$ADMTQ strings to a USB serial port. A desktop computer reads these strings from the serial port and displays the variable on-screen in a GUI that updates in real time as new strings are received. In this way the user can watch as testing proceeds.
 
 This protocol could also be used to log parameters of the quadrotor as it is flying. The Propeller that is controlling the quadrotor could send these strings via a serial port to an external SD card. If an SD card is not available then the system could perhaps use a wireless transceiver such as an XBee. In the event of a system failure, the developer could look at the logged strings in order to help with debugging. 
@@ -555,32 +712,31 @@ The table is updated in real time based on the received strings. Some fields are
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Testing}
-\textcolor{green}{\bf Testing—You are expected to have a detailed test plan, including 
-● Unit testing
-● Integration testing
-● Acceptance testing
-If you are unfamiliar with these terms, look them up. Search engines are marvelous 
-inventions.}
+Testing is a critical part of any project, and the Anzhelka project is no exception. All hardware and software is tested thoroughly to ensure correctness. As more time passes we will work on developing automated tests, including regression tests once the project becomes mature.
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Unit Testing}
-\textcolor{red}{Cody}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
-\subsection{Integration Testing}
-\textcolor{red}{Cody}
+\subsection{Software Testing}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
-\subsection{Acceptance Testing}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{Unit Testing}
 \textcolor{red}{Cody}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{Integration Testing}
+\textcolor{red}{Cody}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{Acceptance Testing}
+\textcolor{red}{Cody}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 \subsection{Hardware Testing}
-Because Hardware is a physical entity it is subjected to many more points of failure. Parts can be flawed from the factory, assembled wrongly, or miscalculated.
+Because hardware is a physical entity it is subjected to many more points of failure. Parts can be flawed from the factory, assembled wrongly, or miscalculated.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
@@ -601,25 +757,22 @@ We know that most motors made by the same manufacture with the same specificatio
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{PCBs}
-PCBs can have many points of failure and need to be tested at many different parts of the build phase to insure the most amount of yeild. The PCBs must be tested before they are even produced. 
+PCBs can have many points of failure and need to be tested at many different parts of the build phase to insure the most amount of yield. The PCBs must be tested before they are even produced. 
 
-Each fabrications house has its own set of limitations on what it can produce as far as trace widths, via sizes, spacing, etc. All fabrication houses with provide you with these details before you place an order so that you know what you can and what you can't do in your design. You must also keep in mind the amount of current  or power that will have to travel through your traces that you have designed onto your board. If you are trying to push 10 amps through a 6mil trace you are going to blow that trace and ruin your board. Once you have sent off your design to the fabrication house to be produced, the product must then be electrially tested.
+Each fabrications house has its own set of limitations on what it can produce as far as trace widths, via sizes, spacing, etc. All fabrication houses with provide you with these details before you place an order so that you know what you can and what you can't do in your design. You must also keep in mind the amount of current  or power that will have to travel through your traces that you have designed onto your board. If you are trying to push 10 amps through a 6mil trace you are going to blow that trace and ruin your board. Once you have sent off your design to the fabrication house to be produced, the product must then be electrically tested.
 
-Electrical testing is a key factor in product yeild. What is electrial testing? Electrial testing is a process in testing that a pad that is supposed to be electrially connected to another pad is actually connected. To some this sounds quite simple, however in practice boardsc can have thousands of points that need to be tested. Some fabrication houses will provided 50\% to 100\% electrial testing, however some will not provide testing. 
+Electrical testing is a key factor in product yield. What is electrical testing? Electrical testing is a process in testing that a pad that is supposed to be electrically connected to another pad is actually connected. To some this sounds quite simple, however in practice boards can have thousands of points that need to be tested. Some fabrication houses will provided 50\% to 100\% electrical testing, however some will not provide testing. 
 
-In the event that you cant get your boards fully tested you will need to create an overlay that will touch all the pads and check to see what is connected and what is not. In practice this is not acceptable to be done outside of the fabrication house or a special electrial testing board house.
+In the event that you cant get your boards fully tested you will need to create an overlay that will touch all the pads and check to see what is connected and what is not. In practice this is not acceptable to be done outside of the fabrication house or a special electrical testing board house.
 
-The physical components that will be soldered onto the PCB have usually been tested and have an acceptable failure rate that wont have a great effect on the yeild. With that being said, placement of the components is essential. If a component is misplaced by 20mils this could cause a bridge between two pins causing a short deaming that board unusable.
+The physical components that will be soldered onto the PCB have usually been tested and have an acceptable failure rate that wont have a great effect on the yield. With that being said, placement of the components is essential. If a component is misplaced by 20mils this could cause a bridge between two pins causing a short rendering that board unusable.
 
-Once the PCB has been fully populated it now must be tested to insure that all the components are in working order. One of the easiest ways to accomplish this is to develop test code that will run on the hardware and will give you a set of known outputs. Having something that will test all components several times under different inputs and outputs is key to insure that the PCB is in good working order.
+Once the PCB has been fully populated it now must be tested to ensure that all the components are in working order. One of the easiest ways to accomplish this is to develop test code that will run on the hardware and will give you a set of known outputs. Having something that will test all components several times under different inputs and outputs is key to insure that the PCB is in good working order.
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Maintenance Plan}
-\textcolor{green}{\bf You are expected to produce a maintenance plan, which 
-states how you plan to keep the software solution current with future environment 
-changes. Here, we assume that you will maintain your project following the 10 
-week course  period, even though we know that this is not really the case. }
+We will continue to work on and develop this project for the rest of the school year, and with any luck beyond the end of the year.
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -635,11 +788,11 @@ This senior design project is no where it needs to be as for a finished product 
 	\item Finalize mechanical assembly
 	\item Mount the IMU onto the quadrotor
 	\item Write the IMU interface object
-	\item Setup wireless interfacing
+	\item Set up wireless interfacing
 	\item Balancing of the propellers
 	\item Build Roll and Pitch test stand
 	\item Write Motor control object
-	\item Finish all electrial wirring for the quadrotor
+	\item Finish all electrical wiring for the quadrotor
 	\item Write attitude control object
 	\item Build yaw test stand
 	\item Write altitude control object
@@ -660,11 +813,38 @@ With the right funding we could add things like object avoidance, quadrotor acro
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Engineering Effort and Societal Impacts}
-\textcolor{green}{\bf Engineering Effort and Societal Impacts—Each project must consider realistic 
-constraints on time and money, and should consider safety, reliability, aesthetics, 
-ethics, and other possible social impacts. Produce a short (1-2 page) statement 
-that describes how your group has addressed these key issue.} \\ \\
-\textcolor{red}{Essay time!!!}
+\subsection{Realistic Constraints on Time and Money}
+
+The Anzhelka project is relatively unconstrained in time and money. We each work roughly 20-40 hours a week on the project, for a total of 23 weeks. This gives approximately 1400 hours of total time investment in the project. Many other students are unwilling or unable to invest as much time as we have in our project. Once the project is accepted by the open source community it should become self sustaining by volunteers. Most likely these volunteers will come from the Parallax forums, since that is the main source of Propeller based collaboration.
+
+This project is also relatively unconstrained in terms of finances. We have invested roughly \$3000 in this project to get it started and off the ground. This money is from savings. Like the amount of time we invest in the project, many other students are unwilling or unable to invest as much money as we have done. We were able to invest as much as we have by preparing and saving for the project before it actually began. It is no surprise that a senior design project was required before graduation.
+
+\subsection{Safety and Reliability}
+
+Safety and Reliability are very important for this project. This project conforms to the Remote Control Aerial Photography Association general operation guidelines ([CITE] http://www.rcapa.net/guidelines.aspx). These guidelines give rules for safe operation of remote controlled vehicles. 
+
+\subsection{Aesthetics}
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.35]{elev_8_artistic_rendering.jpg}
+  \caption{An artistic rendering of the Elev-8 frame.}
+\end{figure}  
+
+The Elev-8 platform is very aesthetic. It has appeal simply for it's uncommon design that many people are unfamiliar with. Quadrotors in general are very popular for their novelty. The commercial Parrot AR Drone quadrotor has a booth every year at the Consumer Electronics Show in Las Vegas, and every year it is packed with spectators.
+
+Several steps were taken to improve the general aesthetics of the quadrotor frame. All wiring was kept to a minimum and hidden wherever possible. The PCB was designed to reduce the number of external components that had to be connected with messy wires. All screws are black oxide coated to match the black of the Delrin pieces. The PCB has a white solder mask to contrast with the black color of the frame.
+
+The Anzhelka Terminal GUI was designed to be intuitive and easy to use, even without any experience. Functionality is divided into tabs for easy access. The motors tab allows for intuitive control of the graph, and the motor table is clear and easy to understand. 
+
+The thrust/torque test stand also had aesthetics in mind when it was designed. The stand is build out of oak and finished in a way that makes the wood almost glow. The metal pieces were sandblasted to create a matte finish. Finally, all wiring was routed and organized as best as possible.
+
+\subsection{Ethics}
+
+Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals. [EXPAND]
+
+
+
+Other Possible Social Impacts
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -714,35 +894,25 @@ should also reference any standard template libraries used in your code.
 	Dupont\texttrademark
 	\url{"http://www2.dupont.com/Plastics/en_US/Products/Delrin/Delrin.html"}
 	
-	
+	\bibitem{eaglerpmobject} %(http://forums.parallax.com/showthread.php?127372-PWM_32_V2-Question-about-Resolution-constant)
+	Tim Moore
+	\url{"http://forums.parallax.com/showthread.php?127372-PWM_32_V2-Question-about-Resolution-constant"}
 	
 \end{thebibliography}
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1    
 
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Appendices}
-\textcolor{green}{\bf Appendices—Include the following:
-● Source code printed in the 2 “pages” per page format.
-● A printed copy of the slides used for your ﬁnal presentation. If you use 
-! ! animation in your slides, then you need to “sanitize” the slides so that they are 
-readable when printed..
-● A professional quality one-page resume for each member of the group. Use the 
-! ! ! same template for each resume.}
-\\ \\
-\textcolor{red}{Include the frame diagrams}
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
-
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
 \section{Acknowledgements}
-\textcolor{green}{\bf Acknowledgements—Thank anyone who helped your group with the project.} \\ \\
-\textcolor{red}{Must thank everyone}
+We have had a considerable amount of assistance with this project. We would like to thank everyone who has supported us as we work on the largest undertaking either of us has ever done.
 
 Gene Shermen - Machinist
 
-Dawn \textcolor{red}{INSERT LAST NAME} - Machinist
+Dale Holtkamp - Machinist
 
 Elmar Palma - Lab use
+
+Philip Brisk - Consulting
 
 Ping Liang - Consulting
 
@@ -752,8 +922,24 @@ Texas Instraments - Samples
 
 Microchip - Samples
 
-Q9GFO - Laser cutting the Derlin\textregistered  \- Frame Parts
+W9GFO (Rich Harman)- Laser cutting the Derlin\textregistered  \- Frame Parts
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+
+
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Appendices}
+ Include the following:
+ 
+ --- Source code printed in the 2 “pages” per page format.
+ 
+ --- A printed copy of the slides used for your ﬁnal presentation. If you use animation in your slides, then you need to “sanitize” the slides so that they are readable when printed..
+ 
+ --- A professional quality one-page resume for each member of the group. Use the same template for each resume.
+ 
+ --- Include the frame diagrams
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
 
 
 
