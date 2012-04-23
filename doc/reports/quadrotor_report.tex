@@ -27,7 +27,8 @@
 \usepackage{graphicx}
 \usepackage{subfigure}
 \usepackage{indentfirst}
-
+\usepackage{fancyhdr} % Fancy Header
+\usepackage{rotating} % To make vertical text in tables
 
 \usepackage{hyperref} %Must be at the end of use package but before "other settings". Used to make links of all references.
 
@@ -44,6 +45,11 @@
 \definecolor{lightlightgray}{gray}{0.9}
 
 \graphicspath{{../figures/}{../extra/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
+
+\fancyfoot[CO,CE]{ \thepage \\ \includegraphics[width=2cm]{../extra/pheonix_small.png}}
+\pagestyle{fancy}
+
+
 
 \begin{document}
 
@@ -413,6 +419,59 @@ Being able to work in a team is both a skill and a challenge. Working on a proje
 This was a foreseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and what we had yet to complete. With these two resources set up and with the help of keeping an open schedule the team has been able to successfully coordinate and maximize productivity.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
+\subsection{Control Loop Frequency}
+\begin{longtable}{l l l l l l l l l l l l l}
+Quantity&	
+\begin{sideways}+\end{sideways}	&	
+\begin{sideways}-\end{sideways}	&	
+\begin{sideways}*\end{sideways}	&	
+\begin{sideways}/\end{sideways}	&	
+\begin{sideways}cos\end{sideways}	&	
+\begin{sideways}sin\end{sideways}	&	
+\begin{sideways}asin\end{sideways}	&	
+\begin{sideways}acos\end{sideways}	&	
+\begin{sideways}atan2\end{sideways}	&	
+\begin{sideways}sqrt\end{sideways}	&	
+\begin{sideways}quat*\end{sideways}	&	
+\begin{sideways}Sum\end{sideways}\\
+	\hline
+Moment	&	1	&	6	&	20	&	11	&	3	&	4	&	0	&	2	&	2	&	0	&	3	&	52 \\
+	\hline
+Altitude &	3	&	1	&	4	&	1	&	0	&	0	&	0	&	0	&	0	&	0	&	2	&	11	 \\
+	\hline
+Motor Speed	&	14	&	10	&	18	&	10	&	0	&	0	&	0	&	0	&	0	&	4	&	0	&	56		 \\
+	\hline
+	Sum	&	18	&	17	&	42	&	22	&	3	&	4	&	0	&	2	&	2	&	4	&	5	&	119	\\
+\end{longtable}
+
+
+
+\begin{longtable}{l l l l l l l l l l l l l l l l l l l }
+Quantity&	
+\begin{sideways}+\end{sideways}	&	
+\begin{sideways}-\end{sideways}	&	
+\begin{sideways}*\end{sideways}	&	
+\begin{sideways}/\end{sideways}	&	
+\begin{sideways}cos\end{sideways}	&	
+\begin{sideways}sin\end{sideways}	&	
+\begin{sideways}asin\end{sideways}	&	
+\begin{sideways}acos\end{sideways}	&	
+\begin{sideways}atan2\end{sideways}	&	
+\begin{sideways}sqrt\end{sideways}	&	
+\begin{sideways}quat*\end{sideways}	&	
+\begin{sideways}Sum\end{sideways} & &
+\begin{sideways}w/ Parallelization \end{sideways} & & &\\
+	\hline
+Unit Time&	3.7	&	3.8	&	8.4	&	10	&	78	&	74	&	261	&	265	&	117	&	173	&	225	&		&		&		&		&		&		&		 \\
+	\hline
+Moment	&	3	&	23	&	168	&	116&	234	&	298	&	0	&	530	&	234	&	0	&	675	&	2283	&	uS	&	437	&	Hz	&	2283	&		&					 \\
+	\hline
+Altitude	&	11	&	3	&	33	&	10	&	0	&	0	&	0	&	0	&	0	&	0	&	450	&	509	&	uS	&	1963	&	Hz	&		&	uS	&					 \\
+	\hline
+Motor	&	52	&	38	&	151	&	105	&	0	&	0	&	0	&	0	&	0	&	694	&	0	&	1042	&	uS	&	959	&	Hz	&	1042	&	uS	&					 \\
+	\hline
+Sum	&	67	&	65	&	352	&	232	&	234	&	298	&	0	&	530	&	234	&	694.	&	1125	&	3835	&	uS	&	260	&	Hz	&	3325	&	300	&	Hz		
+\end{longtable}
 
 \clearpage %make room for the picture
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -899,20 +958,21 @@ The thrust/torque test stand also had aesthetics in mind when it was designed. T
 
 \subsection{Ethics}
 
-Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals. [EXPAND]
+Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals. [TODO EXPAND]
 
 
 
-Other Possible Social Impacts
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Conclusions}
-%TODO: conclusion
-\textcolor{green}{\bf Conclusions—Assume that you write this just before handing in your document. 
-Summarize brieﬂy what you did for you project. Address the following; what most 
-surprised you about the process of creating the project. What would you do 
-differently if you had to do it again?}
+For this project, we have developed the hardware and software frameworks necessary to fly autonomously. We have built and tested the mechanical and electrical hardware, and developed much of the associated sensor software. We have analysed current research papers on the topic of quadrotor control, and have developed a document that clearly and precisely outlines the steps necessary to fly (\cite{anzhelka_math}). We have extensively documented the entire process, and provided all of it as open source. We have created an identity for the project in the form of the name Anzhelka and our phoenix logo. With these accomplishments we are only a few small steps away from flying.
+
+We were, and are constantly surprised by the amount of work even apparently simple tasks take. We had originally anticipated being able to fly by mid January. Then mid February. Now, it is mid May. The process has been a learning experience for both of us. We have learned the value of a methodical approach and good documentation, and to respect the progress of others in our field.
+
+If we had to do it differently we would make a larger team. Specifically, it would be very beneficial to add several new roles in addition to the computer engineering and computer science roles that we already fill. A mechanical engineer would take care of the quadrotor frame, an electrical engineer would take care of the circuits, and an administration major would maintain all the documentation. With these three other people we could make the excellent project it already is absolutely outstanding.
+
+
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  

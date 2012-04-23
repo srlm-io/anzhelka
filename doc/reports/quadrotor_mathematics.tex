@@ -13,6 +13,7 @@
 \usepackage{amsmath}
 \usepackage{longtable} %for tables that can break across pages
 \usepackage{graphicx}
+\usepackage{fancyhdr} % Fancy Header
 
 
 %\usepackage{hyperref} %Must be at the end of use package but befor "other settings". Used to make links of all references.
@@ -29,7 +30,8 @@
 \newcommand{\bs}[1]{\boldsymbol{#1}}
 
 \graphicspath{{../figures/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
-
+\fancyfoot[CO,CE]{ \thepage \\ \includegraphics[width=2cm]{../extra/pheonix_small.png}}
+\pagestyle{fancy}
 
 \begin{document}
 
