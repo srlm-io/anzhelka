@@ -3,28 +3,71 @@
 %
 % CTRL+SPACE to switch panes in Texmaker
 %
-
-
 % Note: blank lines indicate a new paragraph
 % Note: \left( and \right) cannot break lines.
+
+
+
+
 
 \documentclass{article}
 
 \usepackage{amsmath}
-\numberwithin{equation}{section} %change the numbering to have something like 1.1 and 3.15, etc.
+\usepackage{longtable}
+\usepackage{color}
+%\usepackage{verbatim} % used to display code
+\usepackage{listings}
+\usepackage{graphicx}
 
+\usepackage{hyperref} %Must be at the end of use package but befor "other settings". Used to make links of all references.
+
+
+
+
+
+
+\numberwithin{equation}{section} %change the numbering to have something like 1.1 and 3.15, etc.
 %Format of macro:
 %\newcommand{\NAME}[ARGUMENT NUMBER (OPTIONAL)]{ stuff to include, arguments denoted #1, #2, etc. }
 \newcommand{\vect}[1]{\boldsymbol{#1^2}}
 \newcommand{\bigvect}[3]{\boldsymbol{#1^#2^#3}}
 \newcommand{\bs}[1]{\boldsymbol{#1}}
 
-%\newcommand*{\tabbox}[2][t]{%
-%    \vspace{0pt}\parbox[#1][3.7\baselineskip]{1cm}{\strut#2\strut}} %% Used for in table alignment. See http://tex.stackexchange.com/questions/6355/problem-with-table-vertical-alignment
+\definecolor{lightlightgray}{gray}{0.9}
 
-\usepackage{color}
+\graphicspath{{../figures/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
 
 \begin{document}
+
+
+
+\lstset{
+%language=C,                             % Code langugage
+basicstyle=\ttfamily,                   % Code font, Examples: \footnotesize, \ttfamily
+keywordstyle=\color{OliveGreen},        % Keywords font ('*' = uppercase)
+commentstyle=\color{gray},              % Comments font
+%numbers=left,                           % Line nums position
+%numberstyle=\tiny,                      % Line-numbers fonts
+%stepnumber=1,                           % Step between two line-numbers
+%numbersep=5pt,                          % How far are line-numbers from code
+backgroundcolor=\color{lightlightgray}, % Choose background color
+frame=none,                             % A frame around the code
+tabsize=4,                              % Default tab size
+captionpos=b,                           % Caption-position = bottom
+breaklines=true,                        % Automatic line breaking?
+breakatwhitespace=false,                % Automatic breaks only at whitespace?
+showspaces=false,                       % Dont make spaces visible
+showtabs=false,                         % Dont make tabls visible
+%columns=flexible,                       % Column format
+%morekeywords={__global__, __device__},  % CUDA specific keywords
+}
+
+
+
+
+
+
+
 
 \title{Autonomous Quadrotor Project: \\ Anzhelka \\ \- \\ {\bf ALPHA DRAFT}}
 \author{Cody Lewis \\ \texttt{srlm@anzhelka.com} \and Luke De Ruyter \\ \texttt{ilukester@anzhelka.com} }
@@ -40,7 +83,8 @@ And when he [Herod] had apprehended him [Peter], he put him in prison, and deliv
 \addcontentsline{toc}{section}{Revisions}
 \begin{paragraph}{Revions}
 {
-Here is where you will place the revisions of this document.
+Here is where you will place the revisions of this document. \\ \\
+9:55pm - All of the spelling was checked and fixed for the first 2 secitions writen by Luke.
 }
 \end{paragraph}
 %% REV REV REV REV REV REV REV REV REV REV REV REV REV
@@ -63,25 +107,29 @@ Here is where you will place the revisions of this document.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 \subsection{Executive Summary}
+\begin{center}\includegraphics[scale=.6]{elev_8_rendering.JPG}\end{center}
 
-This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimbal that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.\\ \\
-Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Acelerometer \textcolor{red}{CHECK SPELLING}, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to controll up to 8 Servos, able to track the exact speed and possition of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
-This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior desing project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that measures in at 4 inches by 3 inches. \\ \\
+This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimble that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.\\ \\
+Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Accelerometer, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to control up to 8 Servos, able to track the exact speed and position of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
+This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior design project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that measures in at 4inches by 3inches. \\ \\
 Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the control algorithms is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor. \\ \\
-The project was started without any expertise or experience with autonomous flying or quadrotors, but with will to learn, create and develope a system that could even be understood by people with experience in these fields. Software is one of the groups expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experience with designing PCB's and circuits, however nothing to the extent of this project. The team believed that this project was worth approximately 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximately 30 hours per person per week were devoted to this project. \\ \\
+The project was started without any expertise or experiance with autonomous flying or quadrotors, but with will to learn, create and develop a system that could even be understood by people with experience in these fields. Software is one of the groups expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experience with designing PCB's and circuits, however nothing to the extent of this project. The team believed that this project was worth aprroximately 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximately 30 hours per person per week were devoted to this project. \\ \\
+
 \textcolor{red}{NEEDS ACHIEVEMENTS}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Design Objectives and System Overview}
 
-This project was designed to be open ended and to be used in an unpresisented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unatainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gritter from traditional methods.\\ \\
-The quadrotor will have atleast a 15minute run time, with the ablitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The controll loop to keep the platform stable will run at 300Hz and be asyncronous. \\ \\
-On this project the team members of Anzhelka decided to keep responsiblities as open as possible, however SRLM did most of the coding and wood working while ILUKESTER did most of the embeded hardware and wiring. Everything else was either split evenly or worked on jointly.
+This project was designed to be open ended and to be used in an unprecedented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unattainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gitter from traditional methods.\\ \\
+The quadrotor will have at least a 15minute run time, with the abilitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The control loop to keep the platform stable will run at 300Hz and be \textcolor{red}{asynchronous}. \\ \\
+On this project the team members of Anzhelka decided to keep responsibilities as open as possible, however SRLM did most of the coding and wood working while ILUKESTER did most of the embedded hardware and wiring. Everything else was either split evenly or worked on jointly.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Background and Prior Art}
+There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
@@ -97,7 +145,7 @@ The Anzhelka project software was developed for the most part using a Linux syst
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 
 The project uses the following directory structure:
-
+\begin{lstlisting}
  /hardware 
     /frame 
     /pcb 
@@ -122,11 +170,13 @@ The project uses the following directory structure:
     /tests 
     /extra 
  /extra 
+\end{lstlisting} 
  
-Hardware
+ 
+\texttt{Hardware}
 Subfolders will store the major components of the project. For example, the frame has several .dxf files that are sent to the laser cutter, so that will all go into a subfolder called frame. The project may have several PCBs made as well, and so each should go into a subfolder under pcb. 
 
-Software 
+\texttt{Software}
 The software is separated by language into separate folders. This makes sense because each processor in the project will have only one language running, but separate processors that are running the same language may share components (library files, for example). Each language has a number of subfolders: 
 
 \begin{list}{*}{}
@@ -138,12 +188,12 @@ The software is separated by language into separate folders. This makes sense be
 \end{list}
 The files that are in the Software folder should be used only for what runs onboard the quadrotor. Test programs or desktop PC client programs should instead go into the Extra folder. Note that these programs may still access the lib and tool subfolders in the software directory. 
 
-Documentation 
+\texttt{Documentation}
 This folder stores all the relevant datasheets in the datasheet subdirectory, and any other project documentation that is deemed to fit. Note that most documentation probably belongs in the anzhelka wiki. 
 
 The datasheet and reports folder contain the reference datasheets for each component and the various generated reports of the project, respectively. The figures folder holds an images that is used in the documentation. The notes folders holds papers that are interesting and relevant to the project, such as the cited research papers. The tests folder holds the test results data, and any associated data processing scripts. The extra folder holds other documentation material such as project logos and fonts. 
 
-Extra 
+\texttt{Extra}
 This folder contains other associated programs for the project. Since the Software folder is dedicated exclusively to software that is intended to fly the quadrotor other programs need to be stored in the Extra folder. This folder stores the Anzhelka Terminal files and the Thrust/Torque test stand files for example.
 
 All code is compiled with the BSTC compiler. This is available in [REFERENCE HERE]. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
@@ -162,11 +212,10 @@ All project files are hosted on the project Git repository, hosted by Google Cod
 
 
 
-
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Related Documents and Supporting Materials}
 
-\textcolor{blue}{Cody, Not nessisary though.} 
+\textcolor{blue}{Cody, Not necessary though.} 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 
@@ -183,24 +232,25 @@ All project files are hosted on the project Git repository, hosted by Google Cod
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Requirements Specifications}
-This section describes issues that need to be addressed or resolved prior or while completing the desgn as well as issues that may influence the design process.
+\textcolor{red}{This section describes issues that need to be addressed or resolved prior or while completing the desgn as well as issues that may influence the design process.}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Assumptions}
-Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video of the activity that you have recorded usually turns out shakey and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be acomplished while being as simple as powering on a couple of devices. 
+Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video usually turns out shaky and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be accomplished while being as simple as powering on a couple of devices. 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Realistic Constraints}
-Every system has constraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefore it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalcuated problems.
+Every system has constraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefore it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalculated problems.
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{System Environment and External Interfaces}
-To be able to accomplish all of these tasks there is \textcolor{red}{alot} of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must becontrolled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
+To be able to accomplish all of these tasks there is \textcolor{red}{alot} of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must be controlled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2   
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -212,9 +262,9 @@ Unfortunately there was no money that was given to the team in order to support 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Safety}
-When dealing with any autonomous system one must take extreme cautions in order to insure the safety of everyone. Autonomous systems are dangerous because there is no one behind the controls of the system and can become unpredictable in the event of a system failure. \\ \\ 
-During the design process of the frame the team made sure to use proper spec fasteners, washers, and nuts. Also, all threaded components were secured using blue locktight to ensure that nothing would lossen on its own. \\ \\
-Whenever flying an arial vehicle be sure to wear saftey glasses to protect your eyes in the event that the propeller has a failure and is detached/released from the motor(s).
+When dealing with any autonomous system one must take extreme cautions in order to \textcolor{red}{ensure} the safety of everyone. Autonomous systems are dangerous because there is no one behind the controls of the system and can become unpredictable in the event of a system failure. \\ \\ 
+During the design process of the frame the team made sure to use proper spec fasteners, washers, and nuts. Also, all threaded components were secured using blue lock tight to ensure that nothing would loosen on its own. \\ \\
+Whenever flying an aerial vehicle be sure to wear safety glasses to protect your eyes in the event that the propeller has a failure and is detached/released from the motor(s).
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -325,11 +375,17 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 \section{Constant Identification}
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Thrust Torque Test Stand}
+\subsection{Thrust/Torque Test Stand}
 
 A good autonomous quadrotor needs to be able to measure, in real units such as kilograms and seconds, important aspects about itself such as orientation, motor thrust, acceleration, and so on. It's fairly easy to make a remote controlled quadrotor platform since the human in the loop can intuitively correct for many small errors, and our eyes are very good at collecting the necessary raw information. An autonomous quadrotor does not have this luxury, and must explicitly define each kinematic and dynamic equation. Among others, the quadrotor must know the propeller torque and thrust constants. 
 
-[EQUATIONS HERE]
+\begin{equation} \label{eq:motor_thrust}
+K_T = \frac{T}{\rho n^2 D^4}
+\end{equation}
+
+\begin{equation} \label{eq:motor_torque}
+K_Q = \frac{Q}{\rho n^2 D^5}
+\end{equation}
 
 Above, we have the two equations that define how the propellers affect our quadrotor system. The form that they are in now makes it convenient for us to measure the constants $K_T$ and $K_Q$: if we can somehow measure the terms on the right hand side then we can figure out what the constants are.
 
@@ -372,9 +428,8 @@ This protocol is used in the thrust/torque test stand. The test stand measures t
 This protocol could also be used to log parameters of the quadrotor as it is flying. The Propeller that is controlling the quadrotor could send these strings via a serial port to an external SD card. If an SD card is not available then the system could perhaps use a wireless transceiver such as an XBee. In the event of a system failure, the developer could look at the logged strings in order to help with debugging. 
 
 
-\subsubsection{Protocol String Formats}
-\begin{tabular}{p{2cm}p{9cm}}
-
+\subsubsection{Protocol String Table}
+\begin{longtable}{p{2cm}p{9cm}}
 \hline
 \$ADRPS &
 	Most recent rotations per second for each motor \newline
@@ -426,7 +481,7 @@ This protocol could also be used to log parameters of the quadrotor as it is fly
 	Format: 
 	\texttt{\$ADDRP m1,m2,m3,m4} \\
 \hline
-\end{tabular}
+\end{longtable}
 
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  

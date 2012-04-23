@@ -11,6 +11,14 @@
 \documentclass{article}
 
 \usepackage{amsmath}
+\usepackage{longtable} %for tables that can break across pages
+
+
+%\usepackage{hyperref} %Must be at the end of use package but befor "other settings". Used to make links of all references.
+
+
+
+
 \numberwithin{equation}{section} %change the numbering to have something like 1.1 and 3.15, etc.
 
 %Format of macro:la
@@ -21,7 +29,7 @@
 
 \begin{document}
 
-\title{---ROUGH DRAFT---\\Quadrotor Mathematics: \\ A Simplified Approach}
+\title{Quadrotor Mathematics: \\ A Simplified Approach}
 \author{Cody Lewis \\ \texttt{srlm@anzhelka.com} \and Luke De Ruyter \\ \texttt{ilukester@anzhelka.com} }
 \date{\today}
 \maketitle
@@ -42,7 +50,7 @@ A quadrotor is a simple aerial vehicle much like a helicopter, but instead of a 
 
 Quadrotor dynamics are very complex. It's difficult because you have four motors, all pointed in the same direction, and that's it. But yet the vehicle can move on three axes in translational motion, and can rotate about another three axes. A quadrotor must be able to convert the four motor inputs into these six different (and often conflicting) motions.
 
-The simplest case is hovering in a single location, and will be dealt with in this paper. Initially it is assumed that the quadrotor will have negligable translational motion, although eventually the translational equations may be added to this paper.
+The simplest case is hovering in a single location, and will be dealt with in this paper. Initially it is assumed that the quadrotor will have negligible translational motion in the global x-y plane, although eventually the translational equations may be added to this paper.
 
 The quadrotor used in this paper is assumed to be fairly simple. The platform must be able to measure the following components:
 \begin{list}{*}{}
@@ -51,7 +59,7 @@ The quadrotor used in this paper is assumed to be fairly simple. The platform mu
 	\item motor rotational speed
 	\item air density
 \end{list}
-Note that if air density is assumed to be constant than performance may suffer at different altitudes or weather (--- Can this be quantified?). In addition, the following constants must be empirically measured for each quadrotor vehicle:
+Note that if air density is assumed to be constant than performance may suffer at different altitudes or weather. In addition, the following constants must be empirically measured for each quadrotor vehicle:
 \begin{list}{*}{}
 	\item mass ($kg$)
 	\item moment of inertia tensor ($kg \cdot m^2$)
@@ -61,7 +69,7 @@ Note that if air density is assumed to be constant than performance may suffer a
 	\item rotor diameter ($m$)
 \end{list}
 
-The system is complicated by the fact that a quadrotor will need to be able to balance itself in flight. If a gust of wind blows from the side and rolls the quadrotor, it will no longer be a stable hover. The vehicle will need to increase the speed of some motors and decrease the speed of others so that the vehicle is rotated back into a vertical hovering state.
+The quadrotor system is complicated by the fact that a quadrotor will need to be able to balance itself in flight. If a gust of wind blows from the side and rolls the quadrotor, it will no longer be in a stable hover. The controller will need to increase the speed of some motors and decrease the speed of others so that the vehicle is rotated back into a vertical hovering state.
 
 There is still a problem: each motor is producing torque on the body as well as thrust. This is manifested by the motor "attempting" to rotate the body due to the spinning mass of the motor and propeller, and the air resistance the propeller encounters. On a quadrotor frame we have two motors spinning clockwise and two spinning counter clockwise, and the torques cancel each other out. But if a motor's speed in increased to account for a tilt, then it's torque on the frame will increase as well, causing the whole body to rotate.
 
@@ -76,7 +84,7 @@ And so now, when a gust of wind blows on the frame, we have to somehow correct t
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 Variables with the subscript $i$ denote association with motor $i$.\\
-\begin{tabular}{l l}
+\begin{longtable}{p{2cm}p{8cm}}
  	$ \bs{\omega}_{b} $ 	& angular velocity in the body frame ($rad/s$) \\
  	$ \mathbf{q} $ 			& attitude quaternion \\
  	$ \tilde{\mathbf{q}} $	& error quaternion \\
@@ -106,17 +114,13 @@ Variables with the subscript $i$ denote association with motor $i$.\\
  	$ \beta_H $				& direction of the tilt axis in the $x-y$ plane ($???$) \\
 	$ K_{tilt} $			& amount of tilt in the system? (from altitude controller) \\
 	 	
- 	
- 	
-
- 	
-\end{tabular}
+\end{longtable}
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Constants}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
-\begin{tabular}{l l}
+\begin{longtable}{p{2cm}p{8cm}}
  	$ \bs{I}_{nb} $			& moment of inertia tensor ($kg \cdot m^{2}$) \\
  	$ D $ 					& rotor diameter ($m$) \\
  	$ d $					& offset of each rotor from the center of mass ($m$) \\
@@ -139,7 +143,7 @@ Variables with the subscript $i$ denote association with motor $i$.\\
  	$ K_{P_i} $				& Motor Proportional PID gain (for $1 \leq i \leq 4$) \\
  	$ K_{I_i} $				& Motor Integral PID gain (for $1 \leq i \leq 4$) \\
  	
-\end{tabular}
+\end{longtable}
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Introduction to Quaternions}
@@ -183,7 +187,7 @@ We define the norm of quaternion as
 
 $$ \lVert q \rVert = \sqrt{q_0^2 + q_1^2 + q_2^2 + q_3^2} $$
 
-The norm can be thought of as the "length" of a quaternion (or vector, etc). A $ \lVert q \rVert $ value of 1 is called a unit quaternion. In quaternion literature there seems to be a discrepency: some authors define the quaternion norm as above, with a square root (---Citations---), while others omit the square root (\cite{shoemake69} ---CITE---). In this paper we will use the norm with a square root. This is called the L2-norm, or more commonly the Euclidean norm. I couldn't find anything on a norm that squared it's components but had no root, so we'll ignore it (for more information on norms, see \cite{malek09}).
+The norm can be thought of as the "length" of a quaternion (or vector, etc). A $ \lVert q \rVert $ value of 1 is called a unit quaternion. In quaternion literature there seems to be a discrepancy: some authors define the quaternion norm as above, with a square root, while others omit the square root (e.g. \cite{shoemake69}). In this paper we will use the norm with a square root. This is called the L2-norm, or more commonly the Euclidean norm. I couldn't find anything on a norm that squared it's components but had no root, so we'll ignore it (for more information on norms, see \cite{malek09}).
 
 We also define the conjugate and inverse of a rotation quaternion as
 
@@ -223,14 +227,14 @@ The only binary operation that we will be using for rotation quaternions is mult
 For the rest of this paper, if a vector is rotated by a quaternion it will  be written as a vector but assumed to be in the vector part of a quaternion. For example,
 
 \begin{equation}
-	\dot{\bs{q}} = \frac{1}{2} \bs{q} \otimes \omega_b, \qquad 	\textrm{where} \quad
+	\omega_b' = \bs{q} \otimes \omega_b, \qquad 	\textrm{where} \quad
 	\omega_b =	
 	\begin{bmatrix}
 		0 \\
 		\omega_b \\
 	\end{bmatrix}
 \end{equation}
-Does the above actually make sense?... Need to clarify
+The vector $\omega_b$ is rotated by quaternion $\bs{q}$ to get the rotated vector $\omega_b'$.
 
 The product of two quaternions is another quaternion and is defined as:
 \begin{equation}
@@ -243,16 +247,7 @@ The product of two quaternions is another quaternion and is defined as:
 	\end{split}
 \end{equation}
 
-Question: Order of the component multiplication doesn't matter, right? Also, double check the correct multiplication... \\
-
-One thing to note is that a quaternion multiplication has 12 scalar additions and 16 scalar multiplies. Since the components are floating point, each quaternion multiplication consumes 28 floating point operations. \\
-
-
-
-----A bunch more stuff to define------ \\
-----Need to define the fact that two quaternions can represent the same space \\
-----Need to define quaternion derivatives ---- \\
-----What is $q^*$?---- \\
+One thing to note is that a quaternion multiplication has 12 scalar additions and 16 scalar multiplies. Since the components are floating point numbers, each quaternion multiplication consumes 28 floating point operations. \\
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Basic Equations}
@@ -452,7 +447,7 @@ First, in equation \eqref{eq:rpm_to_Omega} we have a standard conversion from ro
 \Omega_i = 2 \pi n_i
 \end{equation}
 
-Each motor generates a thrust in the direction of the motor shaft axis, and a torque around the motor shaft axis. Equations \eqref{eq:motor_thrust} and \eqref{eq:motor_torque} are derived from --WHAT???. The calculation of $K_T$ and $K_Q$ is discussed in subsection \ref{subsec:thrustandtorquecoefficientmeasurements}.
+Each motor generates a thrust in the direction of the motor shaft axis, and a torque around the motor shaft axis. The calculation of $K_T$ and $K_Q$ is discussed in subsection \ref{subsec:thrustandtorquecoefficientmeasurements}.
 
 
 \begin{equation} \label{eq:motor_thrust}
@@ -571,8 +566,9 @@ The following two equations are explicitly defined a discrete time $t$. For clar
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Quadrotor Motion Model}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+The equations in this section describe the motion of the quadrotor body through space. In essence, these equations are taken directly from any introductory physics textbook and simply expanded a small amount. These equations are necessary for translational motion, but are not required to simply hover
 
-\begin{equation}
+\begin{equation} \label{eq:body_acceleration}
 \dot{\boldsymbol{V}}_b = \frac{1}{m} 
 	\left[
 		\begin{array}{c}
@@ -592,7 +588,9 @@ The following two equations are explicitly defined a discrete time $t$. For clar
 	\otimes \boldsymbol{q} - \boldsymbol{\omega}_b \times \boldsymbol{V}_b
 \end{equation}
 
-\begin{equation}
+Equation \eqref{eq:body_acceleration} describes the body acceleration of the quadrotor. The equation follows the form of $F = ma$ from traditional physics (rewritten for $a = \frac{F}{m}$). The first accounts for the acceleration due to the force of the motors. The second term accounts for the acceleration due to gravity, rotated based on the vehicle orientation. The third term accounts for fictitious forces (forces due to the non-inertial reference frame of the body).
+
+\begin{equation} \label{eq:body_angular_acceleration}
 \dot{\boldsymbol{\omega}}_b = \boldsymbol{I}^{-1}_{nb}
 	\left(
 		\left[
@@ -606,14 +604,21 @@ The following two equations are explicitly defined a discrete time $t$. For clar
 	\right)
 \end{equation}
 
-\begin{equation}
+Equation \eqref{eq:body_angular_acceleration} describes the angular acceleration of the quadrotor. The equation follows the form of $\tau = I \alpha$ from traditional physics (rewritten for $\alpha = \frac{\tau}{I}$. The first term (with the moments $M_{xyz}$) accounts for the rotational force of the propellers. The second term accounts for the fictitious forces.
+
+\begin{equation} \label{eq:earth_velocity}
 \dot{\boldsymbol{R}}_e = \boldsymbol{q} \otimes \boldsymbol{V}_b \otimes \boldsymbol{q}^*
 \end{equation}
 
-\begin{equation}
+Equation \eqref{eq:earth_velocity} relates velocity in the body reference frame to velocity in the earth reference frame.
+
+
+
+
+\begin{equation} \label{eq:omega_b_derivative}
 \dot{\boldsymbol{q}} = \frac{1}{2} \boldsymbol{q} \otimes \boldsymbol{\omega}_b
 \end{equation}
-Question: Is the above equation for quaternion derivatives?...
+Note that equation \eqref{eq:omega_b_derivative} describes the derivative of a quaternion.
 
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -676,7 +681,7 @@ Output:
 
 
 
-\begin{align}
+{\allowdisplaybreaks \begin{align}
 \tilde{\bs{q}} &= \bs{q}_d \otimes \bs{q}^* \\%eq:errorquaternion}
 \alpha &= 2\arccos{\left(\tilde{q_0}\right)} \\%eq:errorquaternionalpha}
 t_1 &= \sin{\alpha/2} \\
@@ -699,8 +704,8 @@ t_1 &= \sin{\alpha/2} \\
 	\beta_H &= \arctan_2 \left(r_y, r_x \right) \\
 	M_x &= K_{PH} \alpha_H \cos \beta_H - K_{DH} \omega_x \\
 	M_y &= K_{PH} \alpha_H \sin \beta_H - K_{DH} \omega_y \\
-	M_z &= K_{Pz} \psi - K_{Dz} \omega_z \\
-\end{align}
+	M_z &= K_{Pz} \psi - K_{Dz} \omega_z
+\end{align}}
 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -754,8 +759,8 @@ K_{tilt} &=
 	\right) \\
 \tilde{\bs{R}}_{e_z} &= \bs{R}_{e_z} - desired \left( \bs{R}_{e_z} \right) \\
 	F_{PIDz} &= K_{Pz} \tilde{\bs{R}}_{e_z} + K_{Iz} \Sigma \tilde{\bs{R}}_{e_z} + K_{Dz} \dot{\tilde{\bs{R}}}_{e_z} \\ %\label{eq:altitudePID}
-	F_z &= \frac{mg + F_{PIDz}} {K_{tilt}} \\
-	\end{align}
+	F_z &= \frac{mg + F_{PIDz}} {K_{tilt}}
+\end{align}
 
 
 
@@ -798,12 +803,10 @@ Output Variables:
  	$ u_i $					& motor command ($???$) \\
 \end{tabular}
 
-
-% Don't think we need to implement these two equations...
 %T &= K_T\rho n^2 D^4 \\ %\label{eq:motor_thrust}
 %Q &= K_Q\rho n^2 D^5 \\ %\label{eq:motor_torque}
 
-\begin{align} 
+{\allowdisplaybreaks \begin{align} 
 c &= \frac{K_Q D}{K_T} \\
 t_1 &= \frac{M_z}{4c} \\
 t_2 &= \frac{M_y}{2d} \\
@@ -827,7 +830,7 @@ u_1 &= K_{P1} \left( \Omega_{d1} - \Omega_{i1} \right) + K_{I1} \Omega \left(t \
 u_2 &= K_{P2} \left( \Omega_{d2} - \Omega_{i2} \right) + K_{I2} \Omega \left(t \right) _{Ierror2} \\
 u_3 &= K_{P3} \left( \Omega_{d3} - \Omega_{i3} \right) + K_{I3} \Omega \left(t \right) _{Ierror3} \\
 u_4 &= K_{P4} \left( \Omega_{d4} - \Omega_{i4} \right) + K_{I4} \Omega \left(t \right) _{Ierror4}
-\end{align}
+\end{align}}
 
 From here, we are able to send the command $u_i$ to the motor ESCs via a standard PWM signal. Note that the $u_i$ will have to be adjusted to fit within the standard servo type PWM signal standard. Typically, this means that the signal is set so that a motor speed of 0 corresponds to 1000uS, and a full motor speed corresponds to 2000uS, with a pulse every 20mS (approximately).
 
@@ -1108,9 +1111,18 @@ Question: are $\beta_H$ and $\gamma_H$ perpendicular or somehow constant relativ
 	\item Add a PID tutorial (how to prevent integral wind up; derivative impulse (that saturates))
 	\item I suspect that the $K_{tilt}$ equation can be simplified by taking the dot product of the two vectors, which (according to a UCSD slide show) is $p_0 q_0 +p_1 q_1 + p_2 q_2 + p_3 q_3 = |p||q| \cos \varphi$ where $\varphi$ is half the angle angle one would need to rotate from one orientation to the other in 3D space.
 	\item Add more information about the motor thrust test stand (subsection \ref{subsec:thrustandtorquecoefficientmeasurements})
-	\item 
-	
+	\item Add citation for the quaternion norm debate (to square root or not).
+	\item Question: Order of the quaternion component multiplication doesn't matter, right? Also, double check the correct multiplication...
+	\item Equations \eqref{eq:motor_thrust} and \eqref{eq:motor_torque} are derived from --WHAT???.
+	\item Talk about quaternion derivatives, and equation \eqref{eq:omega_b_derivative}
+	\item Quantify by how much performance will suffer if air density is assumed to be constant.
 \end{list}
+
+Specifically, with quaternions:
+---Need to define the fact that two quaternions can represent the same space \\
+---Need to define quaternion derivatives --- \\
+---What is $q^*$?--- \\
+
 
 
 \begin{thebibliography}{99}
