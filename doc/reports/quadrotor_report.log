@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.11 (MiKTeX 2.9) (preloaded format=pdflatex 2011.11.22)  22 APR 2012 21:55
+This is pdfTeX, Version 3.1415926-1.40.11 (MiKTeX 2.9) (preloaded format=pdflatex 2011.11.22)  22 APR 2012 22:02
 entering extended mode
 **C:/tempQuad/anzhelka/doc/reports/quadrotor_report.tex
 (C:/tempQuad/anzhelka/doc/reports/quadrotor_report.tex
@@ -101,18 +101,18 @@ File: pdftex.def 2010/09/14 v0.05b Graphics/color for pdfTeX
 \Gread@gobject=\count99
 ))
 (C:\tempQuad\anzhelka\doc\reports\quadrotor_report.aux)
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
 
 (C:\Users\lderuyter\AppData\Roaming\MiKTeX\2.9\tex\context\base\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -130,101 +130,149 @@ LaTeX Font Info:    ... okay on input line 23.
 ) [1
 
 {C:/Users/lderuyter/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-Underfull \hbox (badness 10000) in paragraph at lines 39--44
+Underfull \hbox (badness 10000) in paragraph at lines 43--48
 
  []
 
 [2] (C:\tempQuad\anzhelka\doc\reports\quadrotor_report.toc [3])
 \tf@toc=\write3
  [4]
-Underfull \hbox (badness 10000) in paragraph at lines 64--71
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 64--71
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 64--71
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 64--71
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 64--71
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 75--79
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 75--79
-
- []
-
-[5] [6]
-Underfull \hbox (badness 10000) in paragraph at lines 128--132
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 128--132
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 135--139
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 135--139
+Underfull \hbox (badness 10000) in paragraph at lines 68--83
 
  []
 
-[7]
-Missing character: There is no ‚ in font cmbx10!
-Missing character: There is no Ä in font cmbx10!
-Missing character: There is no î in font cmbx10!
-Missing character: There is no ‚ in font cmbx10!
-Missing character: There is no Ä in font cmbx10!
-Missing character: There is no î in font cmbx10!
- [8]
-Missing character: There is no ‚ in font cmbx10!
-Missing character: There is no Ä in font cmbx10!
-Missing character: There is no î in font cmbx10!
 
-Underfull \hbox (badness 10000) in paragraph at lines 184--187
+Overfull \hbox (10.5552pt too wide) in paragraph at lines 68--83
+\OT1/cmr/m/n/10 >>>>>>> 85c37edbb0a1c40c9b88cb66b03446cdbf1cc94d []NEEDS ACHIEV
+E-MENTS[] 
+ []
+
+[5]
+Underfull \hbox (badness 10000) in paragraph at lines 87--91
 
  []
 
-Missing character: There is no ‚ in font cmbx10!
-Missing character: There is no Ä in font cmbx10!
-Missing character: There is no î in font cmbx10!
-Missing character: There is no ‚ in font cmbx10!
-Missing character: There is no ó in font cmbx10!
-Missing character: There is no è in font cmbx10!
-Missing character: There is no ‚ in font cmbx10!
-Missing character: There is no ó in font cmbx10!
-Missing character: There is no è in font cmbx10!
-Missing character: There is no ‚ in font cmbx10!
-Missing character: There is no ó in font cmbx10!
-Missing character: There is no è in font cmbx10!
+
+Underfull \hbox (badness 10000) in paragraph at lines 87--91
+
+ []
+
+[6] [7]
+Overfull \hbox (4.97014pt too wide) in paragraph at lines 168--169
+\OT1/cmr/m/n/10 tem-plate form of this script can be found in $\OML/cmm/m/it/10
+ =software=spin=tool=bst[]emplate:sh$\OT1/cmr/m/n/10 .
+ []
+
+[8]
+Overfull \hbox (20.47185pt too wide) in paragraph at lines 189--202
+\OT1/cmr/m/n/10 PWM - Pulse Width Mod-u-la-tion ======= []
+ []
+
 [9]
+Underfull \hbox (badness 10000) in paragraph at lines 237--245
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 237--245
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 237--245
+
+ []
+
+[10]
+Underfull \hbox (badness 10000) in paragraph at lines 248--252
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 248--252
+
+ []
+
+Missing character: There is no ‚ in font cmbx10!
+Missing character: There is no Ä in font cmbx10!
+Missing character: There is no î in font cmbx10!
+[11]
+Missing character: There is no ‚ in font cmr10!
+Missing character: There is no Ä in font cmr10!
+Missing character: There is no ú in font cmr10!
+Missing character: There is no ‚ in font cmr10!
+Missing character: There is no Ä in font cmr10!
+Missing character: There is no ù in font cmr10!
+ [12] [13] [14] [15]
+Overfull \hbox (30.60966pt too wide) in paragraph at lines 426--430
+[]\OT1/cmr/m/n/10 $ADMVV Most re-cent mo-tor volt-age in mil-li-volts For-mat: 
+$AD-MVV m1,m2,m3,m4 
+ []
+
+[16]
+Missing character: There is no ‚ in font cmbx10!
+Missing character: There is no Ä in font cmbx10!
+Missing character: There is no î in font cmbx10!
+Missing character: There is no ‚ in font cmbx10!
+Missing character: There is no ó in font cmbx10!
+Missing character: There is no è in font cmbx10!
+Missing character: There is no ‚ in font cmbx10!
+Missing character: There is no ó in font cmbx10!
+Missing character: There is no è in font cmbx10!
+Missing character: There is no ‚ in font cmbx10!
+Missing character: There is no ó in font cmbx10!
+Missing character: There is no è in font cmbx10!
+ [17]
 Missing character: There is no ‚ in font cmbx10!
 Missing character: There is no Ä in font cmbx10!
 Missing character: There is no î in font cmbx10!
 
-Underfull \hbox (badness 10000) in paragraph at lines 256--259
+Underfull \hbox (badness 10000) in paragraph at lines 572--575
 
  []
 
@@ -237,7 +285,7 @@ Missing character: There is no Ç in font cmbx10!
 Missing character: There is no ‚ in font cmbx10!
 Missing character: There is no Ä in font cmbx10!
 Missing character: There is no î in font cmbx10!
-[10]
+[18]
 Missing character: There is no ‚ in font cmbx10!
 Missing character: There is no Ä in font cmbx10!
 Missing character: There is no î in font cmbx10!
@@ -268,26 +316,29 @@ Missing character: There is no è in font cmbx10!
 Missing character: There is no ‚ in font cmbx10!
 Missing character: There is no Ä in font cmbx10!
 Missing character: There is no î in font cmbx10!
- [11] (C:\tempQuad\anzhelka\doc\reports\quadrotor_report.aux) ) 
+ [19] (C:\tempQuad\anzhelka\doc\reports\quadrotor_report.aux) ) 
 Here is how much of TeX's memory you used:
  1418 strings out of 494019
  17307 string characters out of 3143869
- 77631 words of memory out of 3000000
+ 79631 words of memory out of 3000000
  4742 multiletter control sequences out of 15000+200000
  9845 words of font info for 36 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 27i,6n,20p,812b,236s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 27i,8n,20p,902b,236s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program File
 s (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Program Files 
 (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files (x
-86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files (x86)
-/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files (x86)/Mi
-KTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files (x86)/MiKTe
-X 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 
-2.9/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on quadrotor_report.pdf (11 pages, 129357 bytes).
+86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files (x86
+)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files (x86)/M
+iKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files (x86)/MiKT
+eX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files (x86)/MiKTeX 
+2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files (x86)/MiKTeX 2.9
+/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/f
+onts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fon
+ts/type1/public/amsfonts/cm/cmtt12.pfb>
+Output written on quadrotor_report.pdf (19 pages, 183259 bytes).
 PDF statistics:
- 66 PDF objects out of 1000 (max. 8388607)
+ 104 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

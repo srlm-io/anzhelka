@@ -1,7 +1,7 @@
 %Cody Lewis, Luke De Ruyter, 2012
 %Visit anzhelka.com for all the latest
 %
-% CTRL+SPACE to switch panes
+% CTRL+SPACE to switch panes in Texmaker
 %
 
 
@@ -18,6 +18,10 @@
 \newcommand{\vect}[1]{\boldsymbol{#1^2}}
 \newcommand{\bigvect}[3]{\boldsymbol{#1^#2^#3}}
 \newcommand{\bs}[1]{\boldsymbol{#1}}
+
+%\newcommand*{\tabbox}[2][t]{%
+%    \vspace{0pt}\parbox[#1][3.7\baselineskip]{1cm}{\strut#2\strut}} %% Used for in table alignment. See http://tex.stackexchange.com/questions/6355/problem-with-table-vertical-alignment
+
 \usepackage{color}
 
 \begin{document}
@@ -61,11 +65,19 @@ Here is where you will place the revisions of this document. \\ \\
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 \subsection{Executive Summary}
 
+<<<<<<< HEAD
 This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimble that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.\\ \\
 Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Accelerometer, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to control up to 8 Servos, able to track the exact speed and position of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
 This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior design project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that measures in at 4inches by 3inches. \\ \\
 Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the control algorithms is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor. \\ \\
 The project was started without any expertise or experiance with autonomous flying or quadrotors, but with will to learn, create and develop a system that could even be understood by people with experience in these fields. Software is one of the groups expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experience with designing PCB's and circuits, however nothing to the extent of this project. The team believed that this project was worth aprroximately 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximately 30 hours per person per week were devoted to this project. \\ \\
+=======
+This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimbal that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.\\ \\
+Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Acelerometer \textcolor{red}{CHECK SPELLING}, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to controll up to 8 Servos, able to track the exact speed and possition of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
+This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior desing project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that measures in at 4 inches by 3 inches. \\ \\
+Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the control algorithms is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor. \\ \\
+The project was started without any expertise or experience with autonomous flying or quadrotors, but with will to learn, create and develope a system that could even be understood by people with experience in these fields. Software is one of the groups expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experience with designing PCB's and circuits, however nothing to the extent of this project. The team believed that this project was worth approximately 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximately 30 hours per person per week were devoted to this project. \\ \\
+>>>>>>> 85c37edbb0a1c40c9b88cb66b03446cdbf1cc94d
 \textcolor{red}{NEEDS ACHIEVEMENTS}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
@@ -79,15 +91,91 @@ On this project the team members of Anzhelka decided to keep responsibilities as
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Background and Prior Art}
+<<<<<<< HEAD
 
 There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
+=======
+>>>>>>> 85c37edbb0a1c40c9b88cb66b03446cdbf1cc94d
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Development Environment and Tools}
-
-\textcolor{blue}{Cody}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+The Anzhelka project software was developed for the most part using a Linux system. All code and other project files are hosted on the project Git repository (code.anzhelka.com). The Propeller code was written in Gedit, compiled and downloaded with the BSTC compiler, and interfaced with using picocom.
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+\subsubsection{Directory Structure}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+
+The project uses the following directory structure:
+
+ /hardware 
+    /frame 
+    /pcb 
+ /software 
+    /spin 
+       /src 
+       /lib 
+       /test 
+       /tool 
+       /config 
+    /java 
+       /src 
+       /lib 
+       /test 
+       /tool 
+       /config 
+ /doc 
+    /datasheet 
+    /reports 
+    /figures 
+    /notes 
+    /tests 
+    /extra 
+ /extra 
+ 
+Hardware
+Subfolders will store the major components of the project. For example, the frame has several .dxf files that are sent to the laser cutter, so that will all go into a subfolder called frame. The project may have several PCBs made as well, and so each should go into a subfolder under pcb. 
+
+Software 
+The software is separated by language into separate folders. This makes sense because each processor in the project will have only one language running, but separate processors that are running the same language may share components (library files, for example). Each language has a number of subfolders: 
+
+\begin{list}{*}{}
+	\item src is where the source code for the project is stored. Subfolders as appropriate. 
+	\item lib stores all general purpose library files (code) such as Propeller Obex objects. 
+	\item test stores the test harnesses such as unit tests and Spin code to test a particular module (the latter case would have a 'main' type method and would be self supporting when running on the Propeller). 
+	\item tool holds all the relevant development tools for that language (bstc for Spin, for example). 
+	\item config stores any sort of relevant compile time or testing configuration files. 
+\end{list}
+The files that are in the Software folder should be used only for what runs onboard the quadrotor. Test programs or desktop PC client programs should instead go into the Extra folder. Note that these programs may still access the lib and tool subfolders in the software directory. 
+
+Documentation 
+This folder stores all the relevant datasheets in the datasheet subdirectory, and any other project documentation that is deemed to fit. Note that most documentation probably belongs in the anzhelka wiki. 
+
+The datasheet and reports folder contain the reference datasheets for each component and the various generated reports of the project, respectively. The figures folder holds an images that is used in the documentation. The notes folders holds papers that are interesting and relevant to the project, such as the cited research papers. The tests folder holds the test results data, and any associated data processing scripts. The extra folder holds other documentation material such as project logos and fonts. 
+
+Extra 
+This folder contains other associated programs for the project. Since the Software folder is dedicated exclusively to software that is intended to fly the quadrotor other programs need to be stored in the Extra folder. This folder stores the Anzhelka Terminal files and the Thrust/Torque test stand files for example.
+
+All code is compiled with the BSTC compiler. This is available in [REFERENCE HERE]. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+\subsubsection{Development Cycle}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+To facilitate the development cycle a simple compilation script was developed. A template form of this script can be found in $/software/spin/tool/bst_template.sh$. This script will compile the Spin program, and if no errors are found it will attempt to download to the Propeller. If successful it will open picocom (terminal program) on the USB port to listen for data. Using this script while programming dramatically decreases the write-compile-test debug cycle.
+
+All code was written in Gedit. Gedit is a simple text editor with a few features built in, including syntax highlighting. For most of the languages in this project, Gedit has provided suitable syntax highlighting. Propeller Spin, however, is not available by default. Syntax highlighting was accomplished by writing a language definition file ($/software/spin/tool/spin.lang$) and placing it in $/usr/share/gtksourceview-3.0/language-specs$. Gedit will then automatically highlight the Spin files.
+
+%%TODO: update the file path typesetting.
+
+All project files are hosted on the project Git repository, hosted by Google Code at code.anzhelka.com. A Git repository was selected so that all developers would have equal access to the source files, changes would be logged and trackable, issues would be trackable, and so that concurrent work on files  could be easily merged. All project files are open source under the MIT license and can be downloaded freely.
+
+
+
+
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Related Documents and Supporting Materials}
@@ -95,37 +183,62 @@ There have been several different renditions of this project but to the best of 
 \textcolor{blue}{Cody, Not nessisary though.} 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Definitions and Acronyms}
+<<<<<<< HEAD
 \textcolor{red}{Needs lots more of deffinitions}\\
 ESC - Electronics Speed Control\\
 IMU - Inertial Messurement Unit\\
 PWM - Pulse Width Modulation
+=======
+\begin{tabular}{l l}
+	ESC & Electronics Speed Control \\
+	IMU & Inertial Messurement Unit \\
+	PWM & Pulse Width Modulation \\
+\end{tabular}
+>>>>>>> 85c37edbb0a1c40c9b88cb66b03446cdbf1cc94d
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
+
+
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Requirements Specifications}
 This section describes issues that need to be addressed or resolved prior or while completing the desgn as well as issues that may influence the design process.
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Assumptions}
 Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video usually turns out shaky and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be accomplished while being as simple as powering on a couple of devices. 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Realistic Constraints}
+<<<<<<< HEAD
 Every system has constraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefore it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalculated problems.
+=======
+Every system has constraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefore it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalcuated problems.
+>>>>>>> 85c37edbb0a1c40c9b88cb66b03446cdbf1cc94d
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{System Environment and External Interfaces}
+<<<<<<< HEAD
 To be able to accomplish all of these tasks there is a lot of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must be controlled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
+=======
+To be able to accomplish all of these tasks there is \textcolor{red}{alot} of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must becontrolled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
+>>>>>>> 85c37edbb0a1c40c9b88cb66b03446cdbf1cc94d
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2   
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Budget and Cost Analysis}
+<<<<<<< HEAD
 Unfortunately there was no money that was given to the team in order to support the project. All of the funding had come from the team members own personal accounts. Below is an exert from our spreadsheet with the cost analysis and money spent on this project.\\ \\
+=======
+Unfortunately there was no money that was given to the team in order to support the project. All of the funding had come from the team members own personal accounts. Below is a excerpt from our spreadsheet with the cost analysis and money spent on this project.\\ \\
+>>>>>>> 85c37edbb0a1c40c9b88cb66b03446cdbf1cc94d
 \textcolor{red}{INSERT COST TABLE HERE}\\ \\
 \textcolor{blue}{Update table before adding}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
@@ -162,27 +275,72 @@ Being able to work in a team is both a skill and a challenge. Working on a proje
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Program Design}
-\textcolor{green}{\bf Program Design—each component of the selected solution approach should be carefully designed}
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Software Introduction}
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{System Architecture}
+\subsection{Propeller}
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+\subsubsection{Architecture}
+
+The Anzhelka project uses the Propeller P8X32A microcontroller from Parallax. This microcontroller is a 8 core 32 bit RISC processor. The Propeller is \$8 per chip, plus approximately \$2 for support components. For this project the Propeller has been overclocked from the default 80MHz to 100MHz. This additional speed facilitates more complex computations without sacrificing output rate. Each core, called a COG, is identical with equal access to all chip resources. The Propeller has a central RAM area called the HUB which is COG accessible in a round robin fashion.
+
+The Propeller is distinctly different from most other microcontrollers by it's lack of built in hardware. The Propeller does not have any hardware level serial ports, analog to digital or digital to analog ports, or any pulse width modulation ports. Instead, the Propeller is designed to be able to use software for these common interfaces. This is typically done through what is known as “bit banging.” The only exception is the built in video generation hardware that assists in creating NSTC, PAL, or VGA signals. To make development easier for the programmer, Parallax hosts a source code website that provides code for common tasks such as serial or PWM.
+
+The Propeller has two built in languages: a high level language called Spin and the assembly language called PASM. PASM is executed directly by a COG. Spin is executed by a built in PASM Spin interpreter that can be dynamically loaded into one or more COGs. Other high level languages available for the Propeller generally operate in a similar manner to Spin. This project uses Spin and PASM exclusively.
+
+The Propeller has three different memory locations: 2KB of COG RAM, 32KB of HUB RAM, and external 64KB of I2C EEPROM. Upon startup, the Propeller copies the contents of the EEPROM to HUB RAM, loads a Spin interpreter into COG 0, and begins execution.  Any PASM code, including the Spin interpreter, must fit in 496 instructions or less in order to fit into the COG RAM. The Propeller does not have provisions for fetching PASM instructions from other locations besides COG RAM. For Spin code the compiled interpretable bytes are stored in the HUB RAM, and are fetched and decoded by the Spin interpreter.
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+\subsubsection{Programming}
+
+The Propeller is programmed in Propeller Assembly (PASM) and a high level language called Spin. In general, PASM is used when speed is required. At 100MHz, the Propeller can execute 25,000,000 assembly instructions each second (each instruction takes 40ns). By contrast, the interpreted Spin language is about 100x slower. Because of this contrast Spin is used where ease of programming is important, and PASM is used where speed is important.
+
+Spin is officially called an object oriented programming language, but there are some subtle differences compared to mainstream object oriented terminology. Spin OOP is used to organize code into logical blocks much like an import statement in C++ or Python. Spin objects do not use techniques such as class instances, inheritance, subtype polymorphism. A Spin object is used to group related functions together into a unit that can be included in multiple Spin programs. Typically, Spin objects are used for interfacing with external devices. For example, a typical Spin program might have an object for serial communication, an object for VGA signal generation, and an object for I2C communication. The Parallax Object Exchange (obex.parallax.com) hosts Parallax written objects and community written objects under the open source MIT licence.
+
+Spin syntax is very similar to Python. To denote a new scope Spin uses indentation instead of curly braces {} (familiar to C/C++ and Java programmers). Spin code is divided into blocks: CON (constant), VAR (variable), OBJ (object), DAT (data), PUB (public function), and PRI (private function). Most typical programming constructs are a part of the Spin language: conditional IF statements, FOR loops (called REPEAT), boolean conditions, and so on.
+
+All variables in the Propeller are integers. Variables are typically 32 bit signed integers called longs, but in Spin it is possible to create 16 bit or 8 bit sized variables as well (called words and bytes, respectively). Global variables are declared in the VAR block, and global constants are declared in the CON block. PRI and PUB functions can declare local variables, along with function parameters. 
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Other Software Stuff}
+\textcolor{red}{Cody...} ie things such as the python and the possibilty of future expansion (BeagleBoard)
+
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Rationale and Alternatives}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Construction of a Prototype}
-\textcolor{green}{\bf Given the relatively short duration of the class, completion of the project may not be possible; however, you must do your best to produce a working prototype that implements the most important core functionality of the system you have envisions. If graphical output is not possible, create some screen mock-ups on your own.}
+\section{Quadrotor Prototype Construction}
+%\textcolor{green}{\bf Given the relatively short duration of the class, completion of the project may not be possible; however, you must do your best to produce a working prototype that implements the most important core functionality of the system you have envisions. If graphical output is not possible, create some screen mock-ups on your own.}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Intermediate Project Reports}
-\textcolor{green}{\bf Intermediate Project Reports—Document your progress. Both intermediate ! ! ! project reports should describe your progress toward the construction of the overall prototype. This section should include two brief summaries that document your project at the time of the intermediate demonstrations.} \\ \\
-\textcolor{red}{\bf Not required because these were admitted.}
+%\subsection{Intermediate Project Reports}
+%\textcolor{green}{\bf Intermediate Project Reports—Document your progress. Both intermediate ! ! ! project reports should describe your progress toward the construction of the overall prototype. This section should include two brief summaries that document your project at the time of the intermediate demonstrations.} \\ \\
+%\textcolor{red}{\bf Not required because these were admitted.}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -192,12 +350,135 @@ Being able to work in a team is both a skill and a challenge. Working on a proje
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Software}
-\textcolor{red}{Cody}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Implementation}
-\textcolor{green}{\bf Implementation Here, provide an overview of the high-level code structure of your application. What are the key data structures, modules, etc. Do not provide source code here; it should be an Appendix instead.}
+\section{Constant Identification}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Thrust Torque Test Stand}
+
+A good autonomous quadrotor needs to be able to measure, in real units such as kilograms and seconds, important aspects about itself such as orientation, motor thrust, acceleration, and so on. It's fairly easy to make a remote controlled quadrotor platform since the human in the loop can intuitively correct for many small errors, and our eyes are very good at collecting the necessary raw information. An autonomous quadrotor does not have this luxury, and must explicitly define each kinematic and dynamic equation. Among others, the quadrotor must know the propeller torque and thrust constants. 
+
+[EQUATIONS HERE]
+
+Above, we have the two equations that define how the propellers affect our quadrotor system. The form that they are in now makes it convenient for us to measure the constants $K_T$ and $K_Q$: if we can somehow measure the terms on the right hand side then we can figure out what the constants are.
+
+From these equations, it is clear that we need to measure thrust, torque, air density, rotation speed, and the propeller diameter. Measuring rotor diameter, motor speed and air density are straight forward, and so they are not covered here. The real challenge comes from measuring motor thrust and torque.
+
+Thrust is measured by mounting the motor on the end of the lever arm, then measuring the torque that the propeller exerts as it spins. A pressure sensor rigidly mounted between the lever arm and a stationary base can measure this torque.
+
+Calculating torque is a bit more complicated: the motor body needs to be mounted on a rotating axis that is directly in line with the motor shaft, and the torque along this axis needs to be measured. Most measurement test stands seem to only measure thrust, and ignore yaw. We, however, rely on the torque to yaw the quadrotor vehicle.
+
+To measure torque, our test stand has the motor mounted to a rod, which then has a lever arm attached that presses on a scale. In a same way as thrust the force pressing on the scale can be read, and with the length of the lever arm torque can be calculated.
+
+Our test can measure thrust and torque simultaneously and automatically. To do this we are using the Flexiforce pressure sensors ([REFERENCE]). These sensors vary the resistance based on the amount of pressure, and resistance is very easy to measure with a microcontroller.
+
+For motor speed we will be using a Eagle Tree brushless RPM sensors ([REFERENCE]). Our main control board is the quadpower board that we have developed for our quadrotor. This has the advantage of being identical to what we will be flying, it will have the motor current and voltage sensing built in.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Implementation Details}
+
+\subsection{Anzhelka Data and Command Exchange Protocol}
+
+\subsubsection{Introduction}
+The Anzhelka project uses a protocol called \$ATXXX to facilitate data and command exchange between different subsystems. \$ATXXX is very similar to NMEA-0183 where data is exchanged via sentences prefaced with a sentence code. This allows for the Propeller to send real time information about the running state to other onboard processors or to offboard computers, and to receive commands. The protocol was developed to facilitate predictable and reliable exchanges.
+
+\subsubsection{Implementation Details}
+All strings are encoded in standard ASCII. Numbers are converted to their ASCII equivalent and are in base 10 unless otherwise noted. If a number is decimal then it will have the ASCII decimal point included in the sentence string. By having all the data be in ASCII a normal terminal program (such as picocom or cutecom) can be used to receive and send data. 
+
+Each string is independent of all other strings. There is no order required to send or receive strings. If multiple strings of the same type are received, the listening devices should assume that the last received is the most recent. If an unknown string or other serial data is encountered then it should be ignored.
+
+Data strings are prefaced with \$ADxxx (short for Anzhelka Data type xxx). 
+
+Note that the only defined whitespace in a string is a single space after the sentence code, and a newline (ASCII characters LF and CR) after each string. For clarity of notation the newline is not written in the string lists below.
+
+\subsubsection{Example Usage}
+This protocol is used in the thrust/torque test stand. The test stand measures the thrust and torque using force sensors, and measures the rotations per second of the motor. The test stand then outputs the \$ADRPS, \$ADPWM, \$ADMTH, and \$ADMTQ strings to a USB serial port. A desktop computer reads these strings from the serial port and displays the variable on-screen in a GUI that updates in real time as new strings are received. In this way the user can watch as testing proceeds.
+
+This protocol could also be used to log parameters of the quadrotor as it is flying. The Propeller that is controlling the quadrotor could send these strings via a serial port to an external SD card. If an SD card is not available then the system could perhaps use a wireless transceiver such as an XBee. In the event of a system failure, the developer could look at the logged strings in order to help with debugging. 
+
+
+\subsubsection{Protocol String Formats}
+\begin{tabular}{p{2cm}p{9cm}}
+
+\hline
+\$ADRPS & %\parbox{9cm}{
+	Most recent rotations per second for each motor \newline
+	Format: \newline
+	\$ADRPS m1,m2,m3,m4 \\ %} \\
+\hline
+\$ADMIA &
+	Most recent motor current in milliamps \newline
+	Format: \newline
+	\$ADMIA m1,m2,m3,m4 \\
+\hline
+\end{tabular}
+
+\bigskip
+
+\$ADMVV 
+Most recent motor voltage in millivolts
+Format: 
+\$ADMVV m1,m2,m3,m4 
+
+\$ADPWM 
+Most recent motor PWM command, in microseconds (uS) 
+
+Format: 
+
+\$ADPWM m1,m2,m3,m4 
+
+\$ADMKP 
+Current motor PID loop proportional constant (KP). No units. 
+
+Format: 
+
+\$ADMKP m1,m2,m3,m4 
+
+\$ADMKI 
+Current motor PID loop integral constant (KI). No units. 
+
+Format: 
+
+\$ADMKI m1,m2,m3,m4 
+
+\$ADMKD 
+Current motor PID loop derivative constant (KD). No units. 
+
+Format: 
+
+\$ADMKD m1,m2,m3,m4 
+
+\$ADMTH 
+Most recent motor thrust in units of Newtons. 
+
+Format: 
+
+\$ADMTH m1,m2,m3,m4 
+
+\$ADMTQ 
+Most recent motor torque in units of Newton-Meters. 
+
+Format: 
+
+\$ADMTQ m1,m2,m3,m4 
+
+\$ADDRP 
+
+Most recent motor rotations per second set point. This is the speed that motors are trying to achieve, and is fed into the motor PID loops. 
+
+Format: 
+
+\$ADDRP m1,m2,m3,m4
+
+
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -209,6 +490,41 @@ Being able to work in a team is both a skill and a challenge. Working on a proje
 \subsection{High Level Software Design}
 \textcolor{red}{Cody}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+ 
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{User Interface}
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Anzhelka Terminal}
+The Anzhelka project uses a PC based GUI platform called Anzhelka Terminal (AT) to display realtime system states and to allow for parameter tuning. AT is written in Python and uses the WxWidgets Python branch WxPython for the GUI. AT is cross platform.
+
+The AT GUI was written in WxPython and developed in part with the WYSIWYG editor WxGlade. WxGlade was suitable for most of the general layout tools, but was insufficient in two areas. First, WxGlade could not specifically layout the dynamic graphs since the graph class is a non standard class. Secondly, WxGlade was not used to layout the motor parameter table. This table has a row for each motor (normally 4 motors, but possibly 3 or more) and a column for each parameter of interest. Since either number should be easily changeable without excessive GUI editing this section was hand coded.
+
+AT will listen on the specified serial port for \$ATXXX strings, and will  make these strings available for reading. Within the program, different threads will search the received strings list and extract the strings of interest, then display them onscreen. If an unknown string is encountered then AT will ignore it.
+
+There are two GUI screens that are currently implemented: the COM port setup tab and the motor variable tab. Additional screens planned for the future include a inertial measurements tab, a control parameters tuning tab, and a high level command tab.
+
+The motor control tab has several features that are important. At the top of the pane is a dynamic graph that will display in real time it's received information. This feature was one of the deciding factors to use Python instead of some other language. The graph can be automatically or user scaled on either axis, and is updated behind the scenes with the received serial strings.
+
+Below the graph is the motor parameter table. This table displays all relevant information about each motor, including: 
+motor number
+rotations per second
+desired rotations per second
+voltage
+current
+electronic speed controller PWM command
+thrust
+torque
+$K_P$ of the motor PID controller
+$K_I$ of the motor PID controller
+$K_D$ of the motor PID controller
+The table is updated in real time based on the received strings. Some fields are editable as well (such as $K_{PID}$ and DRPM), and when changed AT will send these values through the serial port as a \$ATXXX string (Note: this feature is still in development). This table is generated at runtime so it is easy to change the number of motors and the motor parameters. This was done in particular to support the same AT program for hexrotors and octorotors as well as quadrotors.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Testing}
@@ -233,7 +549,7 @@ inventions.}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Maintence Plan}
+\section{Maintenance Plan}
 \textcolor{green}{\bf You are expected to produce a maintenance plan, which 
 states how you plan to keep the software solution current with future environment 
 changes. Here, we assume that you will maintain your project following the 10 
@@ -258,7 +574,7 @@ that describes how your group has addressed these key issue.} \\ \\
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Project Managementl}
+\subsection{Project Management}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
