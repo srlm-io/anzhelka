@@ -12,6 +12,7 @@
 
 \documentclass{article}
 
+% Packages that are being used.
 \usepackage{amsmath}
 \usepackage{longtable}
 \usepackage{color}
@@ -20,8 +21,6 @@
 \usepackage{graphicx}
 
 \usepackage{hyperref} %Must be at the end of use package but befor "other settings". Used to make links of all references.
-
-
 
 
 
@@ -109,30 +108,33 @@ Here is where you will place the revisions of this document. \\ \\
 \subsection{Executive Summary}
 \begin{center}\includegraphics[scale=.6]{elev_8_rendering.JPG}\end{center}
 
-This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimble that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.\\ \\
-Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Accelerometer, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to control up to 8 Servos, able to track the exact speed and position of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
-This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior design project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that measures in at 4inches by 3inches. \\ \\
-Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the control algorithms is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor. \\ \\
-The project was started without any expertise or experiance with autonomous flying or quadrotors, but with will to learn, create and develop a system that could even be understood by people with experience in these fields. Software is one of the groups expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experience with designing PCB's and circuits, however nothing to the extent of this project. The team believed that this project was worth aprroximately 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximately 30 hours per person per week were devoted to this project. \\ \\
 
+This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimbal that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.
+
+Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Accelerometer, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to control up to 8 Servos, able to track the exact speed and position of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades.
+
+This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior design project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that measures in at 4 inches by 3 inches.
+
+Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the control algorithms is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor.
+
+The project was started without any expertise or experience with autonomous flying or quadrotors, but with will to learn, create and develop a system that could even be understood by people with experience in these fields. Software is one of the groups expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experience with designing PCB's and circuits, however nothing to the extent of this project. The team believed that this project was worth approximately 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximately 30 hours per person per week were devoted to this project.
 \textcolor{red}{NEEDS ACHIEVEMENTS}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Design Objectives and System Overview}
 
-This project was designed to be open ended and to be used in an unprecedented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unattainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gitter from traditional methods.\\ \\
-The quadrotor will have at least a 15minute run time, with the abilitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The control loop to keep the platform stable will run at 300Hz and be \textcolor{red}{asynchronous}. \\ \\
+This project was designed to be open ended and to be used in an unprecedented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unattainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gitter from traditional methods.
+
+The quadrotor will have at least a 15minute run time, with the abilitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The control loop to keep the platform stable will run at 300Hz and be \textcolor{red}{asynchronous}.
+
 On this project the team members of Anzhelka decided to keep responsibilities as open as possible, however SRLM did most of the coding and wood working while ILUKESTER did most of the embedded hardware and wiring. Everything else was either split evenly or worked on jointly.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Background and Prior Art}
 There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
-
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
-There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Development Environment and Tools}
@@ -196,7 +198,7 @@ The datasheet and reports folder contain the reference datasheets for each compo
 \texttt{Extra}
 This folder contains other associated programs for the project. Since the Software folder is dedicated exclusively to software that is intended to fly the quadrotor other programs need to be stored in the Extra folder. This folder stores the Anzhelka Terminal files and the Thrust/Torque test stand files for example.
 
-All code is compiled with the BSTC compiler. This is available in [REFERENCE HERE]. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
+All code is compiled with the BSTC compiler. This is available in \textcolor{red}{[REFERENCE HERE]}. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 \subsubsection{Development Cycle}
@@ -209,22 +211,24 @@ All code was written in Gedit. Gedit is a simple text editor with a few features
 
 All project files are hosted on the project Git repository, hosted by Google Code at code.anzhelka.com. A Git repository was selected so that all developers would have equal access to the source files, changes would be logged and trackable, issues would be trackable, and so that concurrent work on files  could be easily merged. All project files are open source under the MIT license and can be downloaded freely.
 
-
-
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Related Documents and Supporting Materials}
-
-\textcolor{blue}{Cody, Not necessary though.} 
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
-
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Definitions and Acronyms}
+\textcolor{red}{Needs lots more of definitions}\\
 \begin{tabular}{l l}
 	ESC & Electronics Speed Control \\
 	IMU & Inertial Messurement Unit \\
 	PWM & Pulse Width Modulation \\
+	PCB & Printed Circuit Board \\
+	RISC & Reduced Instruction Set Computing\\
+	PASM & Propeller Assembly \\
+	RAM & Random Access Memroy \\
+	GUI & Graphical User Interface \\
+	AT & Anzhelka Terminal \\
+	\$ADxxx & Anzhelka Terminal Data Type \\
+	OOP & Object Orianted Programming \\
+	EEPROM & Electrically Erasable Programmable Read-Only Memory \\
+	PID & Proportional-Integral-Derviavtive \\
+	UART & Universal Asynchronous Receiver /Transmitter (serial) \\
 \end{tabular}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
@@ -232,7 +236,7 @@ All project files are hosted on the project Git repository, hosted by Google Cod
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Requirements Specifications}
-\textcolor{red}{This section describes issues that need to be addressed or resolved prior or while completing the desgn as well as issues that may influence the design process.}
+\textcolor{red}{This section describes issues that need to be addressed or resolved prior or while completing the design as well as issues that may influence the design process.}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 
@@ -250,37 +254,38 @@ Every system has constraints and Anzhelka is no exception. Our quadrotor can onl
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{System Environment and External Interfaces}
-To be able to accomplish all of these tasks there is \textcolor{red}{alot} of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must be controlled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
+
+To be able to accomplish all of these tasks there are many of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via a serial UART, servos must be controlled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2   
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Budget and Cost Analysis}
-Unfortunately there was no money that was given to the team in order to support the project. All of the funding had come from the team members own personal accounts. Below is a excerpt from our spreadsheet with the cost analysis and money spent on this project.\\ \\
+Unfortunately there was no money that was given to the team in order to support the project. All of the funding had come from the team members own personal accounts. Below is an exert from our spreadsheet with the cost analysis and money spent on this project.
 \textcolor{red}{INSERT COST TABLE HERE}\\ \\
 \textcolor{blue}{Update table before adding}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Safety}
-When dealing with any autonomous system one must take extreme cautions in order to \textcolor{red}{ensure} the safety of everyone. Autonomous systems are dangerous because there is no one behind the controls of the system and can become unpredictable in the event of a system failure. \\ \\ 
-During the design process of the frame the team made sure to use proper spec fasteners, washers, and nuts. Also, all threaded components were secured using blue lock tight to ensure that nothing would loosen on its own. \\ \\
+
+When dealing with any autonomous system one must take extreme cautions in order to insure the safety of everyone. Autonomous systems are dangerous because there is no one behind the controls of the system and can become unpredictable in the event of a system failure. 
+
+During the design process of the frame the team made sure to use fasteners, washers, and nuts that were of suitable specification. In addition, all threaded components were secured using blue lock tight to ensure that nothing would loosen on its own.
+
 Whenever flying an aerial vehicle be sure to wear safety glasses to protect your eyes in the event that the propeller has a failure and is detached/released from the motor(s).
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Risks and Volatile Areas}
-
-\textcolor{blue}{Should we keep this section?}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Importance of Team Work}
-Being able to work in a team is both a skill and a challenge. Working on a project in a group helps you split up the work load and possibly get more work done in less time, however being able to work together with others on the project could present a greater challenge than the project itself. This was a foreseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and we had yet to complete. With these two resources set up and with the help of keeping an open schedule the team has come to realize how important team work really is.
+Being able to work in a team is both a skill and a challenge. Working on a project in a group helps you split up the work load and possibly get more work done in less time, however being able to work together with others on the project could present a greater challenge than the project itself. 
+
+This was a foreseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and we had yet to complete. With these two resources set up and with the help of keeping an open schedule the team has come to realize how important team work really is.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{System Design}
 \textcolor{green}{\bf System Design—this level of design includes the entire system, including the people and processes involved, and not just the software architecture.}
+\textcolor{red}{Cody}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -312,9 +317,9 @@ The Propeller has three different memory locations: 2KB of COG RAM, 32KB of HUB 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 \subsubsection{Programming}
 
-The Propeller is programmed in Propeller Assembly (PASM) and a high level language called Spin. In general, PASM is used when speed is required. At 100MHz, the Propeller can execute 25,000,000 assembly instructions each second (each instruction takes 40ns). By contrast, the interpreted Spin language is about 100x slower. Because of this contrast Spin is used where ease of programming is important, and PASM is used where speed is important.
+The Propeller is programmed in PASM and a high level language called Spin. In general, PASM is used when speed is required. At 100MHz, the Propeller can execute 25,000,000 assembly instructions each second (each instruction takes 40ns). By contrast, the interpreted Spin language is about 100x slower. Because of this contrast Spin is used where ease of programming is important, and PASM is used where speed is important.
 
-Spin is officially called an object oriented programming language, but there are some subtle differences compared to mainstream object oriented terminology. Spin OOP is used to organize code into logical blocks much like an import statement in C++ or Python. Spin objects do not use techniques such as class instances, inheritance, subtype polymorphism. A Spin object is used to group related functions together into a unit that can be included in multiple Spin programs. Typically, Spin objects are used for interfacing with external devices. For example, a typical Spin program might have an object for serial communication, an object for VGA signal generation, and an object for I2C communication. The Parallax Object Exchange (obex.parallax.com) hosts Parallax written objects and community written objects under the open source MIT licence.
+Spin is officially called an object oriented programming language, but there are some subtle differences compared to mainstream object oriented terminology. Spin OOP is used to organize code into logical blocks much like an import statement in C++ or Python. Spin objects do not use techniques such as class instances, inheritance, subtype polymorphism. A Spin object is used to group related functions together into a unit that can be included in multiple Spin programs. Typically, Spin objects are used for interfacing with external devices. For example, a typical Spin program might have an object for serial communication, an object for VGA signal generation, and an object for I2C communication. The Parallax Object Exchange ([REFERENCE]) hosts Parallax written objects and community written objects under the open source MIT licence.
 
 Spin syntax is very similar to Python. To denote a new scope Spin uses indentation instead of curly braces {} (familiar to C/C++ and Java programmers). Spin code is divided into blocks: CON (constant), VAR (variable), OBJ (object), DAT (data), PUB (public function), and PRI (private function). Most typical programming constructs are a part of the Spin language: conditional IF statements, FOR loops (called REPEAT), boolean conditions, and so on.
 
@@ -325,23 +330,12 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Other Software Stuff}
-\textcolor{red}{Cody...} ie things such as the python and the possibilty of future expansion (BeagleBoard)
+\textcolor{red}{Cody...} ie things such as the python and the possibility of future expansion (BeagleBoard)
 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -365,11 +359,18 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 \textcolor{red}{Luke}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Software}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{Frame}
+The frame is constucted out of a material called Derilin made by DuPont\texttrademark
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
-%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{Motors/Propellers}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{PCBs}
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Constant Identification}
@@ -397,9 +398,9 @@ Calculating torque is a bit more complicated: the motor body needs to be mounted
 
 To measure torque, our test stand has the motor mounted to a rod, which then has a lever arm attached that presses on a scale. In a same way as thrust the force pressing on the scale can be read, and with the length of the lever arm torque can be calculated.
 
-Our test can measure thrust and torque simultaneously and automatically. To do this we are using the Flexiforce pressure sensors ([REFERENCE]). These sensors vary the resistance based on the amount of pressure, and resistance is very easy to measure with a microcontroller.
+Our test can measure thrust and torque simultaneously and automatically. To do this we are using the Flexiforce pressure sensors \textcolor{red}{([REFERENCE])}. These sensors vary the resistance based on the amount of pressure, and resistance is very easy to measure with a microcontroller.
 
-For motor speed we will be using a Eagle Tree brushless RPM sensors ([REFERENCE]). Our main control board is the quadpower board that we have developed for our quadrotor. This has the advantage of being identical to what we will be flying, it will have the motor current and voltage sensing built in.
+For motor speed we will be using a Eagle Tree brushless RPM sensors \textcolor{red}{([REFERENCE])}. Our main control board is the quadpower board that we have developed for our quadrotor. This has the advantage of being identical to what we will be flying, it will have the motor current and voltage sensing built in.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 
@@ -489,6 +490,7 @@ This protocol could also be used to log parameters of the quadrotor as it is fly
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{High Level Hardware Design}
 \textcolor{red}{Luke}
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -553,6 +555,42 @@ inventions.}
 \subsection{Acceptance Testing}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+\subsection{Hardware Testing}
+Because Hardware is a physical entity it is subjected to many more points of failure. Parts can be flawed from the factory, assembled wrongly, or miscalculated.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{Frame}
+The frame is ridged and is made up from nearly the same exact parts for all 4 booms. The center of the frame is the only thing that is not duplicated, however the top side and bottom side are nearly identical with minor mounting differentces. Each boom needs to be identical in both size and weight to insure proper balancing.
+
+Once each boom is assembled it should weigh in within an ounce of other booms. If there is to much of a differnce in the weight of the boom this could cause the center of mass to change to dramtically. Therefore the booms would have to be matched.
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{Motors/Propellers}
+The motors and propellers would also need to be tested and matched to insure the best performance. We can assemble all of our motors and propellers and then we can test them for torque and thrust ratings. Once we have all of the results we can then match the motors with nearly the same characteristics together.
+
+One slight nick in a propeller can cause a large inbalancing problem within the propeller that could make it unmatchable. If this is the case we would have to throw away the propeller and begin testing with another.
+
+We know that most motors made by the same manufacture with the same specifications should be nearly identical. From this we can assume that all motors are same and can be treated as such.
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+\subsubsection{PCBs}
+PCBs can have many points of failure and need to be tested at many different parts of the build phase to insure the most amount of yeild. The PCBs must be tested before they are even produced. 
+
+Each fabrications house has its own set of limitations on what it can produce as far as trace widths, via sizes, spacing, etc. All fabrication houses with provide you with these details before you place an order so that you know what you can and what you can't do in your design. You must also keep in mind the amount of current  or power that will have to travel through your traces that you have designed onto your board. If you are trying to push 10 amps through a 6mil trace you are going to blow that trace and ruin your board. Once you have sent off your design to the fabrication house to be produced, the product must then be electrially tested.
+
+Electrical testing is a key factor in product yeild. What is electrial testing? Electrial testing is a process in testing that a pad that is supposed to be electrially connected to another pad is actually connected. To some this sounds quite simple, however in practice boardsc can have thousands of points that need to be tested. Some fabrication houses will provided 50\% to 100\% electrial testing, however some will not provide testing. 
+
+In the event that you cant get your boards fully tested you will need to create an overlay that will touch all the pads and check to see what is connected and what is not. In practice this is not acceptable to be done outside of the fabrication house or a special electrial testing board house.
+
+The physical components that will be soldered onto the PCB have usually been tested and have an acceptable failure rate that wont have a great effect on the yeild. With that being said, placement of the components is essential. If a component is misplaced by 20mils this could cause a bridge between two pins causing a short deaming that board unusable.
+
+Once the PCB has been fully populated it now must be tested to insure that all the components are in working order. One of the easiest ways to accomplish this is to develop test code that will run on the hardware and will give you a set of known outputs. Having something that will test all components several times under different inputs and outputs is key to insure that the PCB is in good working order.
+%% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
+
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Maintenance Plan}
 \textcolor{green}{\bf You are expected to produce a maintenance plan, which 
@@ -562,11 +600,39 @@ week course  period, even though we know that this is not really the case. }
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{For the next 10 weeks}
+\subsection{For the next ten weeks}
+This senior design project is no where it needs to be as for a finished product and will require a lot more time to get there. In the following weeks we hope to acomplish the following tasks.\\
+
+\begin{list}{*}{}
+	\item Write the code for the test stand
+	\item Write motor PID object
+	\item Calibrate the pressure sensors for the test stand
+	\item Characterizing the Motors and Propellers
+	\item Create Eagle Tree wiring harnesses
+	\item Finalize mechanical assembly
+	\item Mount the IMU onto the quadrotor
+	\item Write the IMU interface object
+	\item Setup wireless interfacing
+	\item Balancing of the propellers
+	\item Build Roll and Pitch test stand
+	\item Write Motor control object
+	\item Finish all electrial wirring for the quadrotor
+	\item Write attitude control object
+	\item Build yaw test stand
+	\item Write altitude control object
+	\item Test for physical limit of payload capacity
+\end{list}
+These are just some of the many items that we hope to complete in the following ten weeks.
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{For the next year}
+Since the members of this project are so financially invested into it, we plan on continuing this project for a very long time. It is quite possible that we may even turn this project into company or a business.
+
+One of the hopes is to present the project to the investor community(Kickstarter, IndieGoGo, etc.) and to see if there is enough interest in the project to have them help fund this idea to its full potential.
+
+With the right funding we could add things like object avoidance, quadrotor acrobatics, and ideas provided by users.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
