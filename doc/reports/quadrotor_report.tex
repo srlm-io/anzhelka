@@ -84,6 +84,7 @@ And when he [Herod] had apprehended him [Peter], he put him in prison, and deliv
 {
 Here is where you will place the revisions of this document. \\ \\
 9:55pm - All of the spelling was checked and fixed for the first 2 secitions writen by Luke.
+5:01am - Needs to be proof read in some areas. Needs tables, conclusions, High level, references, appendices, acknowledgements
 }
 \end{paragraph}
 %% REV REV REV REV REV REV REV REV REV REV REV REV REV
@@ -102,6 +103,16 @@ Here is where you will place the revisions of this document. \\ \\
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Introduction}
+
+A quadrotor, also known as a quadrotor helicopter or quadrocopter, is a mutlticopter that has four rotors that provide lift from a ridged frame. Quadrotor designs appeared in the 1920s, however were scraped because of bad performance and high pilot work load.
+
+As of recent much research has gone into the developement of Unmaned Quadrotors for a wide array of uses.
+
+In order to keep a quadrotor from spinning on its own axis, it must be built with counter rotating blades. Without counter rotating blades the quadrotor would create enough torque to spin in a constant direction around its' own axis.
+
+Quadrotors are highly manoverable. You can take off and land vertically. You can translate horizontally through the air, you can also hold altitude. With the right pilotk(or software) behind the controls you can do amazing aerial acrobatics.
+
+What advantages do quadrotors have over helicopters? Quadrotors have no machanical gears between the motors and propellers. Each motor is directly driving its propeller. Having four propellers allows you to have a much smaller propeller than what is on your typical heliocpopter. This means that the propellers possess less kinetic engery while spinning.
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
@@ -126,7 +137,7 @@ The project was started without any expertise or experience with autonomous flyi
 
 This project was designed to be open ended and to be used in an unprecedented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unattainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gitter from traditional methods.
 
-The quadrotor will have at least a 15minute run time, with the abilitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The control loop to keep the platform stable will run at 300Hz and be \textcolor{red}{asynchronous}.
+The quadrotor will have at least a 15minute run time, with the abilitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The control loop to keep the platform stable will run at 300Hz and be \textcolor{red}{??asynchronous??}.
 
 On this project the team members of Anzhelka decided to keep responsibilities as open as possible, however SRLM did most of the coding and wood working while ILUKESTER did most of the embedded hardware and wiring. Everything else was either split evenly or worked on jointly.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -198,7 +209,7 @@ The datasheet and reports folder contain the reference datasheets for each compo
 \texttt{Extra}
 This folder contains other associated programs for the project. Since the Software folder is dedicated exclusively to software that is intended to fly the quadrotor other programs need to be stored in the Extra folder. This folder stores the Anzhelka Terminal files and the Thrust/Torque test stand files for example.
 
-All code is compiled with the BSTC compiler. This is available in \textcolor{red}{[REFERENCE HERE]}. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
+All code is compiled with the BSTC compiler. This is available in \cite{campbell09}. This compiler was selected because it is Linux compatible and it has several optimizations over the Parallax provided compiler. In addition, it has a command line interface which makes it easy to integrate into a compilation cycle script. BSTC will also download the compiled code via the USB COM port to the Propeller.
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 \subsubsection{Development Cycle}
@@ -215,6 +226,7 @@ All project files are hosted on the project Git repository, hosted by Google Cod
 \subsection{Definitions and Acronyms}
 \textcolor{red}{Needs lots more of definitions}\\
 \begin{tabular}{l l}
+	BSTC & Brad's Spin Tool Compiler \\
 	ESC & Electronics Speed Control \\
 	IMU & Inertial Messurement Unit \\
 	PWM & Pulse Width Modulation \\
@@ -236,7 +248,7 @@ All project files are hosted on the project Git repository, hosted by Google Cod
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Requirements Specifications}
-\textcolor{red}{This section describes issues that need to be addressed or resolved prior or while completing the design as well as issues that may influence the design process.}
+\textcolor{red}{This section describes issues that need to be addressed or resolved prior or while completing the design as well as issues that may influence the design process. \\ \\ Still needed?}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 
@@ -280,6 +292,8 @@ Whenever flying an aerial vehicle be sure to wear safety glasses to protect your
 Being able to work in a team is both a skill and a challenge. Working on a project in a group helps you split up the work load and possibly get more work done in less time, however being able to work together with others on the project could present a greater challenge than the project itself. 
 
 This was a foreseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and we had yet to complete. With these two resources set up and with the help of keeping an open schedule the team has come to realize how important team work really is.
+\\ \\
+\textcolor{red}{Cody's Input}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -336,12 +350,7 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-
-
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Rationale and Alternatives}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Quadrotor Prototype Construction}
@@ -361,15 +370,26 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{Frame}
-The frame is constucted out of a material called Derilin made by DuPont\texttrademark
+The plastic frame is constucted out of a material called Derilin\textregistered\cite{dupontderlin} made by DuPont\texttrademark. We had this material laser cut for us by \textcolor{red}{Do we put his name? Do we put his SN?}. The booms of the Frame are made out of 1/4" thin wall aluminum tubing. 
+
+For the screws we are using hex pan head and hex socket cap screws. These type of screws are very common throughout the hobbiest community. For all of the screws we are using blue lock tight to insure that the screws dont loosen from their secured possition. 
+
+Diagrams for the frame parts have been included in the appendices.
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{Motors/Propellers}
+
+Since neither one of the team members has any experience with quadrotors, we had choosen to pickout two different motors for the testing of our platform. To match up to these two motors we picked out two different brands of ESCs in order to determine which would would be best with out platform.
+
+We also decided on a 10inch rotor with a 4.5degree pitch. We decided on 10inches because it gave us plenty of clearance between the rotors and should not produce and turbulences between each other. As for pitch, if you want a very stable take off and land quadrotor you would go with less of a pitch, however if you want to be able to translate rather quickly you want more of a pitch. After reading many different blog posts on the subject we decided that we should stay below 5degrees whenever possiable.
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{PCBs}
+PCBs are very difficult in the ways of being able to produce something that will be small enough to fit on your platform and large enough for you to solder the components onto. The PCB design for the prototype took over a month to organize and route. Even though this seems like a long time, it is not unordinary when dealing with lots of new components.
+
+Once the board was designed and ready for production a fabrication house had to be choosen. Choosing a fabrication house in the United States provides for a great turn around time, but at a huge cost. Choosing one in China provides for a much cheaper product, but at a slower turn around time. The Fabrication house that we had choosen in China took nearly a month for a full turn around. This is not typical.
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -398,9 +418,9 @@ Calculating torque is a bit more complicated: the motor body needs to be mounted
 
 To measure torque, our test stand has the motor mounted to a rod, which then has a lever arm attached that presses on a scale. In a same way as thrust the force pressing on the scale can be read, and with the length of the lever arm torque can be calculated.
 
-Our test can measure thrust and torque simultaneously and automatically. To do this we are using the Flexiforce pressure sensors \textcolor{red}{([REFERENCE])}. These sensors vary the resistance based on the amount of pressure, and resistance is very easy to measure with a microcontroller.
+Our test can measure thrust and torque simultaneously and automatically. To do this we are using the Flexiforce pressure sensors \cite{tekscanforce}. These sensors vary the resistance based on the amount of pressure, and resistance is very easy to measure with a microcontroller.
 
-For motor speed we will be using a Eagle Tree brushless RPM sensors \textcolor{red}{([REFERENCE])}. Our main control board is the quadpower board that we have developed for our quadrotor. This has the advantage of being identical to what we will be flying, it will have the motor current and voltage sensing built in.
+For motor speed we will be using a Eagle Tree brushless RPM sensors \cite{eaglerpm}. Our main control board is the quadpower board that we have developed for our quadrotor. This has the advantage of being identical to what we will be flying, it will have the motor current and voltage sensing built in.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 
@@ -545,14 +565,17 @@ inventions.}
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Unit Testing}
+\textcolor{red}{Cody}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 \subsection{Integration Testing}
+\textcolor{red}{Cody}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 \subsection{Acceptance Testing}
+\textcolor{red}{Cody}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
@@ -644,26 +667,6 @@ that describes how your group has addressed these key issue.} \\ \\
 \textcolor{red}{Essay time!!!}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Project Management}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Requirements Traceability Matrix}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Packaging and Installation Issues}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Design Metrics to be used}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Restrictions, Limitations, and Constraints}
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Conclusions}
 \textcolor{green}{\bf Conclusions—Assume that you write this just before handing in your document. 
@@ -687,6 +690,34 @@ should also reference any standard template libraries used in your code.
 %! ! Online at http://www.computer.org/author/style/refer.htm
 %%! ! Also see http://www.ece.utoronto.ca/ece496/IEEEXManuscriptXFormat.pdf 
 }
+
+\begin{thebibliography}{99}
+
+%Use postfix of 69 to indicate unknown year
+
+	\bibitem{campbell09} % http://www.fnarfbargle.com/bst.html
+	Brad Campbell, 
+	"BST - The multi-platform Propeller Tool Suite" 
+	\url{"http://www.fnarfbargle.com/bst.html"} 2009.
+
+
+	% Justifies the use of a square root in quaternion norm
+	\bibitem{tekscanforce} % http://www.tekscan.com/pdf/A201-force-sensor.pdf
+	Tekscan\textregistered 
+	\url{"http://www.tekscan.com/pdf/A201-force-sensor.pdf"}
+	
+	\bibitem{eaglerpm} % http://www.eagletreesystems.com/support/manuals/brushless-rpm.pdf
+	Eagle Tree Systems \textregistered
+	\url{"http://www.eagletreesystems.com/support/manuals/brushless-rpm.pdf"}
+
+	\bibitem{dupontderlin} % http://www2.dupont.com/Plastics/en_US/Products/Delrin/Delrin.html
+	Dupont\texttrademark
+	\url{"http://www2.dupont.com/Plastics/en_US/Products/Delrin/Delrin.html"}
+	
+	
+	
+\end{thebibliography}
+
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1    
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -698,11 +729,30 @@ should also reference any standard template libraries used in your code.
 readable when printed..
 ● A professional quality one-page resume for each member of the group. Use the 
 ! ! ! same template for each resume.}
+\\ \\
+\textcolor{red}{Include the frame diagrams}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
 \section{Acknowledgements}
-\textcolor{green}{\bf Acknowledgements—Thank anyone who helped your group with the project.}
+\textcolor{green}{\bf Acknowledgements—Thank anyone who helped your group with the project.} \\ \\
+\textcolor{red}{Must thank everyone}
+
+Gene Shermen - Machinist
+
+Dawn \textcolor{red}{INSERT LAST NAME} - Machinist
+
+Elmar Palma - Lab use
+
+Ping Liang - Consulting
+
+Roman Chomko - Consulting
+
+Texas Instraments - Samples
+
+Microchip - Samples
+
+Q9GFO - Laser cutting the Derlin\textregistered  \- Frame Parts
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 
