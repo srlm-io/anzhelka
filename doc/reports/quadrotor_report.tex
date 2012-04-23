@@ -8,13 +8,9 @@
 
 % TODO: Additional material
 % --- Motor Testing: Volts vs RPM, and the other graph
-% --- Code Performance Estimation \ref{subsec:codeperformanceestimation}
-% --- "Autonomous" should be defined somewhere...
-% --- Add picture of thrust torque test stand
 % --- Sort definitions and acronyms list
-% --- Add in reference/paragraph about the quadrotor mathermatics document
-% --- Define and talk about Anzhelka
-% --- Include information about what has specifically been done.
+% --- System design could be expanded (but not absolutely necessary
+% --- Add  OVERALL DIMENSIONS WEIGHT] to prototype->hardware->frame
 
 \documentclass{article}
 
@@ -29,6 +25,8 @@
 \usepackage{indentfirst}
 \usepackage{fancyhdr} % Fancy Header
 \usepackage{rotating} % To make vertical text in tables
+\usepackage[normalem]{ulem} %for strikethroughs
+
 
 \usepackage{hyperref} %Must be at the end of use package but before "other settings". Used to make links of all references.
 
@@ -124,6 +122,8 @@ v0.02 & Needs to be proof read in some areas. Needs tables, conclusions, High le
 \hline
 v0.03 & Cleaned up the document some, added images and tables. & Cody \\
 \hline
+v0.04 & Added conclusion, estimated control loop speed, small sections, figures. & Cody \\
+\hline
 \end{longtable}
 
 %% REV REV REV REV REV REV REV REV REV REV REV REV REV
@@ -158,6 +158,9 @@ Quadrotors are highly manoeuvrable. A quadrotor can take off and land vertically
 Quadrotors are very similar to helicopters, so what advantages do quadrotors have? Quadrotors have no mechanical gears between the motors and propellers. Each motor is directly driving its propeller. Having four propellers allows you to have a much smaller propeller than what is on the typical helicopter. This means that the propellers possess less kinetic energy while spinning.
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
+\subsection{Quadrotor Mathematics}
+A quadrotor is a very complex vehicle that is difficult to control. It is an under-actuated system with only one direction of force and three moment directions. The treatment of the math is too complex to include here. Instead, we have a separate document that discusses the math and theory of quadrotor flight in great detail. See citation \cite{anzhelka_math}. The rest of this paper will focus on everything else related to the quadrotor.
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 \subsection{Executive Summary}
 \begin{figure}[h!]
@@ -166,7 +169,7 @@ Quadrotors are very similar to helicopters, so what advantages do quadrotors hav
   \caption{Rendering of the Open Source Elev-8 quadrotor platform used in the Anzhelka project (image courtesy of Parallax).}
 \end{figure}  
 
-This senior design project's goal is to create an autonomous quadrotor that will be used to film outdoor sports such as mountain biking, snowboarding, and skiing. The quadrotor will have a video camera mounted on a gimbal that will always point at a subject/object to which the tracking device is attached. The tracking device will have its own GPS and IMU in order to be able to determine the location and heading of the subject/object.
+This senior design project's goal is to create an autonomous quadrotor that will be used to film outdoor sports such as mountain biking, snowboarding, and skiing. The quadrotor will have a video camera mounted on a gimbal that will always point at a subject/object to which the tracking device is attached. The tracking device will have its own GPS and IMU in order to be able to determine the location and heading of the subject/object. The quadrotor is intended to fly autonomously, ie without a human controller. The quadrotor should be able to maintain attitude (orientation) and position without human intervention.
 
 Our quadrotor has many features including: 
 \begin{list}{*}{}
@@ -183,9 +186,7 @@ Our quadrotor has many features including:
 
 This senior design project was built around being Open. Open Source. Open Hardware. The open source frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". Our project is hosted hosted by Google Code in the form of a Git repository (\cite{anzhelka_code}). Here you can find all the information used and created during this senior design project. There is also a blog which goes into some of the extensive detail that was put into this project (\cite{anzhelka_blog}). The main processing board for this quad rotor features a Parallax Propeller \footnote{The coincidence between Propeller and propeller is unfortunate and can be a source of confusion. If Propeller is capitalized then the text is referring to the Parallax microcontroller. If propeller is not capitalized then the text is referring to a fixed pitch airplane "air screw"}, overclocked to 100Mhz, and a fully custom board that measures in at 4 inches by 3 inches.
 
-
-%TODO: CHECK PARAGRAPH
-Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the constants for the control algorithms is the motor's torque and thrust. This means that there must be a test stand that tests and can calculate both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor.
+Testing the quadrotor is a challenge in and of itself. But before that, one of the tests that has to be done is to calculate some of the constants for the control algorithms (motor torque and thrust). This means that there must be a test stand that tests and can calculate both of these constants. A slightly different kind of test is testing the functionality of the control board that was designed for the quadrotor.
 
 The project was started without any expertise or experience with autonomous flying or quadrotors, but with a will to learn, create and develop a system that could even be understood by people without experience in these fields. Software is our group expertise. Both team members have had years of experience in multiple programming languages. Hardware on the other hand is a bit more difficult. Only one team member has any experience with designing PCBs and circuits, although nothing to the extent of this project. We believe that, based on the work we have put into the project, that we have earned the class credits that we are receiving. Approximately 30 hours per person per week were devoted to this project.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
@@ -201,12 +202,11 @@ On this project both team members share the same responsibility for all componen
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 \subsection{Current Project Status}
-As of this writing, we still have work to do in order to achieve stable autonomous hover. We are in the process of testing the thrust torque test stand, and verifying all electrical circuits on the quadrotor. Once that is complete we will be able to write the three control loop blocks, as described in detail in the Anzhelka mathematics document \cite{anzhelka_math}. It is estimated that these blocks will be able to run at up to 300Hz (section \ref{subsec:codeperformanceestimation}).  For the project schedule, see subsection \cite{maintenance_plan_10}.
+As of this writing, we still have work to do in order to achieve stable autonomous hover. We are in the process of testing the thrust torque test stand, and verifying all electrical circuits on the quadrotor. Once that is complete we will be able to write the three control loop blocks, as described in detail in the Anzhelka mathematics document \cite{anzhelka_math}. It is estimated that these blocks will be able to run at up to 300Hz (section \ref{subsec:codeperformanceestimation}).  For the project schedule, see subsection \ref{subsec:maintenance_plan_10}.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Background and Prior Art}
-% TODO: THIS PARAGRAPH NEEDS SOMETHING BETTER
-There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Object tracking, and Open.
+There are many different quadrotor designs available, but relatively few open source quadrotors. The most noticeable are the AeroQuad (\cite{aeroquad}) and the Arducopter (\cite{arducopter}). Most quadrotor theory seems to be the product of research labs such as \cite{stingu09}. This project is different in that it uses the Parallax propeller as it's processor and it is very well documented from the beginning.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -334,13 +334,15 @@ Have you ever mounted a camera on to your helmet and rode down a mountainous tra
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 \subsection{Assumptions}
-%TODO: Add assumptions
-\textcolor{red}{IE, we assume that the quadrotor is operating in still air. We assume that it translates slowly. Etc.}
+For this project, we assume that the quadrotor frame is rigid and that the propellers are rigid. We assume that the IMU orientation information is correct and without error. We expect the quadrotor to operate in still air, and that it moves slowly through the air.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Realistic Constraints}
-%TODO: No! We don't know any of that!
-Every system has constraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefore it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalculated problems.
+Every system has constraints and Anzhelka is no exception. The most important constraint is the life of the battery. If each motor consumes 15 amps on average then that is a current drain of 60 amps from the motor battery. Assuming that the battery has 6Ah of energy, then it would be able to power the quadrotor for 10 minutes. Typical flight times for this platform are around 15 minutes, so average current drain is likely less.
+
+The system is also constrained by the maximum acceleration and maximum rotation speed of the propellers. Typically the propeller will not rotate faster than 1200 rpm. This in turn constrains the maximum thrust and torque generated by the motor.
+
+Finally, the system is also constrained by the mass of the vehicle. Since the quadrotor has inertia, to change it's motion requires a greater force from the motors. The motors might not have the power or orientation to change the quadrotor momentum.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
@@ -419,66 +421,12 @@ Being able to work in a team is both a skill and a challenge. Working on a proje
 This was a foreseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and what we had yet to complete. With these two resources set up and with the help of keeping an open schedule the team has been able to successfully coordinate and maximize productivity.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
-\subsection{Control Loop Frequency}
-\begin{longtable}{l l l l l l l l l l l l l}
-Quantity&	
-\begin{sideways}+\end{sideways}	&	
-\begin{sideways}-\end{sideways}	&	
-\begin{sideways}*\end{sideways}	&	
-\begin{sideways}/\end{sideways}	&	
-\begin{sideways}cos\end{sideways}	&	
-\begin{sideways}sin\end{sideways}	&	
-\begin{sideways}asin\end{sideways}	&	
-\begin{sideways}acos\end{sideways}	&	
-\begin{sideways}atan2\end{sideways}	&	
-\begin{sideways}sqrt\end{sideways}	&	
-\begin{sideways}quat*\end{sideways}	&	
-\begin{sideways}Sum\end{sideways}\\
-	\hline
-Moment	&	1	&	6	&	20	&	11	&	3	&	4	&	0	&	2	&	2	&	0	&	3	&	52 \\
-	\hline
-Altitude &	3	&	1	&	4	&	1	&	0	&	0	&	0	&	0	&	0	&	0	&	2	&	11	 \\
-	\hline
-Motor Speed	&	14	&	10	&	18	&	10	&	0	&	0	&	0	&	0	&	0	&	4	&	0	&	56		 \\
-	\hline
-	Sum	&	18	&	17	&	42	&	22	&	3	&	4	&	0	&	2	&	2	&	4	&	5	&	119	\\
-\end{longtable}
 
 
-
-\begin{longtable}{l l l l l l l l l l l l l l l l l l l }
-Quantity&	
-\begin{sideways}+\end{sideways}	&	
-\begin{sideways}-\end{sideways}	&	
-\begin{sideways}*\end{sideways}	&	
-\begin{sideways}/\end{sideways}	&	
-\begin{sideways}cos\end{sideways}	&	
-\begin{sideways}sin\end{sideways}	&	
-\begin{sideways}asin\end{sideways}	&	
-\begin{sideways}acos\end{sideways}	&	
-\begin{sideways}atan2\end{sideways}	&	
-\begin{sideways}sqrt\end{sideways}	&	
-\begin{sideways}quat*\end{sideways}	&	
-\begin{sideways}Sum\end{sideways} & &
-\begin{sideways}w/ Parallelization \end{sideways} & & &\\
-	\hline
-Unit Time&	3.7	&	3.8	&	8.4	&	10	&	78	&	74	&	261	&	265	&	117	&	173	&	225	&		&		&		&		&		&		&		 \\
-	\hline
-Moment	&	3	&	23	&	168	&	116&	234	&	298	&	0	&	530	&	234	&	0	&	675	&	2283	&	uS	&	437	&	Hz	&	2283	&		&					 \\
-	\hline
-Altitude	&	11	&	3	&	33	&	10	&	0	&	0	&	0	&	0	&	0	&	0	&	450	&	509	&	uS	&	1963	&	Hz	&		&	uS	&					 \\
-	\hline
-Motor	&	52	&	38	&	151	&	105	&	0	&	0	&	0	&	0	&	0	&	694	&	0	&	1042	&	uS	&	959	&	Hz	&	1042	&	uS	&					 \\
-	\hline
-Sum	&	67	&	65	&	352	&	232	&	234	&	298	&	0	&	530	&	234	&	694.	&	1125	&	3835	&	uS	&	260	&	Hz	&	3325	&	300	&	Hz		
-\end{longtable}
-
-\clearpage %make room for the picture
+%clearpage %make room for the picture
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{System Design}
-%TODO: This section still needs work...
-\textcolor{green}{\bf System Design—this level of design includes the entire system, including the people and processes involved, and not just the software architecture.}
-\textcolor{red}{Cody}
+The system is fairly simple. The general system architecture consists of the central Propeller microcontroller interfacing with a number of different devices. Both hardware and software mimic this layout, which is shown below.
 
 %\clearpage %make room for the picture
 \begin{figure}[h!]
@@ -536,11 +484,89 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3  
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
+\subsection{Control Loop Frequency} \label{subsec:codeperformanceestimation}
+
+For our software, the critical portion is the main control loop that keeps the quadrotor flying at the desired attitude (roll, pitch, yaw) and altitude. It is essential that this control loop operates fast enough to respond to disturbances. From our research into what other quadrotor groups have done we have found that 50Hz to 75Hz is sufficient for flying. So for our project we need to analyze our system and determine if we can achieve the desired rate.
+
+The first component to consider is the inertial measurement unit (IMU). The IMU that we have selected is the CHR-UM6-LT IMU. From the datasheet, it can output at up to 300 Hz. On the output we have the ESCs that control the motors. These expect a control pulse every 20ms, so that is on update rate of 50Hz. Most stock components can run with a slightly faster update rate, and we can select ESCs that are designed for a faster rate. In any case, we have guaranteed support for 50Hz updates with the hardware we have.
+
+Now we need to consider the software control loop. We've broken the math into three blocks: attitude control, altitude control, and motor control. The equations can be found in the Anzhelka mathematics document \cite{anzhelka_math}. The attitude control block and altitude control block can be done in parallel, and their output fed into the motor control block. We will be writing the code in Propeller Assembly using the Float32 floating point library (\cite{float32}).
+
+The Float32 documentation includes timings and space requirements for each of the mathematical functions. If we count the operations required for each block we can then calculate an estimate of running time and space.
+
+First, we have to count up all of the operations so we know how much math we have to do:
+
+
+\begin{longtable}{l l l l l l l l l l l l l}
+Quantity&	
+\begin{sideways}+\end{sideways}	&	
+\begin{sideways}-\end{sideways}	&	
+\begin{sideways}*\end{sideways}	&	
+\begin{sideways}/\end{sideways}	&	
+\begin{sideways}cos\end{sideways}	&	
+\begin{sideways}sin\end{sideways}	&	
+\begin{sideways}asin\end{sideways}	&	
+\begin{sideways}acos\end{sideways}	&	
+\begin{sideways}atan2\end{sideways}	&	
+\begin{sideways}sqrt\end{sideways}	&	
+\begin{sideways}quat*\end{sideways}	&	
+\begin{sideways}Sum\end{sideways}\\
+	\hline
+Moment	&	1	&	6	&	20	&	11	&	3	&	4	&	0	&	2	&	2	&	0	&	3	&	52 \\
+	\hline
+Altitude &	3	&	1	&	4	&	1	&	0	&	0	&	0	&	0	&	0	&	0	&	2	&	11	 \\
+	\hline
+Motor Speed	&	14	&	10	&	18	&	10	&	0	&	0	&	0	&	0	&	0	&	4	&	0	&	56		 \\
+	\hline
+	Sum	&	18	&	17	&	42	&	22	&	3	&	4	&	0	&	2	&	2	&	4	&	5	&	119	\\
+\end{longtable}
+
+Our control loop has 119 mathematical operations. The number sounds small, but it is slightly misleading. In the next table we see that the time to execute an addition or multiplication is much less than it is to calculate arcsin or arccos. For quaternion multiplication we assume that one multiply has 6 floating point additions, 6 floating point subtractions, and 16 floating point multiplies. This follows from the quaternion multiplication formula. In summary, since we have the number of each operation, we can calculate the total times:
+
+\begin{longtable}{l l l l l l l l l l l l l l l l l l l }
+\textbf{Operator}&	
+\begin{sideways}+\end{sideways}	&	
+\begin{sideways}-\end{sideways}	&	
+\begin{sideways}*\end{sideways}	&	
+\begin{sideways}/\end{sideways}	&	
+\begin{sideways}cos\end{sideways}	&	
+\begin{sideways}sin\end{sideways}	&	
+\begin{sideways}asin\end{sideways}	&	
+\begin{sideways}acos\end{sideways}	&	
+\begin{sideways}atan2\end{sideways}	&	
+\begin{sideways}sqrt\end{sideways}	&	
+\begin{sideways}quat*\end{sideways}	&	
+\begin{sideways}Sum ($\mu s$)\end{sideways} \\
+	\hline
+Unit Time&	3.7	&	3.8	&	8.4	&	10	&	78	&	74	&	261	&	265	&	117	&	173	&	225	&\\
+	\hline
+Moment	&	3	&	23	&	168	&	116&	234	&	298	&	0	&	530	&	234	&	0	&	675	&	2283 \\
+	\hline
+Altitude	&	11	&	3	&	33	&	10	&	0	&	0	&	0	&	0	&	0	&	0	&	450	&	 \sout{\textit{509}} \\
+	\hline
+Motor	&	52	&	38	&	151	&	105	&	0	&	0	&	0	&	0	&	0	&	694	&	0	&	1042\\
+	\hline
+Sum	&	67	&	65	&	352	&	232	&	234	&	298	&	0	&	530	&	234	&	694	&	1125	&	\textbf{3325}\\	
+\end{longtable}
+
+
+Our estimates show that we can have an inner control loop of 260Hz, and if we parallelize the moment and altitude calculations as shown above then we can get about 40Hz faster for a control loop frequency of 300 Hz. Also of interest is that the quadrotor control loop has a response time of 3.3 milliseconds. For reference, the average human reaction time is roughly 200 milliseconds (\cite{human_reaction_time}).
+
+Finally, we are interested in code size. The floating point library has a number of required support functions that do things such as convert to and from floating point, compare floats, and so on that require space. We also assume that 4 longs on average are used to setup each operation. This gives totals of
+\begin{longtable}{l l}
+	\textbf{Block} & \textbf{Longs} \\
+	Moment		& 552 \\
+	Altitude	& 275 \\
+	Motors		& 468 \\
+\end{longtable}
+
+So, if we were to do each instruction in sequence then it would take approximately 850 longs (sum without duplicates). Unfortunately, a Propeller cog only has enough memory for 496 longs. If we break it into sections then the altitude and motor calculations will fit into a single cog, but the moment block is too big. Some optimizations will probably be able to reduce the size to fit.
+
+All in all, the code performance estimates are looking very promising. We should be able to achieve 100Hz update rates and the use of only two cogs without too much trouble.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
-%TODO: add other software stuff. 
-\subsection{Other Software Stuff}
-\textcolor{red}{Cody...} ie things such as the python and the possibility of future expansion (BeagleBoard)
+\subsection{Other Software Notes}
+The other software in this project is standard. This project uses a Phython GUI and a shell script for program compilation.
 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -550,6 +576,7 @@ All variables in the Propeller are integers. Variables are typically 32 bit sign
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Quadrotor Prototype Construction}
+A quadrotor to the specifications is being constructed for this project.
 %\textcolor{green}{\bf Given the relatively short duration of the class, completion of the project may not be possible; however, you must do your best to produce a working prototype that implements the most important core functionality of the system you have envisions. If graphical output is not possible, create some screen mock-ups on your own.}
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
@@ -566,7 +593,7 @@ At this point in the project, we have developed four main areas of hardware: the
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{Frame}
-The quadrotor frame that we are using for this project is the open source Elev-8 frame from Parallax (\cite{elev8_frame})The resin plates are constructed out of a material called Delin\textregistered\cite{dupontdelin} made by DuPont\texttrademark. We had this material laser cut for us by a W9GFO from the Parallax forums. The booms of the Frame are made out of 5/8" thin wall aluminium tubing. Overall dimensions are [TODO: OVERALL DIMENSIONS WEIGHT].
+The quadrotor frame that we are using for this project is the open source Elev-8 frame from Parallax (\cite{elev8_frame})The resin plates are constructed out of a material called Delin\textregistered\cite{dupontdelin} made by DuPont\texttrademark. We had this material laser cut for us by a W9GFO from the Parallax forums. The booms of the Frame are made out of 5/8" thin wall aluminium tubing.
 
 For the screws we are using hex pan head and hex socket cap screws. These screws are very common in the industrial supply industry. For all of the screws we are using blue LocTite or a nylon locknut to ensure that the screws do not loosen from their secured position. Lockwashers are not used due to being completely ineffective and, in fact, worse than nothing at all (\cite{vibration_loose}).
 
@@ -584,7 +611,18 @@ We also decided on a 10 inch rotor with a 4.5 degree pitch. We decided on 10 inc
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 \subsubsection{Power Board PCB}
-%TODO: What is the PCB for this project...
+For this project we developed a custom circuit board to power the quadrotor. This PCB has all the hardware on it to facilitate a number of features:
+\begin{list}{*}{}
+	\item Propeller microcontroller, overclockable
+	\item Switching regulators for the logic voltages
+	\item Power distribution for motor ESCs
+	\item Current and voltage sensing for all motors
+	\item Level shifting for 5v interfacing
+	\item 8 free channel of ADC
+	\item 8 free servo channels
+	\item I/O headers for I2C, IMU, SD card, and XBee
+	\item Mounting holes for BoE formfactor, quickstart, SD card, and IMU
+\end{list}
 
 PCBs are very difficult in the ways of being able to produce something that will be small enough to fit on your platform and large enough for you to solder the components onto. The PCB design for the prototype took over a month to design and lay out. Even though this may seem like a long time, it is not excessive when dealing with many new components.
 %\clearpage %make room for the picture
@@ -604,8 +642,22 @@ Once the board was designed and ready for production a fabrication house had to 
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
-\subsubsection{Thrust/Torque Test stand}
-%TODO: add some information here about thrust torque test stand
+\subsubsection{Thrust/Torque Test Stand Construction}
+The thrust/torque test stand was constructed out of wood and metal. Everything was hand crafted. A few components needed machining, and those were done in a machine shop. We developed the test stand from scratch with very little prior work to base the project on. The axles are all supported ball bearings to reduce friction to negligable amounts.
+
+\begin{figure}[ht]
+\centering
+\subfigure[The thrust/torque test stand.]{
+\includegraphics[scale=.22]{thrust_torque_stand_overview.JPG}
+}
+\subfigure[The motor mounting is on the left and torque measurement arm is the bronze piece on the right.]{
+\includegraphics[scale=.22]{thrust_torque_stand_detail}
+}
+\caption[Optional caption for list of figures]{Brushless motor test stand}
+\end{figure}
+
+As the propeller spins, it creates a thrust force pointing to the left in the picture. This thrust force is measure by a pressure sensor on the bottom foot. Additionally, the propeller creates a torque. This torque pushes the brass lever arm into another pressure sensor on the upper part of the arm, which can then measure the motor torque.
+
 
 \subsection{Software}
 Most software development to this point has been to work on the various library objects, and to understand the system. In this section various significant software modules are discussed.
@@ -630,7 +682,6 @@ The Propeller object for this sensor is based on code provided by Tim Moore \cit
 \centering
 \subfigure[The Eagle Tree brushless RPM sensor]{
 \includegraphics[scale=.1]{eagle_tree_sensor.JPG}
-\label{fig:subfig1}
 }
 \subfigure[Motor connection of the sensor.]{
 \includegraphics[scale=.1]{eagle_tree_connection.JPG}
@@ -666,7 +717,7 @@ When communicating with a host computer or other microcontrollers, the Propeller
 \section{Constant Identification}
 The quadrotor platform has a number of different constants that depend on the hardware used. Most constants such as mass and rotor diameter are relatively easy to measure. Other constants are not so easy. This section details the more difficult constant identifications. For a full treatment of the math and a list of all constants, see the Anzhelka mathematics document \cite{anzhelka_math}.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Thrust/Torque Test Stand}
+\subsection{Thrust/Torque Test Stand Theory}
 
 A good autonomous quadrotor needs to be able to measure, in real units such as kilograms and seconds, important aspects about itself such as orientation, motor thrust, acceleration, and so on. It's fairly easy to make a remote controlled quadrotor platform since the human in the loop can intuitively correct for many small errors, and our eyes are very good at collecting the necessary raw information. An autonomous quadrotor does not have this luxury, and must explicitly define each kinematic and dynamic equation. Among others, the quadrotor must know the propeller torque and thrust constants. 
 
@@ -779,17 +830,17 @@ This protocol could also be used to log parameters of the quadrotor as it is fly
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{High Level Hardware Design}
-\textcolor{red}{Luke}
-%TODO: Highlevel hardware design
+%\subsection{High Level Hardware Design}
+%\textcolor{red}{Luke}
+%TO DO: Highlevel hardware design
 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{High Level Software Design}
-\textcolor{red}{Cody}
-%TODO: Highlevel software design
+%\subsection{High Level Software Design}
+%\textcolor{red}{Cody}
+%TO DO: Highlevel software design
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
  
@@ -833,22 +884,22 @@ Testing is a critical part of any project, and the Anzhelka project is no except
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
-\subsection{Software Testing}
+%\subsection{Software Testing}
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
-\subsubsection{Unit Testing}
-\textcolor{red}{Cody}
+%\subsubsection{Unit Testing}
+%\textcolor{red}{Cody}
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
-\subsubsection{Integration Testing}
-\textcolor{red}{Cody}
+%\subsubsection{Integration Testing}
+%\textcolor{red}{Cody}
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
-\subsubsection{Acceptance Testing}
-\textcolor{red}{Cody}
+%\subsubsection{Acceptance Testing}
+%\textcolor{red}{Cody}
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
@@ -893,7 +944,7 @@ We will continue to work on and develop this project for the rest of the school 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{For the next ten weeks} \label{maintenance_plan_10}
+\subsection{For the next ten weeks} \label{subsec:maintenance_plan_10}
 This senior design project is no where it needs to be as for a finished product and will require a lot more time to get there. In the following weeks we hope to accomplish the following tasks:
 
 \begin{list}{*}{}
@@ -956,9 +1007,12 @@ The Anzhelka Terminal GUI was designed to be intuitive and easy to use, even wit
 
 The thrust/torque test stand also had aesthetics in mind when it was designed. The stand is build out of oak and finished in a way that makes the wood almost glow. The metal pieces were sandblasted to create a matte finish. Finally, all wiring was routed and organized as best as possible.
 
+\subsection{Anzhelka Marketing}
+We have worked on marketing this project as well. We selected the name "Anzhelka" (meaning angelic in Russian) and made it the core identifier of our project. We have developed the phoenix logo that is used on everything that we produce. We have developed team T-shirts and a display board to simultaneously educate and promote the project. We have a project domain (anzhelka.com) and sensible web addresses. This project now has an identity such as few senior design projects ever achieve.
+
 \subsection{Ethics}
 
-Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals. [TODO EXPAND]
+Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals.
 
 
 
@@ -982,13 +1036,32 @@ If we had to do it differently we would make a larger team. Specifically, it wou
 
 %Use postfix of 69 to indicate unknown year
 
+	\bibitem{anzhelka_code}
+	C. Lewis, L De Ruyter,
+	\url{"http://code.anzhelka.com"}
+	
+	\bibitem{anzhelka_blog}
+	C. Lewis, L De Ruyter,
+	\url{"http://blog.anzhelka.com"}
+
+	\bibitem{anzhelka_math}
+	C. Lewis, L De Ruyter,
+	"Quadrotor Mathematics For Simpletons," 2012, available at \url{"http://code.anzhelka.com"}
+	
+	\bibitem{stingu09}
+	E. Stingu, F. Lewis, 
+	"Design and Implementation of a Structured Flight Controller for a 6DoF Quadrotor Using Quaternions," 
+	Mediterranean Conference on Control \& Automation, pp. 1233-1238, June 2009.
+	
 	\bibitem{campbell09} % http://www.fnarfbargle.com/bst.html
-	Brad Campbell, 
+	B. Campbell, 
 	"BST - The multi-platform Propeller Tool Suite" 
 	\url{"http://www.fnarfbargle.com/bst.html"} 2009.
 
-
-	% Justifies the use of a square root in quaternion norm
+	\bibitem{elev8_frame}
+	K. Gracey,
+	Elev-8 Quadcopter, \url{"http://www.parallax.com/tabid/768/ProductID/799/Default.aspx"}
+	
 	\bibitem{tekscanforce} % http://www.tekscan.com/pdf/A201-force-sensor.pdf
 	Tekscan\textregistered 
 	\url{"http://www.tekscan.com/pdf/A201-force-sensor.pdf"}
@@ -1006,16 +1079,27 @@ If we had to do it differently we would make a larger team. Specifically, it wou
 	\url{"http://forums.parallax.com/showthread.php?127372-PWM_32_V2-Question-about-Resolution-constant"}
 	
 	
+	\bibitem{vibration_loose}
+	"Vibration Loosening of Bolts and Threaded Fasteners", 2012,
+	\url{"http://www.boltscience.com/pages/vibloose.htm"}
 	
-	
-	%TO CITE
-	\bibitem{anzhelka_code}
-	\bibitem{anzhelka_blog}
-	\bibitem{anzhelka_math}
-	\bibitem{elev8_frame}
-	\bibitem{vibration_loose} %http://www.boltscience.com/pages/vibloose.htm
 	\bibitem{propeller_pitch} %Link to paper that explains maximum efficiency at small pitch.
-	\bibitem{rcapa_guidelines} %[CITE] http://www.rcapa.net/guidelines.aspx
+	EPI Inc. "Propeller Performance Factors", 2010, \url{"http://www.epi-eng.com/propeller_technology/selecting_a_propeller.htm"}
+	\bibitem{rcapa_guidelines}
+	Remote Control Aerial Photography Association, "General Guidelines", 2012 \url{"http://www.rcapa.net/guidelines.aspx"}
+	
+	
+	\bibitem{human_reaction_time}
+	HumanBenchmark.com, 2012, \url{"http://www.humanbenchmark.com/tests/reactiontime/stats.php"}
+	
+	\bibitem{float32}
+	C. Thompson, "Floating Point", 2009, \url{"http://obex.parallax.com/objects/202/"}
+	
+	\bibitem{aeroquad}
+	AeroQuad, 2012, \url{http://aeroquad.com/}
+	
+	\bibitem{arducopter}
+	DIY Drones Arducopter, 2012, \url{http://code.google.com/p/arducopter/}
 \end{thebibliography}
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1    

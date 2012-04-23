@@ -29,13 +29,13 @@
 \newcommand{\bigvect}[3]{\boldsymbol{#1^#2^#3}}
 \newcommand{\bs}[1]{\boldsymbol{#1}}
 
-\graphicspath{{../figures/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
+\graphicspath{{../figures/}{../extra/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
 \fancyfoot[CO,CE]{ \thepage \\ \includegraphics[width=2cm]{../extra/pheonix_small.png}}
 \pagestyle{fancy}
 
 \begin{document}
 
-\title{Quadrotor Mathematics: \\ A Simplified Approach}
+\title{Quadrotor Mathematics For Simpletons}
 \author{Cody Lewis \\ \texttt{srlm@anzhelka.com} \and Luke De Ruyter \\ \texttt{ilukester@anzhelka.com} }
 \date{\today}
 \maketitle
@@ -1104,42 +1104,42 @@ u_i = f_{mot}^{-1} \left( \frac{1}{a_i} \Omega_{di}, V_{batt} \right)
 %  & & \frac{n\left(n-1\right)\left(n-2\right)\left(n-3\right)}{4!}x^4 + \\
 %  & & \ldots
 %\end{eqnarray*}
-
-\section{Stuff I still need to address}
-\begin{list}{*}{}
-	\item Add tables with acronyms, abbreviations, and units
-	\item Add information on how to calculate moment of inertia tensor (make note of parallel axes theorem)
-	\item I made a note of "Origin at CoM, axes of inertia". What does it mean?
-	\item What is static / dynamic range (tracking)? In reference to yaw/roll/pitch error
-	\item Discuss kinematics vs. Dynamics
-	\item Add the derivation from brushless DC motor to brushed DC motor, specifically for thrust/torque
-	\item Add information about calculating "linear regression" to calculate motor constants from test data.
-	\item Add step by step information for testing thrust/torque
-	\item Check: when rolling/pitching/yawing, do these equations hold only for small differences in rotor speed? (source: the masters paper from Asia...)
-	\item I'm told that since the big matrix only has four possible inputs (4 motors), we can only control four things. But what about hex/octo rotors?
-	\item What about motor saturation? Should priority be given to attitude over altitude?
-	\item From the motor control section, "Does the system take into account that these are rotations, so that several values can represent the same rotation? eg $3\pi$ and $-\pi$.
-	\item Add a PID tutorial (how to prevent integral wind up; derivative impulse (that saturates))
-	\item I suspect that the $K_{tilt}$ equation can be simplified by taking the dot product of the two vectors, which (according to a UCSD slide show) is $p_0 q_0 +p_1 q_1 + p_2 q_2 + p_3 q_3 = |p||q| \cos \varphi$ where $\varphi$ is half the angle angle one would need to rotate from one orientation to the other in 3D space.
-	\item Add more information about the motor thrust test stand (subsection \ref{subsec:thrustandtorquecoefficientmeasurements})
-	\item Add citation for the quaternion norm debate (to square root or not).
-	\item Question: Order of the quaternion component multiplication doesn't matter, right? Also, double check the correct multiplication...
-	\item Equations \eqref{eq:motor_thrust} and \eqref{eq:motor_torque} are derived from --WHAT???.
-	\item Talk about quaternion derivatives, and equation \eqref{eq:omega_b_derivative}
-	\item Quantify by how much performance will suffer if air density is assumed to be constant.
-	\item Should this subsection (\ref{subsec:motorspeedcalculations}) have something in here where it converts $n_i$ to $omega_i$? Ie, from RPM to rad/s?
-	\item Should this subsection (\ref{subsec:motorspeedcalculations}) have something in the PID where it uses the measured speed of the propellers?
-	\item  Is $q^*$ the correct notation for conjugate?
-	\item Is it a conversion between RPM and Rad/S in section \ref{subsec:forcestomotorspeeds}?
-
-
-\end{list}
-
-Specifically, with quaternions:
----Need to define the fact that two quaternions can represent the same space \\
----Need to define quaternion derivatives --- \\
----What is $q^*$?--- \\
-
+%
+%\section{Stuff I still need to address}
+%\begin{list}{*}{}
+%	\item Add tables with acronyms, abbreviations, and units
+%	\item Add information on how to calculate moment of inertia tensor (make note of parallel axes theorem)
+%	\item I made a note of "Origin at CoM, axes of inertia". What does it mean?
+%	\item What is static / dynamic range (tracking)? In reference to yaw/roll/pitch error
+%	\item Discuss kinematics vs. Dynamics
+%	\item Add the derivation from brushless DC motor to brushed DC motor, specifically for thrust/torque
+%	\item Add information about calculating "linear regression" to calculate motor constants from test data.
+%	\item Add step by step information for testing thrust/torque
+%	\item Check: when rolling/pitching/yawing, do these equations hold only for small differences in rotor speed? (source: the masters paper from Asia...)
+%	\item I'm told that since the big matrix only has four possible inputs (4 motors), we can only control four things. But what about hex/octo rotors?
+%	\item What about motor saturation? Should priority be given to attitude over altitude?
+%	\item From the motor control section, "Does the system take into account that these are rotations, so that several values can represent the same rotation? eg $3\pi$ and $-\pi$.
+%	\item Add a PID tutorial (how to prevent integral wind up; derivative impulse (that saturates))
+%	\item I suspect that the $K_{tilt}$ equation can be simplified by taking the dot product of the two vectors, which (according to a UCSD slide show) is $p_0 q_0 +p_1 q_1 + p_2 q_2 + p_3 q_3 = |p||q| \cos \varphi$ where $\varphi$ is half the angle angle one would need to rotate from one orientation to the other in 3D space.
+%	\item Add more information about the motor thrust test stand (subsection \ref{subsec:thrustandtorquecoefficientmeasurements})
+%	\item Add citation for the quaternion norm debate (to square root or not).
+%	\item Question: Order of the quaternion component multiplication doesn't matter, right? Also, double check the correct multiplication...
+%	\item Equations \eqref{eq:motor_thrust} and \eqref{eq:motor_torque} are derived from --WHAT???.
+%	\item Talk about quaternion derivatives, and equation \eqref{eq:omega_b_derivative}
+%	\item Quantify by how much performance will suffer if air density is assumed to be constant.
+%	\item Should this subsection (\ref{subsec:motorspeedcalculations}) have something in here where it converts $n_i$ to $omega_i$? Ie, from RPM to rad/s?
+%	\item Should this subsection (\ref{subsec:motorspeedcalculations}) have something in the PID where it uses the measured speed of the propellers?
+%	\item  Is $q^*$ the correct notation for conjugate?
+%	\item Is it a conversion between RPM and Rad/S in section \ref{subsec:forcestomotorspeeds}?
+%
+%
+%\end{list}
+%
+%Specifically, with quaternions:
+%---Need to define the fact that two quaternions can represent the same space \\
+%---Need to define quaternion derivatives --- \\
+%---What is $q^*$?--- \\
+%
 
 
 \begin{thebibliography}{99}
