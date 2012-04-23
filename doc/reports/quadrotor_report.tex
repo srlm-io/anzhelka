@@ -1,0 +1,338 @@
+%Cody Lewis, Luke De Ruyter, 2012
+%Visit anzhelka.com for all the latest
+%
+% CTRL+SPACE to switch panes
+%
+
+
+% Note: blank lines indicate a new paragraph
+% Note: \left( and \right) cannot break lines.
+
+\documentclass{article}
+
+\usepackage{amsmath}
+\numberwithin{equation}{section} %change the numbering to have something like 1.1 and 3.15, etc.
+
+%Format of macro:
+%\newcommand{\NAME}[ARGUMENT NUMBER (OPTIONAL)]{ stuff to include, arguments denoted #1, #2, etc. }
+\newcommand{\vect}[1]{\boldsymbol{#1^2}}
+\newcommand{\bigvect}[3]{\boldsymbol{#1^#2^#3}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\usepackage{color}
+
+\begin{document}
+
+\title{Autonomous Quadrotor Project: \\ Anzhelka \\ \- \\ {\bf ALPHA DRAFT}}
+\author{Cody Lewis \\ \texttt{srlm@anzhelka.com} \and Luke De Ruyter \\ \texttt{ilukester@anzhelka.com} }
+\date{\today}
+\maketitle
+\begin{verse}\textit{
+And when he [Herod] had apprehended him [Peter], he put him in prison, and delivered him to four quaternions of soldiers to keep him; intending after Easter to bring him forth to the people.} \\
+\hfill --Acts 12:14, King James Bible, Cambridge Edition
+\end{verse}
+
+%% REV REV REV REV REV REV REV REV REV REV REV REV REV
+\newpage
+\addcontentsline{toc}{section}{Revisions}
+\begin{paragraph}{Revions}
+{
+Here is where you will place the revisions of this document.
+}
+\end{paragraph}
+%% REV REV REV REV REV REV REV REV REV REV REV REV REV
+
+%% TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC
+\newpage
+\renewcommand{\contentsname}{Table of Contents}
+\tableofcontents
+\addcontentsline{toc}{section}{Table of Contents}
+\newpage
+%% TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Introduction}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
+\subsection{Executive Summary}
+
+This senior design project's goal was to create an autonomous quadrotor that would be used for outdoor sports like mountain biking, snowboarding, etc. The quadrotor would have a video camera mounted onto a gimble that would always point at a subject/object in which the tracking device was placed. The tracking device would have its' own GPS and IMU in order to be able to determine the location and heading of the subject/object.\\ \\
+Our quadrotor has many features including: 3-Axis Gyro, 3-Axis Acelerometer \textcolor{red}{CHECK SPELLING}, 3-Axis Compass, Voltage and Current monitoring of each motor, a separate battery for logic operations for emergency recoveries, ability to controll up to 8 Servos, able to track the exact speed and possition of each motor, monitor 8 additional analog inputs, and mounting holes for all components and future upgrades. \\ \\
+This senior design project was built around being Open. Open Source. Open Hardware. The frame that was used for the quadrotor was designed by Ken Gracey, an employee at Parallax, and is called the "Elev-8". There is a Git repository hosted by Google Code in which you can find all the information used and created during this senior desing project. There is also a Blog which goes into some of the extensive detail that was put into this project. The main processing board for this quad rotor features a Parallax Propeller, overclocked to 100Mhz, and a fully custom board that messures in at 4inches by 3inches. \\ \\
+Testing something that is so dynamic in nature is a great challenge in its own. One of the test that has to be done in order to calculate some of the gains for the controll algorithims is the motor's torque and thrust. This meant that there had to be a test stand that would test both of these constants. Another test that had to be completed was on the control board that was designed for the quadrotor. \\ \\
+The project was started without any expertiese or experiance with autonomous flying or quadrotors, but with will to learn, create and develope a system that could even be understood by people with experince in these fields. Software is one of the groups expertese. Both team members have had years of experence in multiple programming languages. Hardware on the other hand is a bit more difficult. Only Luke had any real experence with designing PCB's and curcuits, however nothing to the extent of this project. The team believed that this project was worth aprroximently 16 credits. This was determined by the amount of hours that were being put into the project each week. Approximently 30 hours per person per week were devoted to this project. \\ \\
+\textcolor{red}{NEEDS ACHIEVEMENTS}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Design Objectives and System Overview}
+
+This project was designed to be open ended and to be used in an unpresisented amount of ways. After watching countless videos from Go Pro cameras from a single perspectives and partial views of the subject, project Anzhelka was created. Anzhelka would allow users to be able to capture video angles that were once unatainable without costing thousands of dollars. Anzhelka would allow users to capture video with the same ease as using a Go Pro camera, but without the single perspectives and gritter from traditional methods.\\ \\
+The quadrotor will have atleast a 15minute run time, with the ablitly to carry a 2 pound payload. It could also be controlled by a human from up to a mile away with line of sight. The controll loop to keep the platform stable will run at 300Hz and be asyncronous. \\ \\
+On this project the team members of Anzhelka decided to keep responsiblities as open as possible, however SRLM did most of the coding and wood working while ILUKESTER did most of the embeded hardware and wiring. Everything else was either split evenly or worked on jointly.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Background and Prior Art}
+
+There have been several different renditions of this project but to the best of the teams knowledge there has not been a project that has contained the 3 main parts of this project. Autonomous Quadrotor, Oject tracking, and Open.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Development Environment and Tools}
+
+\textcolor{blue}{Cody}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Related Documents and Supporting Materials}
+
+\textcolor{blue}{Cody, Not nessisary though.} 
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Definitions and Acronyms}
+ESC - Electronics Speed Control
+IMU - Inertial Messurement Unit
+PWM - Pulse Width Modulation
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Requirements Specifications}
+This section describes issues that need to be addressed or resolved prior or while completing the desgn as well as issues that may influence the design process.
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Assumptions}
+Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video of the activity that you have recorded usually turns out shakey and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be acomplished while being as simple as powering on a couple of devices. 
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Realistic Constraints}
+Every system has contraints and Anzhelka is no exception. Our quadrotor can only travel so fast, about 10 mph, therefor it wouldn't be able to keep up with anything much faster than that. Large gust of wind could cause problems with keeping the quadrotor platform stable enough to keep the camera from shaking. Wet weather would be large problem and would cause unknown and uncalcuated problems.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{System Environment and External Interfaces}
+To be able to acomplish all of these tasks there is alot of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via \textcolor{red}{I2C}, servos must becontrolled via PWM signals, voltage and current of each motor is monitored via a specially designed circuit.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2   
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Budget and Cost Analysis}
+Unfortantly there was no money that was given to the team in order to support the project. All of the funding had come from the teammembers own personal accounts. Below is a excert from our spreadsheet with the cost analyis and money spent on this project.\\ \\
+\textcolor{red}{INSERT COST TABLE HERE}\\ \\
+\textcolor{blue}{Update table before adding}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Safety}
+When dealing with any autonomous system one must take extreme cautions in order to insure the safety of everyone. Autonomous systems are dangerous because there is no one behind the controls of the system and can become unpredictable in the event of a system failure. \\ \\ 
+During the design process of the frame the team made sure to use proper spec fasteners, washers, and nuts. Also, all threaded components were secured using blue locktight to ensure that nothing would lossen on its own. \\ \\
+Whenever flying an arial vehicle be sure to wear saftey glasses to protect your eyes in the event that the propeller has a failure and is detached/released from the motor(s).
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Risks and Volatile Areas}
+
+\textcolor{blue}{Should we keep this section?}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Importance of Team Work}
+Being able to work in a team is both a skill and a challenge. Working on a project in a group helps you split up the work load and possiably get more work done in less time, however being able to work together with others on the project could pressent a greater challenge than the project itself. This was a forseen challenge and the team set up a Git repository for all code, data, images, and presentations. There was also an official blog set up where we could go in great detail on what we were working on and we had yet to complete. With these two resources set up and with the help of keeping an open schedual the team has come to realize how important team work really is.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{System Design}
+\textcolor{green}{\bf System Design—this level of design includes the entire system, including the people and processes involved, and not just the software architecture.}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Experiment Design}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Experiment Results and Feasibility}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Program Design}
+\textcolor{green}{\bf Program Design—each component of the selected solution approach should be carefully designed}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{System Architecture}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Rationale and Alternatives}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Construction of a Prototype}
+\textcolor{green}{\bf Given the relatively short duration of the class, completion of the project may not be possible; however, you must do your best to produce a working prototype that implements the most important core functionality of the system you have envisions. If graphical output is not possible, create some screen mock-ups on your own.}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Intermediate Project Reports}
+\textcolor{green}{\bf Intermediate Project Reports—Document your progress. Both intermediate ! ! ! project reports should describe your progress toward the construction of the overall prototype. This section should include two brief summaries that document your project at the time of the intermediate demonstrations.} \\ \\
+\textcolor{red}{\bf Not required because these were admitted.}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Hardware}
+\textcolor{red}{Luke}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Software}
+\textcolor{red}{Cody}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Implementation}
+\textcolor{green}{\bf Implementation Here, provide an overview of the high-level code structure of your application. What are the key data structures, modules, etc. Do not provide source code here; it should be an Appendix instead.}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{High Level Hardware Design}
+\textcolor{red}{Luke}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{High Level Software Design}
+\textcolor{red}{Cody}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Testing}
+\textcolor{green}{\bf Testing—You are expected to have a detailed test plan, including 
+● Unit testing
+● Integration testing
+● Acceptance testing
+If you are unfamiliar with these terms, look them up. Search engines are marvelous 
+inventions.}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Unit Testing}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+\subsection{Integration Testing}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+\subsection{Acceptance Testing}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Maintence Plan}
+\textcolor{green}{\bf You are expected to produce a maintenance plan, which 
+states how you plan to keep the software solution current with future environment 
+changes. Here, we assume that you will maintain your project following the 10 
+week course  period, even though we know that this is not really the case. }
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{For the next 10 weeks}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{For the next year}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Engineering Effort and Societal Impacts}
+\textcolor{green}{\bf Engineering Effort and Societal Impacts—Each project must consider realistic 
+constraints on time and money, and should consider safety, reliability, aesthetics, 
+ethics, and other possible social impacts. Produce a short (1-2 page) statement 
+that describes how your group has addressed these key issue.} \\ \\
+\textcolor{red}{Essay time!!!}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Project Managementl}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Requirements Traceability Matrix}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Packaging and Installation Issues}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Design Metrics to be used}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Restrictions, Limitations, and Constraints}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Conclusions}
+\textcolor{green}{\bf Conclusions—Assume that you write this just before handing in your document. 
+Summarize brieﬂy what you did for you project. Address the following; what most 
+surprised you about the process of creating the project. What would you do 
+differently if you had to do it again?}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{References}
+\textcolor{green}{\bf References—Every, book, paper, webpage you used must be cited in a standard 
+format. You could use the American Psychological format [1, 2], or the IEEE 
+standard [3], or any other format so long as you are consistent and complete. You 
+should also reference any standard template libraries used in your code. 
+[1]  Burgess, P., S. (1995). A Guide for Writing Research Papers based on Styles Recommended 
+! ! by The American Psychological Association. 
+% ! Online at http://webster.commnet.edu/apa/apa_index.htm
+[2]  Coppola, L. (2000). The APA Citation Format. Rochester Institute of Technology, Wallace 
+%! ! Library. Online at  http://wally.rit.edu/pubs/guides/apa.html
+[3]  Institute of Electrical and Electronics Engineers (2000). Computer science style guide.  
+%! ! Online at http://www.computer.org/author/style/refer.htm
+%%! ! Also see http://www.ece.utoronto.ca/ece496/IEEEXManuscriptXFormat.pdf 
+}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1    
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Appendices}
+\textcolor{green}{\bf Appendices—Include the following:
+● Source code printed in the 2 “pages” per page format.
+● A printed copy of the slides used for your ﬁnal presentation. If you use 
+! ! animation in your slides, then you need to “sanitize” the slides so that they are 
+readable when printed..
+● A professional quality one-page resume for each member of the group. Use the 
+! ! ! same template for each resume.}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
+\section{Acknowledgements}
+\textcolor{green}{\bf Acknowledgements—Thank anyone who helped your group with the project.}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
