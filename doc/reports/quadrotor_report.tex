@@ -376,74 +376,57 @@ This protocol could also be used to log parameters of the quadrotor as it is fly
 \begin{tabular}{p{2cm}p{9cm}}
 
 \hline
-\$ADRPS & %\parbox{9cm}{
+\$ADRPS &
 	Most recent rotations per second for each motor \newline
 	Format: \newline
-	\$ADRPS m1,m2,m3,m4 \\ %} \\
+	\texttt{\$ADRPS m1,m2,m3,m4} \\ 
 \hline
 \$ADMIA &
 	Most recent motor current in milliamps \newline
 	Format: \newline
-	\$ADMIA m1,m2,m3,m4 \\
+	\texttt{\$ADMIA m1,m2,m3,m4} \\
+\hline
+\$ADMVV &
+	Most recent motor voltage in millivolts \newline
+	Format: \newline
+	\texttt{\$ADMVV m1,m2,m3,m4} \\
+\hline
+\$ADPWM &
+	Most recent motor PWM command, in microseconds (uS) \newline 
+	Format:  \newline
+	\texttt{\$ADPWM m1,m2,m3,m4} \\
+\hline
+\$ADMKP &
+	Current motor PID loop proportional constant (KP). No units.  \newline
+	Format:  \newline
+	\texttt{\$ADMKP m1,m2,m3,m4} \\
+\hline
+\$ADMKI &
+	Current motor PID loop integral constant (KI). No units.  \newline
+	Format:  \newline
+	\texttt{\$ADMKI m1,m2,m3,m4} \\
+\hline
+\$ADMKD &
+	Current motor PID loop derivative constant (KD). No units.  \newline
+	Format:  \newline
+	\texttt{\$ADMKD m1,m2,m3,m4} \\
+\hline
+\$ADMTH &
+	Most recent motor thrust in units of Newtons.  \newline
+	Format:  \newline
+	\texttt{\$ADMTH m1,m2,m3,m4} \\
+\hline
+\$ADMTQ &
+	Most recent motor torque in units of Newton-Meters.  \newline
+	Format:  \newline
+	\texttt{\$ADMTQ m1,m2,m3,m4} \\
+\hline
+\$ADDRP &
+	Most recent motor rotations per second set point (the desired rps). This is the speed that motors are trying to achieve, and is fed into the motor PID loops. 
+	Format: 
+	\texttt{\$ADDRP m1,m2,m3,m4} \\
 \hline
 \end{tabular}
-
-\bigskip
-
-\$ADMVV 
-Most recent motor voltage in millivolts
-Format: 
-\$ADMVV m1,m2,m3,m4 
-
-\$ADPWM 
-Most recent motor PWM command, in microseconds (uS) 
-
-Format: 
-
-\$ADPWM m1,m2,m3,m4 
-
-\$ADMKP 
-Current motor PID loop proportional constant (KP). No units. 
-
-Format: 
-
-\$ADMKP m1,m2,m3,m4 
-
-\$ADMKI 
-Current motor PID loop integral constant (KI). No units. 
-
-Format: 
-
-\$ADMKI m1,m2,m3,m4 
-
-\$ADMKD 
-Current motor PID loop derivative constant (KD). No units. 
-
-Format: 
-
-\$ADMKD m1,m2,m3,m4 
-
-\$ADMTH 
-Most recent motor thrust in units of Newtons. 
-
-Format: 
-
-\$ADMTH m1,m2,m3,m4 
-
-\$ADMTQ 
-Most recent motor torque in units of Newton-Meters. 
-
-Format: 
-
-\$ADMTQ m1,m2,m3,m4 
-
-\$ADDRP 
-
-Most recent motor rotations per second set point. This is the speed that motors are trying to achieve, and is fed into the motor PID loops. 
-
-Format: 
-
-\$ADDRP m1,m2,m3,m4
 
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
