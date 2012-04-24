@@ -24,12 +24,15 @@ TODO: in getrpm and getrps precompute 80_000_000 / 6
 }}
 Con
   Mhz    = (80+10)                                      ' System clock frequency in Mhz. + init instructions
+  
+  MAX_RPS_CHANGE = 60
    
 VAR
   long  Cog
   long  Pins[8]
   long  PinShift                                          
   long  PinMask
+  long	previous_speed
 
 PUB setpins(_pinmask)
 '' Set pinmask for active input pins [0..31]
@@ -47,6 +50,7 @@ PUB start : sstatus
 '' Start driver (1 Cog)  
 '' - Note: Call setpins() before start
 '
+  previous_speed := 0
   if not Cog
     longfill(@Pins, 0, 8)
     sstatus := Cog := cognew(@INIT, @Pins) + 1
@@ -60,21 +64,17 @@ PUB stop
 PUB getpinptr
   return @Pins
 
-PUB getrpm(i) | delta
+PUB getrpm(i) | speed
 '' Get the RPM of motor i (by index, not pin number)
 '' Valid index range is 0-7
 '' Returns -1 when no valid data
-	if i > 7 OR i < 0 'Check Range
-		return -1
-	
-	delta := Pins[i]
-	
-	if delta == 0
-		return -1
-	
-	return (clkfreq / (delta*6)) * 60
-	
-PUB getrps(i) | delta
+	speed := getrps(i)
+	if speed > -1 'Valid
+		return speed * 60
+	else		'Invalid number
+		return speed 
+		
+PUB getrps(i) | delta, speed
 '' Get the RPS of motor i (by index, not pin number)
 '' Valid index range is 0-7
 '' Returns -1 when no valid data
@@ -86,7 +86,13 @@ PUB getrps(i) | delta
 	if delta == 0
 		return -1
 	
-	return (clkfreq / (delta*6))
+	speed := (clkfreq / (delta*6))
+'	if (||(speed - previous_speed)) > MAX_RPS_CHANGE
+'		return -1
+'	
+'	previous_speed := speed
+	
+	return speed
 
 PUB getpins(i)
 	return Pins[i]	

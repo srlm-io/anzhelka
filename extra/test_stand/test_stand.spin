@@ -31,7 +31,7 @@ CON
 	KEYPAD_LOW_PIN  = 0
 	KEYPAD_HIGH_PIN = 7
 	
-	ESC_PIN = 13 'turns on at ~1600 us
+	ESC_PIN = 20 'turns on at ~1600 us
 	
 	RPM_PIN = 8 'Note: currently not used in code (a pin mask is used instead)
 	
@@ -46,6 +46,12 @@ CON
 	ACCUMULATOR = 1
 	PREVIOUS = 2
 	DELTA = 3
+	
+	
+'ADC Channel Names
+	ADC_THRUST = 1
+	ADC_TORQUE = 0
+	
 
 VAR
 	long motorkp[NUM_MOT]
@@ -82,10 +88,11 @@ PUB Main | i, pwmoutput
 		
 	waitcnt(clkfreq + cnt)
 	
+	pwm.servo(ESC_PIN, 1000)
 	debug.str(PDEBUG, string("$ADSTR 'Starting...'"))
 	DebugNewline
 
-	pwm.servo(ESC_PIN, 1000)
+
 	repeat i from 10 to 0
 		debug.str(PDEBUG, string("$ADSTR 't minus "))
 		debug.dec(PDEBUG, i)
@@ -103,19 +110,39 @@ PUB Main | i, pwmoutput
 	
 
 	repeat
-		repeat i from 0 to 1000 step 10
-
-			motorpwm[0] := i + 1000
-			printMotorList(string("$ADPWM"), @motorpwm)
-
-
-			pwm.servo(ESC_PIN, pwmoutput)
-			repeat 1 'Number of seconds
-				repeat 20 'Number of rps readings per second
-					motorrps[0] := rpm.getrps(0)
-					printMotorList(string("$ADRPS"), @motorrps)
-					waitcnt(clkfreq/20 + cnt)			
+		repeat i from 0 to 1000 step 1
+			loop(i)
 			
+		repeat 'Delay at top
+			loop(1000)
+			
+		repeat i from 1000 to 0 step 1
+			loop(i)
+
+PUB loop(i)
+	motorpwm[0] := i + 1000
+	printMotorList(string("$ADPWM"), @motorpwm)
+
+	
+
+	pwm.servo(ESC_PIN, motorpwm[0])
+	repeat 1 'Number of seconds
+		repeat 2 'Number of rps readings per second
+			motorrps[0] := rpm.getrps(0)
+			readForce
+
+			printMotorList(string("$ADRPS"), @motorrps)
+			printMotorList(string("$ADMTH"), @motorthrust)
+			printMotorList(string("$ADMTQ"), @motortorque)
+
+PUB readForce | thrust, torque
+	torque := ADC.average(ADC_TORQUE, 4)
+	thrust := ADC.average(ADC_THRUST, 4)
+	
+	motorthrust[0] := thrust
+	motortorque[0] := torque
+
+	
 PUB motorPID(motor) | rps, drps, p, i, d, drive
 'Returns the PWM value to send to the motor
 'Motor is in the range of 0 - (NUM_MOT -1), and is used to index the following hub variables:
