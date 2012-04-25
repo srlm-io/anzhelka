@@ -77,15 +77,15 @@ PUB Main | i, j, counter
 		i := cnt
 		
 		printMotorList(string("$ADRPS "), @rps)
-'		printMotorList(string("$ADMIA "), @motoramp)
-'		printMotorList(string("$ADMVV "), @motorvolt)
-'		printMotorList(string("$ADPWM "), @motorpwm)
-'		printMotorList(string("$ADMKP "), @motorkp)
-'		printMotorList(string("$ADMKI "), @motorki)
-'		printMotorList(string("$ADMKD "), @motorkd)
-'		printMotorList(string("$ADMTH "), @motorthrust)
-'		printMotorList(string("$ADMTQ "), @motortorque)
-'		printMotorList(string("$ADDRP "), @motordesiredrps)
+		printMotorList(string("$ADMIA "), @motoramp)
+		printMotorList(string("$ADMVV "), @motorvolt)
+		printMotorList(string("$ADPWM "), @motorpwm)
+		printMotorList(string("$ADMKP "), @motorkp)
+		printMotorList(string("$ADMKI "), @motorki)
+		printMotorList(string("$ADMKD "), @motorkd)
+		printMotorList(string("$ADMTH "), @motorthrust)
+		printMotorList(string("$ADMTQ "), @motortorque)
+		printMotorList(string("$ADDRP "), @motordesiredrps)
 '		
 '		repeat 327
 '			debug.tx_test0(0, "*")
