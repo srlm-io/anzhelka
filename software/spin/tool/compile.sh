@@ -6,15 +6,21 @@
 #If any errors are encountered then it will stop at the appropriate point.
 
 #Meant to be run from the /spin directory
-#  $> tool/bst_mpu6050.sh
+#  $> tool/compile src/[filename].spin
 
 
 
+
+
+if [ $# -eq 0 ] ; then
+	echo "Usage: $0 [Top Level Spin File Path]"
+	exit 1
+fi
 
 echo
 echo
 
-./tool/bstc.linux -f -p0 -L lib  src/temp_num_gen.spin > bstoutput.txt
+./tool/bstc.linux -f -p0 -L lib  $1 > bstoutput.txt
 cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt
