@@ -20,7 +20,7 @@ fi
 echo
 echo
 
-./tool/bstc.linux -f -p0 -L lib  $1 > bstoutput.txt
+./tool/bstc.linux -f -p0 -l -L lib  $1 > bstoutput.txt
 cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt
