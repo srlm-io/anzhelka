@@ -13,9 +13,14 @@
 
 
 if [ $# -eq 0 ] ; then
-	echo "Usage: $0 [Top Level Spin File Path]"
+	echo "Usage: $0 [Top Level Spin File Path][--list [block number | objectname]]"
 	exit 1
 fi
+
+#Extract the filename without extension:
+filename=$(basename $1)
+extension=${filename##*.}
+filename=${filename%.*}
 
 echo
 echo
@@ -25,26 +30,38 @@ cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt
 if [ $? -eq 0 ]; then
-   echo Found Error!
+	echo Found Error!
 else
-   echo ----------------------------------------------------------
-   echo No compiler errors...
+	echo ----------------------------------------------------------
+	echo No compiler errors...
+
+	grep -q "No Propeller detected on" bstoutput.txt
+	if [ $? -eq 0 ]; then
+		echo Could not find Propeller chip...
+	else
    
-   grep -q "No Propeller detected on" bstoutput.txt
-   if [ $? -eq 0 ]; then
-      echo Could not find Propeller chip...
-   else
-   
-      echo
-      echo
-      echo To exit picocom, type C-A then C-X
-      echo
-      rm bstoutput.txt
-      
-      port=$(ls /dev/*USB*)
-      #echo $port
-      picocom -b 115200 $port
-   fi
+   		
+		echo
+		echo
+		echo To exit picocom, type C-A then C-X
+		echo
+		rm bstoutput.txt
+		
+		if [ $2 == "--list" ] ; then
+			if [ $# -gt 2 ]; then
+			gnome-terminal --geometry=142x60 -x ./tool/listgrep.py $filename.list $3
+			else
+				gnome-terminal --geometry=142x60 -x ./tool/listgrep.py $filename.list
+			fi
+		else
+			echo "Currently, the argument in position 2 must be --list."
+		fi
+			
+		
+		port=$(ls /dev/*USB*)
+		#echo $port
+		picocom -b 115200 $port
+	fi
 fi
 
 rm bstoutput.txt
