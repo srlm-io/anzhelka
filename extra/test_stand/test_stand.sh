@@ -14,7 +14,7 @@
 echo
 echo
 
-../../software/spin/tool/bstc.linux -f -p0 -L ../../software/spin/lib  test_stand.spin > bstoutput.txt
+../../software/spin/tool/bstc.linux -f -p0 -l -L ../../software/spin/lib  test_stand.spin > bstoutput.txt
 cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt

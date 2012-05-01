@@ -782,7 +782,7 @@ K_{tilt} &=
 
 
 
-
+\clearpage
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Motor Speed Calculations} \label{subsec:motorspeedcalculations}
@@ -806,8 +806,8 @@ Input Constants:
  	$ D $ 					& rotor diameter ($m$) \\
  	$ d $					& offset of each rotor from the center of mass ($m$) \\
  	$ \rho $				& air density ($kg/m^3$) \\
- 	$ K_t $					& thrust coefficient ($???$) \\
- 	$ K_q $					& torque coefficient ($???$) \\
+ 	$ K_t $					& thrust coefficient \\
+ 	$ K_q $					& torque coefficient \\
  	$ K_{P_i} $				& Motor Proportional PID gain (for $1 \leq i \leq 4$) \\
  	$ K_{I_i} $				& Motor Integral PID gain (for $1 \leq i \leq 4$) \\
  	$ \pi $					& pi \\
@@ -816,7 +816,7 @@ Input Constants:
 \bigskip
 Output Variables:
 \begin{tabular}{l l}
- 	$ u_i $					& motor command ($???$) \\
+ 	$ u_i $					& motor command \\
 \end{tabular}
 
 %T &= K_T\rho n^2 D^4 \\ %\label{eq:motor_thrust}

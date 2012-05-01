@@ -1,0 +1,199 @@
+%Cody Lewis, Luke De Ruyter, 2012
+%Visit anzhelka.com for all the latest
+%
+% CTRL+SPACE to switch panes in Texmaker
+%
+% Note: blank lines indicate a new paragraph
+% Note: \left( and \right) cannot break lines.
+
+% NOTES: 
+% --- Titles overlap for Engineering Effort and Societal Impacts.
+
+% TODO: Additional material
+% --- System design could be expanded (but not absolutely necessary
+
+\documentclass[english]{article}
+
+% Packages that are being used.
+\usepackage{amsmath}
+\usepackage{longtable}
+\usepackage{color}
+%\usepackage{verbatim} % used to display code
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{indentfirst}
+\usepackage{fancyhdr} % Fancy Header
+\usepackage{rotating} % To make vertical text in tables
+\usepackage[normalem]{ulem} %for strikethroughs
+
+%\usepackage{babel}
+
+%\usepackage{hyperref} %Must be at the end of use package but before "other settings". Used to make links of all references.
+
+
+
+
+\numberwithin{equation}{section} %change the numbering to have something like 1.1 and 3.15, etc.
+%Format of macro:
+%\newcommand{\NAME}[ARGUMENT NUMBER (OPTIONAL)]{ stuff to include, arguments denoted #1, #2, etc. }
+\newcommand{\vect}[1]{\boldsymbol{#1^2}}
+\newcommand{\bigvect}[3]{\boldsymbol{#1^#2^#3}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+
+%\addto{\captionsenglish}{\renewcommand*{\appendixname}{MyAppx}}
+
+\definecolor{lightlightgray}{gray}{0.9}
+
+\graphicspath{{../tests/}{../figures/}{../extra/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
+
+\fancyhead[RO,RE]{\textit{Page \thepage}}
+\fancyhead[CO,CE]{}
+\fancyhead[LO,LE]{\textit{Software Requirements Specification for Anzhelka}}
+%\fancyfoot[CO,CE]{ \thepage \\ \includegraphics[width=2cm]{../extra/pheonix_small.png}}
+\pagestyle{fancy}
+
+\setcounter{tocdepth}{1} %display only sections in table of contents
+
+\begin{document}
+
+\pagenumbering{roman}
+
+\lstset{
+%language=C,                             % Code langugage
+basicstyle=\ttfamily,                   % Code font, Examples: \footnotesize, \ttfamily
+keywordstyle=\color{OliveGreen},        % Keywords font ('*' = uppercase)
+commentstyle=\color{gray},              % Comments font
+%numbers=left,                           % Line nums position
+%numberstyle=\tiny,                      % Line-numbers fonts
+%stepnumber=1,                           % Step between two line-numbers
+%numbersep=5pt,                          % How far are line-numbers from code
+backgroundcolor=\color{lightlightgray}, % Choose background color
+frame=none,                             % A frame around the code
+tabsize=4,                              % Default tab size
+captionpos=b,                           % Caption-position = bottom
+breaklines=true,                        % Automatic line breaking?
+breakatwhitespace=false,                % Automatic breaks only at whitespace?
+showspaces=false,                       % Dont make spaces visible
+showtabs=false,                         % Dont make tabls visible
+%columns=flexible,                       % Column format
+%morekeywords={__global__, __device__},  % CUDA specific keywords
+}
+
+
+
+
+
+
+
+%\\ Version 1.0 approved \\ Prepared by Luke De Ruyter, Cody Lewis \\ University of California, Riverside \\ \date{\today}
+\title{\begin{flushright}\textbf{
+\rule{\textwidth}{3 pt} \\
+\bigskip \bigskip
+\Huge Software/Hardware \\ 
+Requirements Specification \\ 
+\bigskip \LARGE for \\ \bigskip
+\Huge Anzhelka \\
+\bigskip \bigskip \bigskip
+\large Version 1.0 approved \\
+\bigskip \bigskip \bigskip
+Prepared by \\ Luke De Ruyter \\Cody Lewis \\
+\bigskip \bigskip \bigskip
+University of California, Riverside \\
+\bigskip \bigskip \bigskip
+\today
+}\end{flushright}}
+%\author{Cody Lewis \\ \texttt{srlm@anzhelka.com} \and Luke De Ruyter \\ \texttt{ilukester@anzhelka.com} }
+%\date{\today}
+\date{}
+\author{}
+\maketitle 
+\newpage
+
+%\begin{center}\includegraphics[scale=.24]{tribal_phoenix.jpg}\end{center}
+
+%% TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC
+\renewcommand{\contentsname}{Table of Contents}
+\tableofcontents
+%\addcontentsline{toc}{section}{Table of Contents}
+%% TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC TOC
+
+
+%% REV REV REV REV REV REV REV REV REV REV REV REV REV
+\section*{Revisions}
+Current project status and files can be found at
+\begin{center}
+ \textbf{blog.anzhelka.com} \\
+ \textbf{code.anzhelka.com} \\
+\end{center}
+
+\begin{longtable}{l | l | p{5cm} | l}
+\hline
+\textbf{Version} & \textbf{Date} & \textbf{Changes} & \textbf{Commiter}\\
+\hline
+0.01	& April 30, 2012 & Initial layout of file was created. 	& Cody \\
+\hline
+\end{longtable}
+
+%% REV REV REV REV REV REV REV REV REV REV REV REV REV
+
+
+\newpage
+\pagenumbering{arabic}
+
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Introduction}
+\subsection{Purpose}
+\subsection{Document Conventions}
+\subsection{Intended Audience and Reading Suggestions}
+\subsection{Product Scope}
+\subsection{References}
+
+\newpage
+\section{Overall Description}
+\subsection{Product Perspective}
+\subsection{Product Functions}
+\subsection{User Classes and Characteristics}
+\subsection{Operating Environment}
+\subsection{Design and Implementation Constraints}
+\subsection{User Documentation}
+\subsection{Assumptions and Dependencies}
+
+\newpage
+\section{External Interface Requirements}
+\subsection{User Interfaces}
+\subsection{Hardware Interfaces}
+\subsection{Software or Hardware Interfaces}
+\subsection{Communications Interfaces}
+
+\newpage
+\section{System Features}
+\subsection{System Feature 1}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+\subsection{System Feature 2 (and so on)}
+
+\newpage
+\section{Other Nonfunctional Requirements}
+\subsection{Performance Requirements}
+\subsection{Safety Requirements}
+\subsection{Security Requirements}
+\subsection{Software or Hardware Quality Attributes}
+\subsection{Business Rules}
+
+\newpage
+\section{Other Requirements}
+\appendix
+%\gdef\thesection{Appendix \Alph{section}:}
+\section{Glossary}
+\section{Analysis Models}
+\section{To Be Determined List}
+
+
+\end{document}
