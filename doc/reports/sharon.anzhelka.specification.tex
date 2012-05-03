@@ -50,7 +50,7 @@
 \fancyhead[RO,RE]{\textit{Page \thepage}}
 \fancyhead[CO,CE]{}
 \fancyhead[LO,LE]{\textit{Software Requirements Specification for Anzhelka}}
-%\fancyfoot[CO,CE]{ \thepage \\ \includegraphics[width=2cm]{../extra/pheonix_small.png}}
+\fancyfoot[CO,CE]{ \thepage \\ \includegraphics[width=2cm]{../extra/pheonix_small.png}}
 \pagestyle{fancy}
 
 \setcounter{tocdepth}{1} %display only sections in table of contents
@@ -149,16 +149,32 @@ Current project status and files can be found at
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Introduction}
 \subsection{Purpose}
+Anzhelka is a complete system intended for autonomous quadrotor flight. Included as a part of Anzhelka is both hardware and software. This includes the quadrotor frame, control electronics, ground station software, and the complete system documentation. Anzhelka is completely open source, and all project files are available for download. You can find in this document any instructions necessary for understanding the functionality of Anzhelka components. This includes hardware and software interfaces, features, and system requirements.
 \subsection{Document Conventions}
 \subsection{Intended Audience and Reading Suggestions}
+This document is written for Anzhelka developers. This document is intended to refine development direction, and to bring new developers up to speed. For this document, developers include software writers, hardware designers, and system testers.
+
+You should read this document based on your background with Anzhelka. Current developers can find the appropriate section to read. New developers should read the introduction, overall description, and system features sections. If you are a non-developer for this project, and don't intend to ever become one, you should avoid this document. Look on the Anzhelka website for something more appropriate to your needs.
+
+
 \subsection{Product Scope}
+Anzhelka consists of four main components: a quadrotor hardware frame, custom quadrotor software, ground station software, and detailed documentation via the Anzhelka website. Even without a degree in control systems, you can use Anzhelka components to make an autonomous quadrotor system. By using these components you can customize the functionality of the system to suit your needs, or use them directly to perform predefined commands.
+
+
 \subsection{References}
 
 \newpage
 \section{Overall Description}
 \subsection{Product Perspective}
+\textit{<Describe the context and origin of the product being specified in this SPECIFICATION. For example, state whether this product is a follow-on member of a product family, a replacement for certain existing systems, or a new, self-contained product. If the SPECIFICATION defines a component of a larger system, relate the requirements of the larger system to the functionality of this software or hardware and identify interfaces between the two. A simple diagram that shows the major components of the overall system, subsystem interconnections, and external interfaces can be helpful.>}
+
+
 \subsection{Product Functions}
+\textit{<Summarize the major functions the product must perform or must let the user perform. Details will be provided in Section 3, so only a high level summary (such as a bullet list) is needed here. Organize the functions to make them understandable to any reader of the SPECIFICATION. A picture of the major groups of related requirements and how they relate, such as a top level data flow diagram or object class diagram, is often effective.>}
+
 \subsection{User Classes and Characteristics}
+\textit{<Identify the various user classes that you anticipate will use this product. User classes may be differentiated based on frequency of use, subset of product functions used, technical expertise, security or privilege levels, educational level, or experience. Describe the pertinent characteristics of each user class. Certain requirements may pertain only to certain user classes. Distinguish the most important user classes for this product from those who are less important to satisfy.>}
+
 \subsection{Operating Environment}
 \subsection{Design and Implementation Constraints}
 \subsection{User Documentation}
