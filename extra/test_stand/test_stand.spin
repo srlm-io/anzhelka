@@ -93,7 +93,7 @@ PUB Main | i, pwmoutput
 	DebugNewline
 
 
-	repeat i from 10 to 0
+	repeat i from 30 to 0
 		debug.str(PDEBUG, string("$ADSTR 't minus "))
 		debug.dec(PDEBUG, i)
 		debug.tx(PDEBUG, "'")
@@ -113,11 +113,37 @@ PUB Main | i, pwmoutput
 		repeat i from 0 to 1000 step 1
 			loop(i)
 			
-		repeat 'Delay at top
+		repeat 500'Delay at top
 			loop(1000)
 			
 		repeat i from 1000 to 0 step 1
 			loop(i)
+		
+		repeat 5	
+			repeat i from 0 to 1000 step 10
+				loop(i)
+			
+			repeat 20'Delay at top
+				loop(1000)
+			
+			repeat i from 1000 to 0 step 10
+				loop(i)
+				
+		repeat 5	
+			repeat i from 0 to 1000 step 30
+				loop(i)
+			
+			repeat 20'Delay at top
+				loop(1000)
+			
+			repeat i from 1000 to 0 step 30
+				loop(i)
+			
+			repeat 10
+				loop(0)
+		
+		
+		
 
 PUB loop(i)
 	motorpwm[0] := i + 1000

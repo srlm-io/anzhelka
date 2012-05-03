@@ -47,14 +47,15 @@ else
 		echo
 		rm bstoutput.txt
 		
-		if [ $2 == "--list" ] ; then
+		if [ "$2" = "--list" ] ; then #Quotes around the $2 to make a binary operator (http://linuxcommand.org/wss0100.php)
 			if [ $# -gt 2 ]; then
 			gnome-terminal --geometry=142x60 -x ./tool/listgrep.py $filename.list $3
 			else
 				gnome-terminal --geometry=142x60 -x ./tool/listgrep.py $filename.list
 			fi
 		else
-			echo "Currently, the argument in position 2 must be --list."
+			echo ""
+			#echo "Currently, the argument in position 2 must be --list."
 		fi
 			
 		

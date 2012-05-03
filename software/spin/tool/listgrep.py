@@ -39,8 +39,8 @@ if(len(sys.argv) == 1):
 
 data=open(sys.argv[1]).read()
 
-#The below says match anything that says "Object" followed by up to 800 chars, then "Object DAT Blocks", then the assembly
-result=re.compile("""(Object.{0,800}?Object DAT Blocks\n.*?)\n\|==========""",re.M|re.DOTALL).findall(data)
+#The below says match anything that says "Object" followed by up to 100 chars, then Object base, then up to 1800 chars, then "Object DAT Blocks", then the assembly
+result=re.compile("""(Object.{0,100}?Object Base.{0,1800}?Object DAT Blocks\n.*?)\n\|==========""",re.M|re.DOTALL).findall(data)
 
 if(len(sys.argv) == 2):
 	for item in result:

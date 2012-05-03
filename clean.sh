@@ -10,20 +10,19 @@
 #  $> ./clean.sh
 
 
-tilde="find . -type f | grep '~'$ | xargs rm -v 2> /dev/null"
-aux="find . -type f | grep '.aux'$ | xargs rm -v 2> /dev/null"
-log="find . -type f | grep '.log'$ | xargs rm -v 2> /dev/null"
-out="find . -type f | grep '.out'$ | xargs rm -v 2> /dev/null"
-synctex="find . -type f | grep '.synctex.gz'$ | xargs rm -v 2> /dev/null"
-toc="find . -type f | grep '.toc'$ | xargs rm -v 2> /dev/null"
+tilde="find . -type f | grep '~'$ | xargs rm -v 2> /dev/null" #Gedit temporary files
+aux="find . -type f | grep '.aux'$ | xargs rm -v 2> /dev/null" #Latex something or another...
+log="find . -type f | grep '.log'$ | xargs rm -v 2> /dev/null" #Latex something or another...
+out="find . -type f | grep '.out'$ | xargs rm -v 2> /dev/null" #Latex something or another...
+synctex="find . -type f | grep '.synctex.gz'$ | xargs rm -v 2> /dev/null" #Latex something or another...
+toc="find . -type f | grep '.toc'$ | xargs rm -v 2> /dev/null" #Latex Table of contents files
+list="find . -type f | grep '.list'$ | xargs rm -v 2> /dev/null" #BSTC List files
 
 #echo $tilde
 eval $tilde
 if [ $? -ne 0 ]; then
    echo "No *~ deletes."
 fi
-
-
 
 #echo $aux
 eval $aux
@@ -59,6 +58,11 @@ if [ $? -ne 0 ]; then
    echo "No *.toc deletes."
 fi
 
+#echo $list
+eval $list
+if [ $? -ne 0 ]; then
+   echo "No *.list deletes."
+fi
 
 
 
