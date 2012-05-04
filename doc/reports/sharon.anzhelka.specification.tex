@@ -10,7 +10,9 @@
 % --- Titles overlap for Engineering Effort and Societal Impacts.
 
 % TODO: Additional material
-% --- System design could be expanded (but not absolutely necessary
+% --- Section 2.1 still needs more content
+% --- Cody take Example 1
+% --- Luke take Example 2
 
 \documentclass[english]{article}
 
@@ -45,7 +47,7 @@
 
 \definecolor{lightlightgray}{gray}{0.9}
 
-\graphicspath{{../tests/}{../figures/}{../extra/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
+\graphicspath{{../tests/}{../figures/}{../extra/}{../figures/editorial/}} %\graphicspath{{path/one/}{path/two/}{path/three/}}
 
 \fancyhead[RO,RE]{\textit{Page \thepage}}
 \fancyhead[CO,CE]{}
@@ -166,15 +168,29 @@ Anzhelka consists of four main components: a quadrotor hardware frame, custom qu
 \newpage
 \section{Overall Description}
 \subsection{Product Perspective}
+
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.6]{elev_8_rendering.jpg}
+  \caption{This is an artistic rendering for the frame.}
+\end{figure}  
 \textit{<Describe the context and origin of the product being specified in this SPECIFICATION. For example, state whether this product is a follow-on member of a product family, a replacement for certain existing systems, or a new, self-contained product. If the SPECIFICATION defines a component of a larger system, relate the requirements of the larger system to the functionality of this software or hardware and identify interfaces between the two. A simple diagram that shows the major components of the overall system, subsystem interconnections, and external interfaces can be helpful.>}
 
 
 \subsection{Product Functions}
-\textit{<Summarize the major functions the product must perform or must let the user perform. Details will be provided in Section 3, so only a high level summary (such as a bullet list) is needed here. Organize the functions to make them understandable to any reader of the SPECIFICATION. A picture of the major groups of related requirements and how they relate, such as a top level data flow diagram or object class diagram, is often effective.>}
+Anzhelka will be equipted with a Parallax Propeller Multicore Processor. It will have two separate batteries. One will provide power for the motors and servos and the other to power the electronics. There are pin headers that have been broken out for expandablitly. Some of the pin headers are broken out in servo style arangements for ease of use. The motors and servos will have voltage and current monitoring. Anzhelka has been designed so that one can easily add multiple expansion boards.
 
 \subsection{User Classes and Characteristics}
 \textit{<Identify the various user classes that you anticipate will use this product. User classes may be differentiated based on frequency of use, subset of product functions used, technical expertise, security or privilege levels, educational level, or experience. Describe the pertinent characteristics of each user class. Certain requirements may pertain only to certain user classes. Distinguish the most important user classes for this product from those who are less important to satisfy.>}
+\subsubsection{User Example \#1}
+\subsubsection{User Example \#2}
 
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=1]{hipster1.jpg}
+  \caption{Jason Lariart}
+\end{figure}  
+Description goes here.
 \subsection{Operating Environment}
 \subsection{Design and Implementation Constraints}
 \subsection{User Documentation}
