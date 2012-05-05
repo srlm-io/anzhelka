@@ -6,13 +6,9 @@
 % Note: blank lines indicate a new paragraph
 % Note: \left( and \right) cannot break lines.
 
-% NOTES: 
-% --- Titles overlap for Engineering Effort and Societal Impacts.
-
 % TODO: Additional material
 % --- Section 2.1 still needs more content
-% --- Cody take Example 1
-% --- Luke take Example 2
+
 
 \documentclass[english]{article}
 
@@ -135,6 +131,8 @@ Current project status and files can be found at
 \hline
 0.01	& April 30, 2012 & Initial layout of file was created. 	& Cody \\
 \hline
+0.02	& May 4, 2012 & Purpose, Audience, Scope, Perspective, Functions, and Users was populated. & Cody, Luke \\
+\hline
 \end{longtable}
 
 %% REV REV REV REV REV REV REV REV REV REV REV REV REV
@@ -154,7 +152,7 @@ Current project status and files can be found at
 Anzhelka is a complete system intended for autonomous quadrotor flight. Included as a part of Anzhelka is both hardware and software. This includes the quadrotor frame, control electronics, ground station software, and the complete system documentation. Anzhelka is completely open source, and all project files are available for download. You can find in this document any instructions necessary for understanding the functionality of Anzhelka components. This includes hardware and software interfaces, features, and system requirements.
 \subsection{Document Conventions}
 \subsection{Intended Audience and Reading Suggestions}
-This document is written for Anzhelka developers. This document is intended to refine development direction, and to bring new developers up to speed. For this document, developers include software writers, hardware designers, and system testers.
+This document is written for Anzhelka developers. This document is intended to refine development direction, and to bring new developers up to speed. For this document, developers include software writers, hardware designers, and system testers. When the word "you" is written, it is referring to the developer who is reading this document. When the words "the user" is written, it is referring to the end user of the Anzhelka platform.
 
 You should read this document based on your background with Anzhelka. Current developers can find the appropriate section to read. New developers should read the introduction, overall description, and system features sections. If you are a non-developer for this project, and don't intend to ever become one, you should avoid this document. Look on the Anzhelka website for something more appropriate to your needs.
 
@@ -171,27 +169,28 @@ Anzhelka consists of four main components: a quadrotor hardware frame, custom qu
 
 \begin{figure}[h!]
   \centering
-	\includegraphics[scale=.6]{elev_8_rendering.jpg}
+	\includegraphics[scale=.6]{elev_8_rendering.JPG}
   \caption{This is an artistic rendering of the frame used for Anzhelka.}
 \end{figure}  
-
-We are taking an existing open hardware frame as our base platform. We have chosen to build on top of this hardware because of its expandability and its durability. We have designed a custom control board that will be able to run all of Anzhelka's software and house all the necessary components.\\
-
-
-\textit{<Describe the context and origin of the product being specified in this SPECIFICATION. For example, state whether this product is a follow-on member of a product family, a replacement for certain existing systems, or a new, self-contained product. If the SPECIFICATION defines a component of a larger system, relate the requirements of the larger system to the functionality of this software or hardware and identify interfaces between the two. A simple diagram that shows the major components of the overall system, subsystem interconnections, and external interfaces can be helpful.>}
+Anzhelka is a platform for experimentation in aerial robotics. It is an independent project designed from the ground up. We are taking an existing open hardware frame as our base hardware platform. We have chosen to build on top of this hardware because of its expandability and its durability. We have designed a custom control board that will be able to run all of Anzhelka's software and house all the necessary components.\\
+%
+%
+%\textit{<Describe the context and origin of the product being specified in this SPECIFICATION. For example, state whether this product is a follow-on member of a product family, a replacement for certain existing systems, or a new, self-contained product. If the SPECIFICATION defines a component of a larger system, relate the requirements of the larger system to the functionality of this software or hardware and identify interfaces between the two. A simple diagram that shows the major components of the overall system, subsystem interconnections, and external interfaces can be helpful.>}
 
 
 \subsection{Product Functions}
-Anzhelka will be equipped with a Parallax Propeller Multicore Processor. It will have two separate batteries. One will provide power for the motors and servos and the other to power the electronics. There are pin headers that have been broken out for expandability. Some of the pin headers are broken out in servo style arrangements for ease of use. The motors and servos will have voltage and current monitoring. Anzhelka has been designed so that one can easily add multiple expansion boards.
+Anzhelka is designed to be programmatically controllable in a number of different aspects. The quadrotor can receive commands to set any of it's internal registers, which then affect the flight of the quadrotor. In addition, the quadrotor has a command interpreter that is able to read command sequences from onboard memory. With these commands, the user can control a number of quadrotor functions including attitude and position.
+
+Anzhelka is equipped with a Parallax Propeller multicore processor. The quadrotor has two separate batteries. One battery provides power for the motors and servos; the other battery powers the electronics. The electronic hardware is designed with expandability in mind. The motors and servos have voltage and current monitoring. The Anzhelka system is designed to allow for the easy attachment of additional electronics.
 
 \subsection{User Classes and Characteristics}
-\textit{<Identify the various user classes that you anticipate will use this product. User classes may be differentiated based on frequency of use, subset of product functions used, technical expertise, security or privilege levels, educational level, or experience. Describe the pertinent characteristics of each user class. Certain requirements may pertain only to certain user classes. Distinguish the most important user classes for this product from those who are less important to satisfy.>}
-\subsubsection{User Example \#1}
-\subsubsection{User Example \#2}
+%\textit{<Identify the various user classes that you anticipate will use this product. User classes may be differentiated based on frequency of use, subset of product functions used, technical expertise, security or privilege levels, educational level, or experience. Describe the pertinent characteristics of each user class. Certain requirements may pertain only to certain user classes. Distinguish the most important user classes for this product from those who are less important to satisfy.>}
+
+\subsubsection{User Example: Jason}
 
 \begin{figure}[h!]
   \centering
-	\includegraphics[scale=1]{hipster1.jpg}
+	\includegraphics[width=3in]{hipster1.jpg}
   \caption{Jason Lariart}
 \end{figure}
 
@@ -205,10 +204,33 @@ Anzhelka will be equipped with a Parallax Propeller Multicore Processor. It will
 
 \textbf{ Hobbies:} Photography, Videography, Art, Protesting
 
-\textbf{About Jason:} He is an avid videographer and likes to push the limits of his skills, screw, and equipment. He likes to take pictures and videos of things that not just any ordinary person can do. Jason is currently an amateur photographer, but wants to make a professional carrier out of his work.
+\textbf{About Jason:} He is an avid videographer and likes to push the limits of his skills, crew, and equipment. He likes to take pictures and videos of things that not just any ordinary person can do. Jason is currently an amateur photographer, but wants to make a professional career out of his work.
 \\
 
-\textbf{Scenario:} Jason was preparing for remote video shoot and realized that he wasn't going to be able to get his aerial shot because a helicopter was out of his budget. Jason told the client that he was going to have to spend more money if wanted to get the aerial shot as planned. The client was upset to hear about this and had no choice but to drop the scene from the shoot. %  programmed it so he was able to acchieve the same effect he was looking for while staying in the budget.
+\textbf{Scenario:} Jason is preparing for a remote video shoot and realized that he won't be able to get his aerial shot because a helicopter is out of his budget. Jason told the client that he was going to have to spend more money if wanted to get the aerial shot as planned. The client was upset to hear about this and had no choice but to drop the scene from the shoot. %  programmed it so he was able to acchieve the same effect he was looking for while staying in the budget.
+
+\newpage
+\subsubsection{User Example: Dan}
+
+\begin{figure}[h!]
+  \centering
+	\includegraphics[width=3in]{oldgradstudent.jpg}
+  \caption{Dan Knuth}
+\end{figure}
+\textbf{ Age:} 82
+
+\textbf{ Education:} Doctorate in Mathematics
+
+\textbf{ Marital Status:} Widowed
+
+\textbf{ Occupation:} Software Developer
+
+\textbf{ Hobbies:} Open source programming, online forum posting, sitting
+
+\textbf{About Dan:} Dan works on open source systems. He has literally been around since the begining, and he remembers the days of punch card programming. Throughout his career he has been a strong supporter of making computer science more accessible, and his work in the open source field is both notable and well respected.
+\\
+\textbf{Scenario:} Dan wants to spend more time focusing on his hobbies, but he doesn't have much time left and he needs to eliminate routine activities. Dan wants to develop a robot to automatically pick up his medicine from the pharmacy and carry it to him. This robot needs to be able to fly, and to be user programmable. Dan has lots of experience in working with software, so it's ok if the product is a bit rough and requires the use of a command line. Dan would be particularly appreciative if the instructions could be programmed in by a series of toggle switches and incandescent lights.
+
 \subsection{Operating Environment}
 \subsection{Design and Implementation Constraints}
 \subsection{User Documentation}
