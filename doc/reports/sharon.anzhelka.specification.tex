@@ -25,6 +25,8 @@
 \usepackage{rotating} % To make vertical text in tables
 \usepackage[normalem]{ulem} %for strikethroughs
 
+\usepackage{enumerate} % For letter/number list
+
 %\usepackage{babel}
 
 %\usepackage{hyperref} %Must be at the end of use package but before "other settings". Used to make links of all references.
@@ -245,11 +247,88 @@ Anzhelka is equipped with a Parallax Propeller multicore processor. The quadroto
 
 \newpage
 \section{System Features}
-\subsection{System Feature 1}
+
+
+\subsection{Attitude Control}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. Hit By High Velocity Paintballs &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item Paintball hits, creates sudden attitude disturbance
+\item Quadrotor loses altitude, increase in attitude error
+\item Attittude mathematical control loop gains change to compensate
+\item Quadrotor adjusts motor speed based on control loop result
+\item Quadrotor achieves desired attitude
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+
+\subsection{Altitude Control}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
 \subsubsection{Functional Requirements}
+
+\subsection{Highly Manueverable}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{User Programmable}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{Modularized} 
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{Ground Station}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{Waypoint Control}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{Object Tracking}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{Intuitive User Control}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{Comprehensive Datalogging}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+\subsection{Open Community Support}
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+\subsubsection{Functional Requirements}
+
+
+
 \subsection{System Feature 2 (and so on)}
+
+
+
 
 \newpage
 \section{Other Nonfunctional Requirements}
