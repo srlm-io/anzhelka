@@ -10,7 +10,7 @@
 
 
 
-
+baud="230400"
 
 if [ $# -eq 0 ] ; then
 	echo "Usage: $0 [Top Level Spin File Path][--list [block number | objectname]]"
@@ -25,7 +25,10 @@ filename=${filename%.*}
 echo
 echo
 
-./tool/bstc.linux -f -p0 -l -L lib  $1 > bstoutput.txt
+#Set the tab stops, useful for when displaying the listing
+tabs 5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93
+
+./tool/bstc.linux -f -p0 -l -w1 -L lib -L lib/bma $1 > bstoutput.txt
 cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt
@@ -61,7 +64,7 @@ else
 		
 		port=$(ls /dev/*USB*)
 		#echo $port
-		picocom -b 115200 $port
+		picocom -b $baud $port
 	fi
 fi
 
