@@ -168,7 +168,7 @@ DAT
 '* Assembly language serial driver *
 '***********************************
 
-                        org
+                        org 0
 '
 '
 ' Entry

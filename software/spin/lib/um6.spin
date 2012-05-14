@@ -15,6 +15,7 @@ Date: May 5, 2012
 Notes: 
 --- Works with the CH Robotics UM6 9DOF IMU over a serial interface.
 --- Derived from FullDuplexSerialPlus, Version 1.1
+--- 99% compatible with FDS+ (TODO: explain)
 
 CHR_UM6 Checksum is calculated by the following:
 "The checksum is computed by summing the each unsigned character in the packet
@@ -27,16 +28,25 @@ but it is something worth checking."
 
 The IMU transmits the MSB first. That means that the first data byte received is B3, then B2, B1, and B0.
 
-Note: the variables will be updated in the hub as single longs. This could be a problem for things like the quats
-	where the "single" number is broken into two packets. If half is new and half is old...
-	POSSIBLE SOLUTION -- Use the GET_DATA command  to retrieve the desired addresses, instead of the auto updating.
-	
-Note: For now, it will receive the bytes in a batch. But it really ignores them (because do I really want them?)
 
+TODO:
+---	Note: the variables will be updated in the hub as single longs. This could be a problem for things like the quats
+		where the "single" number is broken into two packets. If half is new and half is old...
+		POSSIBLE SOLUTION -- Use the GET_DATA command  to retrieve the desired addresses, instead of the auto updating.
+
+---	Bug: I think it will hicup on writting the received bytes to the hub if it's a string such as "snsnp": it won't write
+		the first "sn" when it should...
+	
+--- Receive Function tests for maximum packet length of 16. Shouldn't it be 4*16, or 64? (Solved???)
+--- Check whether it works with tx code... I can't seem to get it to respond to anything I send it (eg. AA)
+		Note: it does seem to occasionally send FD (invalid checksum) when sending it command registers
+				but the checksum appears to be correct.
+				
+---	Need to figure out something to do when the command failed bit is set (both in assembly and spin versions)
 }}
 
 ''------------------------------------------------------------------
-''--------------------[BEGIN DEBUGGER]------------------------------
+''--------------------[BEGIN][DEBUGGER]-----------------------------
 ''------------------------------------------------------------------
 
 VAR
@@ -74,9 +84,6 @@ PUB main_debug
 	add_register($62, @euler_phi_theta)
 
 
-
-
-
 	readptr := @readbuf
 
 	bu.taskstart(@entry, start_debug(IMU_RX_PIN, IMU_TX_PIN, 0, 115200), string("Main Task"))
@@ -87,34 +94,18 @@ PUB main_debug
 PUB start_debug(rxpin, txpin, mode, baudrate) : okay
   {{
   DEBUG VERSION - Identical, except it doesnt't start a cog, and instead returns parameter address
-  
-  Starts serial driver in a new cog
-
-
-    rxpin - input receives signals from peripheral's TX pin
-    txpin - output sends signals to peripheral's RX pin
-    mode  - bits in this variable configure signaling
-               bit 0 inverts rx
-               bit 1 inverts tx
-               bit 2 open drain/source tx
-               bit 3 ignor tx echo on rx
-
-    baudrate - bits per second
-            
-    okay - returns false if no cog is available.
-  }}
+}}  
 
 	stop
 	longfill(@rx_head, 0, 4)
 	longmove(@rx_pin, @rxpin, 3)
 	bit_ticks := clkfreq / baudrate
 	buffer_ptr := @rx_buffer
-	
-'	okay := cog := cognew(@entry, @rx_head) + 1
+
 	okay := @rx_head 'For Debugger
 
 ''------------------------------------------------------------------
-''--------------------[END DEBUGGER]--------------------------------
+''--------------------[END][DEBUGGER]-------------------------------
 ''------------------------------------------------------------------
 
 
@@ -124,24 +115,11 @@ PUB start_debug(rxpin, txpin, mode, baudrate) : okay
 
   
 CON                                          ''
-''Parallax Serial Terminal Control Character Constants
-''────────────────────────────────────────────────────
-  HOME     =   1                             ''HOME     =   1          
-  CRSRXY   =   2                             ''CRSRXY   =   2          
-  CRSRLF   =   3                             ''CRSRLF   =   3          
-  CRSRRT   =   4                             ''CRSRRT   =   4          
-  CRSRUP   =   5                             ''CRSRUP   =   5          
-  CRSRDN   =   6                             ''CRSRDN   =   6          
-  BELL     =   7                             ''BELL     =   7          
-  BKSP     =   8                             ''BKSP     =   8          
-  TAB      =   9                             ''TAB      =   9          
-  LF       =   10                            ''LF       =   10         
-  CLREOL   =   11                            ''CLREOL   =   11         
-  CLRDN    =   12                            ''CLRDN    =   12         
-  CR       =   13                            ''CR       =   13         
-  CRSRX    =   14                            ''CRSRX    =   14         
-  CRSRY    =   15                            ''CRSRY    =   15         
-  CLS      =   16                            ''CLS      =   16          
+   
+
+	DEFAULT_BAUD_RATE = 115200	'CHR UM6 Default baud is 115200
+
+
 
 
 VAR
@@ -162,6 +140,9 @@ VAR
 	byte  tx_buffer[16]  
 
 
+
+
+
 PUB add_register(register, hub_address_a)
 {{ Adds a register to watch for to the current count.
 	Must be called before start method.
@@ -174,16 +155,15 @@ PUB add_register(register, hub_address_a)
 	
 	
 	 }}
-'	return hub_address_a
-	
-	long[@data_register][data_count] := register
-	long[@data_address][data_count] := hub_address_a
-	data_count ++
-	
-PUB get_data_count
-	return data_count
-PUB get_data_address_address
-	return @data_address
+
+'	TODO: add bounds check for making sure that register is less than or == to $84
+
+	long[@data_address][register] := hub_address_a
+
+PUB startdefault(rxpin, txpin) : okay
+	{{ Same as start, but with default parameters }}
+	return start(rxpin, txpin, 0, DEFAULT_BAUD_RATE)
+
 PUB start(rxpin, txpin, mode, baudrate) : okay
   {{
   Starts serial driver in a new cog
@@ -208,19 +188,267 @@ PUB start(rxpin, txpin, mode, baudrate) : okay
 	okay := cog := cognew(@entry, @rx_head) + 1
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PUB ReceiveFilteredPacket(addr_i) | i, addr, rp_pt, rp_um6_address, checksum, data_length, checksum_running_total, state
+{{Addr is the location to store the received string, should be large enough to hold everything (18 bytes...)
+
+Stores data in the following format:
+
+Byte Offset - Contents
+0 - type (um6_address)
+1 - data length (bytes)
+2+- data (if any)
+
+This function will block until data is received...
+
+Returns the address passed in.
+}}
+
+	addr := addr_i 'Copy the value so we can return it at the end...
+
+	repeat until rx == "$"		
+	rp_pt := rx
+
+	if (rp_pt & %1000_0000) == 0 'then no data (has data bit is 0)
+		'debug.str(string(10, 13, "Data bit is set to 0"))
+		data_length := 0
+	else
+		data_length := 4
+		
+	
+	rp_um6_address := rx
+	
+	byte[addr++] := rp_um6_address & $FF
+	byte[addr++] := data_length & $FF
+	
+	if data_length <> 0
+		'Hmmm, the indicies on repeat are inclusive, so we need to take off 1. Right?
+		repeat i from 0 to data_length - 1 'If data_legth is 0, then the loop should never execute (right???)
+			byte[addr] := rx
+			checksum_running_total += byte[addr++]
+
+	return addr_i 'return the original value
+
+
+PUB ReceiveOriginalPacket(addr_i) | i, addr, rp_pt, rp_um6_address, checksum, data_length, checksum_running_total, state
+{{
+Addr is the location to store the received string, should be large enough to hold everything (18 bytes...)
+
+Stores data in the following format:
+
+Byte Offset - Contents
+0 - type (um6_address)
+1 - data length (bytes)
+2+- data (if any)
+
+This function will block (wait) until a valid packet is received.
+
+Return
+	addr	on	success
+	-1		on	checksum failure
+	-2		on	packet length error (via pt byte)
+}}
+
+	addr := addr_i 'Copy the value so we can return it at the end...
+
+'------------------------------------
+'  snp state machine
+'------------------------------------
+	state := 1
+	{state description:
+		1 -- Waiting for s
+		2 -- Received s
+		3 -- Received sn
+		
+		Each state then waits for the next char and transitions to state S[1-3] based on the received char.
+		Note that state 2 must check for 2 types of strings: "ssssssn_" and "sn_", both of which are valid.
+		
+	}
+	repeat 
+		i := rx
+		if state == 1
+			if i == "s"
+				state := 2
+		elseif state == 2
+			if i == "s"
+				state := 2
+			elseif i == "n"
+				state := 3
+			else
+				state := 1
+		elseif state == 3
+			if i == "s"
+				state := 2
+			elseif i == "p"
+				quit
+			else
+				state := 1
+		else
+			state := 1 'Should never happen
+'------------------------------------
+
+	rp_pt := rx
+
+	if (rp_pt & %1000_0000) == 0 'then no data (has data bit is 0)
+		data_length := 0
+	elseif (rp_pt & %0100_0000) == 0 'then has data, but no batch, so 4 bytes of data
+		data_length := 4
+	else 'then has data, is a batch, with length of:
+		data_length := 4 * ((rp_pt & %00111100) >> 2)
+	'Check to make sure the data_length size isn't corrupted
+	if data_length < 0 OR data_length > 48
+'		debug.str(@RECEIVE_PACKET_ERROR)
+'		debug.str(string("Invalid data_length: out of bounds.", 10, 13))
+		return -2
+	
+'	if (rp_pt & %0000_0001) == 1 'Then command failed
+'		debug.str(string("Command failed!", 10, 13))	
+		'What shoul we do if command failed bit is set?
+		
+	rp_um6_address := rx
+	
+	byte[addr++] := rp_um6_address & $FF
+	byte[addr++] := data_length & $FF
+	
+	checksum_running_total := "s" + "n" + "p" + rp_pt + rp_um6_address
+	
+	if data_length <> 0
+		'Hmmm, the indicies on repeat are inclusive, so we need to take off 1. Right? Correct
+		repeat i from 0 to data_length - 1 'If data_legth is 0, then the loop should never execute (right???)
+			byte[addr] := rx
+			checksum_running_total += byte[addr++]
+	
+
+	checksum := rx << 8
+	checksum := checksum | rx
+	
+	if checksum <> checksum_running_total
+'		debug.str(@RECEIVE_PACKET_ERROR)
+'		debug.str(string("Invalid Checksum: "))
+'		debug.hex(checksum, 4)
+'		debug.tx("/")
+'		debug.hex(checksum_running_total, 4)
+'		debug.str(string(" (given/calculated)", 10, 13))
+		return -1
+		
+	return addr_i 'return the original value
+	
+
+PRI AppendChecksum(addr) | i, data_length
+{{
+This function still needs to be tested...
+
+I think it is correct, but I am unsure
+}}
+
+	result := 0
+	
+'	debug.str(string(13, 10, "Starting Address: $"))
+'	debug.hex(addr, 8)
+	
+	'Check (and add) "snp" string
+	repeat i from 1 to 3 '1 to 3 because loopup is not zero based...
+'		t1 := byte[addr++]
+		if byte[addr] <> lookup(i: "s", "n", "p")
+'			debug.str(@APPEND_CHECKSUM_ERROR)
+'			debug.str(string("t1 should equal $"))
+'			debug.hex(lookup(i: "s", "n", "p"), 2)
+'			debug.str(string(" but is really $"))
+'			debug.hex(t1, 2)
+'			debug.tx(10)
+'			debug.tx(13)
+			return -1
+		result += byte[addr++]
+	
+	
+'	debug.str(string(13, 10, "Result == $"))
+'	debug.hex(result, 8)
+'	
+	
+	'Evaluate the PT byte
+'	t1 := byte[addr++]
+	result += byte[addr]
+	
+	if (byte[addr] & %1000_0000) == 0
+		'then no data (has data bit is 0)
+'		debug.str(string(10, 13, "Data bit is set to 0"))
+		data_length := 0
+	elseif (byte[addr] & %0100_0000) == 0
+		'then has data, but no batch, so 4 bytes of data
+'		debug.str(string(10, 13, "Single register of data"))
+		data_length := 4
+	else
+		'then has data, is a batch, with length of:
+'		debug.str(string(10, 13, "Batch of data..."))
+		data_length := 4 * ((byte[addr] & %0011_1100) >> 2)
+	addr++ 'increment address from pt byte to first data byte
+	
+	'Add in the address byte
+	result += byte[addr++]
+	
+	
+'	debug.str(string(13, 10, "Result == $"))
+'	debug.hex(result, 8)
+
+	if data_length <> 0
+		'Hmmm, the indicies on repeat are inclusive, so we need to take off 1. Right?
+		repeat i from 0 to data_length - 1 'If data_legth is 0, then the loop should never execute (right???)
+'			debug.str(string(10, 13, "In loop..."))
+			result += byte[addr++]
+	
+'	debug.str(string(13, 10, "Result == $"))
+'	debug.hex(result, 8)
+	
+	
+'	debug.str(string(13, 10, "Checksum Address: $"))
+'	debug.hex(addr, 8)
+	
+	
+	'Now, we have the checksum in result, and need to store it at addr
+	byte[addr++] := (result & $FF00) >> 8 'Upper portion first
+	byte[addr++] := (result & $FF) 'Lower portion second
+	
+	return result
+
+
+
+
+
+
+
+
+''------------------------------------------------------------------
+''--------------------[BEGIN][FULLDUPLEXSERIALPLUS ROUTINES]--------
+''------------------------------------------------------------------
+
+
 PUB stop
-
   '' Stops serial driver - frees a cog
-
 	if cog
 		cogstop(cog~ - 1)
 	longfill(@rx_head, 0, 9)
 
 
 PUB tx(txbyte)
-
   '' Sends byte (may wait for room in buffer)
-
 	repeat until (tx_tail <> (tx_head + 1) & $F)
 	tx_buffer[tx_head] := txbyte
 	tx_head := (tx_head + 1) & $F
@@ -228,43 +456,39 @@ PUB tx(txbyte)
 	if rxtx_mode & %1000
 		rx
 
-PUB rx : rxbyte
 
+PUB rx : rxbyte
   '' Receives byte (may wait for byte)
   '' rxbyte returns $00..$FF
-
 	repeat while (rxbyte := rxcheck) < 0
 
+
 PUB rxflush
-
   '' Flush receive buffer
-
 	repeat while rxcheck => 0
     
+    
 PUB rxcheck : rxbyte
-
   '' Check if byte received (never waits)
   '' rxbyte returns -1 if no byte received, $00..$FF if byte
-
 	rxbyte--
 	if rx_tail <> rx_head
 		rxbyte := rx_buffer[rx_tail]
 		rx_tail := (rx_tail + 1) & $F
 
-PUB rxtime(ms) : rxbyte | t
 
+PUB rxtime(ms) : rxbyte | t
   '' Wait ms milliseconds for a byte to be received
   '' returns -1 if no byte received, $00..$FF if byte
-
 	t := cnt
 	repeat until (rxbyte := rxcheck) => 0 or (cnt - t) / (clkfreq / 1000) > ms
 
+
 PUB str(stringptr)
-
   '' Send zero terminated string that starts at the stringptr memory address
-
 	repeat strsize(stringptr)
 		tx(byte[stringptr++])
+
 
 PUB getstr(stringptr) | index
     '' Gets zero terminated string and stores it, starting at the stringptr memory address
@@ -273,9 +497,7 @@ PUB getstr(stringptr) | index
 	byte[stringptr][--index]~
 
 PUB dec(value) | i
-
 '' Prints a decimal number
-
 	if value < 0
 		-value
 		tx("-")
@@ -293,71 +515,62 @@ PUB dec(value) | i
 
 
 PUB GetDec : value | tempstr[11]
-
     '' Gets decimal character representation of a number from the terminal
     '' Returns the corresponding value
-
 	GetStr(@tempstr)
 	value := StrToDec(@tempstr)    
 
+
 PUB StrToDec(stringptr) : value | char, index, multiply
-
     '' Converts a zero terminated string representation of a decimal number to a value
-
 	value := index := 0
 	repeat until ((char := byte[stringptr][index++]) == 0)
 		if char => "0" and char =< "9"
 			value := value * 10 + (char - "0")
 	if byte[stringptr] == "-"
 		value := - value
+
        
 PUB bin(value, digits)
-
   '' Sends the character representation of a binary number to the terminal.
-
 	value <<= 32 - digits
 	repeat digits
 		tx((value <-= 1) & 1 + "0")
 
-PUB GetBin : value | tempstr[11]
 
+PUB GetBin : value | tempstr[11]
   '' Gets binary character representation of a number from the terminal
-  '' Returns the corresponding value
-   
+  '' Returns the corresponding value  
 	GetStr(@tempstr)
 	value := StrToBin(@tempstr)    
    
-PUB StrToBin(stringptr) : value | char, index
-
-  '' Converts a zero terminated string representaton of a binary number to a value
    
+PUB StrToBin(stringptr) : value | char, index
+  '' Converts a zero terminated string representaton of a binary number to a value
 	value := index := 0
 	repeat until ((char := byte[stringptr][index++]) == 0)
 		if char => "0" and char =< "1"
 			value := value * 2 + (char - "0")
 	if byte[stringptr] == "-"
 		value := - value
+
    
 PUB hex(value, digits)
-
   '' Print a hexadecimal number
-
 	value <<= (8 - digits) << 2
 	repeat digits
 		tx(lookupz((value <-= 4) & $F : "0".."9", "A".."F"))
 
-PUB GetHex : value | tempstr[11]
 
+PUB GetHex : value | tempstr[11]
     '' Gets hexadecimal character representation of a number from the terminal
     '' Returns the corresponding value
-
 	GetStr(@tempstr)
 	value := StrToHex(@tempstr)    
 
+
 PUB StrToHex(stringptr) : value | char, index
-
     '' Converts a zero terminated string representaton of a hexadecimal number to a value
-
 	value := index := 0
 	repeat until ((char := byte[stringptr][index++]) == 0)
 		if (char => "0" and char =< "9")
@@ -368,6 +581,16 @@ PUB StrToHex(stringptr) : value | char, index
 			value := value * 16 + (10 + char - "a")
 	if byte[stringptr] == "-"
 		value := - value
+
+
+
+
+
+
+
+''------------------------------------------------------------------
+''--------------------[BEGIN][PASM]---------------------------------
+''------------------------------------------------------------------
 
 DAT
 
@@ -382,9 +605,10 @@ DAT
 '
 entry			
 				long 0 [8]     ' debugger stub space ... if no debugger, these are nops
-
-
 				mov		dira, mask 'DEBUG: Allow for LED output
+				mov		write_raw, #0	'Default to not write
+				
+				
 				
 
 				mov		t1,par				'get structure address
@@ -453,9 +677,12 @@ receive			jmpret	rxcode,txcode		'run chunk of tx code, then return
 
 				
 
-write_packet	'Checks to see if the packet should be written to the hub, based on the save_packet flag
-				cmp		save_packet, #1	wz	
-'	if_nz		jmp		#state_machine		'skip to rest of code
+write_packet	'Checks to see if the packet should be written to the hub, based on the write_raw flag
+				cmp		write_raw, #1	wz	
+	if_nz		jmp		#state_machine		'skip to rest of code
+				
+'				TODO: optimization:
+'				djnz	write_raw, #state_machine nr 'Basically a == 1 test with branch, but the nr says no effect
 				
 	if_z		rdlong	t2,par				'save received byte and inc head
 	if_z		add		t2,rxbuff
@@ -476,6 +703,7 @@ state_machine
 :state_0 'Compare to s
 				cmp		rxdata, #"s"	wz	'Compare to ASCII 's'
 	if_z		movs	:switch, #:state_1	'transition to next state (1)
+		
 				jmp		#receive
 				
 				
@@ -486,7 +714,7 @@ state_machine
 	if_nz		cmp		rxdata, #"s"	wz	'Compare to ASCII 's'
 	if_nz		movs	:switch, #:state_0	'character was neither s nor n, so back to state 0
 				jmp		#receive			'	otherwise, stay in state 1 (ie, if it's an 's')
-	
+
 '-------------------------------------------
 :state_2 'Compare to p
 				movs	:switch, #:state_0	'Default back to state 0
@@ -500,7 +728,7 @@ state_machine
 '-------------------------------------------				
 :state_3 ' parse the pt byte				
 				
-'				mov		batch_length_debug, rxdata 'make copy
+				mov		pt, rxdata
 				mov		checksum_calc, rxdata
 				add		checksum_calc, snp_sum
 				
@@ -517,75 +745,77 @@ state_machine
 	if_nz		mov		batch_length, rxdata	'if it is a batch, get the length
 	if_nz		shr		batch_length, #2
 	if_nz		and		batch_length, #$F		'only lowest four bits
-				
-'				muxz	outa, mask 'For debugging
-				
 	if_z		mov		batch_length, #1		'Default to a batch length of 1 (if data, at least one register's worth)
-	
-				mov		batch_length_copy, batch_length	'Make a copy, used in state 7
-'				mov		batch_length_debug, rxdata 'make copy
-	
-				movs	:switch, #:state_4		'move on to address state
-	
 
-				
+				movs	:switch, #:state_4		'move on to address state
 	
 				jmp		#receive
 
 '-------------------------------------------				
 :state_4	' parse the address
-'TO_DO: add code here for adjusting the address when in batch mode
+
 				mov		um6_address, rxdata
 				add		checksum_calc, rxdata
 				cmp		has_data, #0	wz
 	if_z		movs	:switch, #:state_6 		'Packet has no data
 	if_nz		movs	:switch, #:state_5		'Packet has data, num registers == batch_length
 	
-	'---------------------------------------
-'				'Test for the various packet types (Slow version)
-'				mov		t1, #0
-'				mov		t2, #data_register
-':state_4_loop	
-'				mov		t3, t2					'Reset t3 with base address (t2)
-'				add		t3, t1					'Add offset (t1) to address
-'				movs	:state_4_loop_read, t3
-'				nop								'Can't modify the next instruction
-':state_4_loop_read
-'				cmp		um6_address, 0-0	wz	'Compare the addresses to the data_register variable
-'	if_nz		add		t1, #1					'increment for next time through loop
-'	if_nz		cmp		t1, #5+1				wc	'Test for bounds (note the +1 here, correct?)
-'	if_nz_and_c	jmp		#:state_4_loop
-
-'	if_nc		jmp		#receive				'if C is not set then it didn't find a match...
-	'---------------------------------------
-				'Test for the various packet types (Fast(?) version)
-			
-'				movs	:state_4_loop, #data_register-1
-'				mov		data_offset, data_count	'DEBUG:TO_DO: Make it so that the 8 is changeable...
-'												'Selected 8 because too many instructions here will make it unable to
-'												'receive the bits (it hangs...)
-'												
-'				add		data_offset, #1
-'				add		:state_4_loop, data_offset	'Set the loop index to the last (based on constant in previous instruction) instruction
-'				nop								'Can't modify the next instruction
-'					
-':state_4_loop	cmp		um6_address, 0-0 wz		'Test received address and the address in memory. Same?
-'	if_nz		sub		:state_4_loop, #1		'If different, decrement to next address
-'	if_nz		djnz	data_offset, #:state_4_loop		'If different, decrement index. If there's still more to check, jump
-'			
-'				'Add this point
-'				' data_offset - index+1 of matching address
-'	if_z		sub		data_offset, #1					'Because counter is +1 from the actual index (so it works with djnz)
-'	if_nz		mov		data_offset, #$FF		'$FF indicates no register match found
-'					
 	
+	
+	
+:state_4_batch
+				'This should be called if the address has been calculated by batch incrementing (not rx receive)
+				cmp		um6_address, #$84 + 1 wc	'Check to see if it is past the maximum register
+	if_nc		mov		write_raw, #1
+	if_nc		jmp		#:state_4_write
+				
+				
+				
+				mov		t1, #data_address
+				add		t1, um6_address
+				movd	:state_4_dr_cmp, t1
+				movs	:state_5_wrlong, t1		'Update the base address 
+				
+:state_4_dr_cmp	cmp		0-0, #0 wz				'Check to see if data_address[um6_address] == 0
+	if_z		mov		write_raw, #1			'If it is == 0, that indicates that it's an unwatched address.
+	if_nz		mov		write_raw, #0			'If it is != 0, that indicates that we should filter it out of the buffer
+	
+	
+:state_4_write	cmp		write_raw, #1
+	if_z		mov		rxdata, #"$"
+	if_z		rdlong	t2,par				'Write '$' to hub
+	if_z		add		t2,rxbuff
+	if_z		wrbyte	rxdata,t2
+	if_z		sub		t2,rxbuff
+	if_z		add		t2,#1
+	if_z		and		t2,#$0F
+
+
+	if_z		mov		rxdata, pt
+	if_z		and		rxdata, #%1000_0011 'get rid of batch data (since we write only one register at a time to hub
+	
+	
+	if_z		add		t2,rxbuff			'write pt byte to hub
+	if_z		wrbyte	rxdata,t2
+	if_z		sub		t2,rxbuff
+	if_z		add		t2,#1
+	if_z		and		t2,#$0F
+
+	if_z		mov		rxdata, um6_address
+	if_z		add		t2,rxbuff			'write um6_address to hub
+	if_z		wrbyte	rxdata,t2
+	if_z		sub		t2,rxbuff
+	if_z		add		t2,#1
+	if_z		and		t2,#$0F
+	if_z		wrlong	t2,par
+
+
 				jmp		#receive
 
 '-------------------------------------------				
 :state_5	'data receive (4 bytes)
-				nop
-				mov		data_bytes_result, #0
-'				mov		batch_byte_index, #dn	'Copy the address of the data registers
+				mov		data_bytes_result, #0			'Clear results for this register
+
 
 
 :state_5_0		add		checksum_calc, rxdata			'Add to checksum
@@ -613,53 +843,32 @@ state_machine
 
 '-------------------------------------------
 'Write received long to hub
-				wrlong	data_bytes_result, data_address
- 
-				{Current Problem: It's not writting the correct(?) Data to the the hub
-				Outputs with just the wrlong above seem to indicate that the data_bytes_result has the correct values
-				but that somewhere in the block below it's not showing up... :(
-				Anyway, the block below was outputting FFFFFFFs in the second column (first added to registers, important?)
-				and 00000000s in the rest
-				
-				}
+'				
+				cmp		write_raw, #0 wz
+			
+:state_5_wrlong
+	if_z		wrlong	data_bytes_result, 0-0	'if valid address, write result (address loaded in state 4 (address) state)
+'				wrlong	data_bytes_result, 0-0	'if valid address, write result (address loaded in state 4 (address) state)
 
-
-
-'				cmp		um6_address, data_register + 0 wz
-'	if_z		wrlong	data_bytes_result, data_address + 0
-'	
-'				cmp		um6_address, data_register + 1 wz
-'	if_z		wrlong	data_bytes_result, data_address + 1
-'	
-'				cmp		um6_address, data_register + 2 wz
-'	if_z		wrlong	data_bytes_result, data_address + 2
-'	
-'				cmp		um6_address, data_register + 3 wz
-'	if_z		wrlong	data_bytes_result, data_address + 3
-'	
-'				cmp		um6_address, data_register + 4 wz
-'	if_z		wrlong	data_bytes_result, data_address + 4
-'	
-'				cmp		um6_address, data_register + 5 wz
-'	if_z		wrlong	data_bytes_result, data_address + 5
-'	
-'				cmp		um6_address, data_register + 6 wz
-'	if_z		wrlong	data_bytes_result, data_address + 6
-'	
-'				cmp		um6_address, data_register + 7 wz
-'	if_z		wrlong	data_bytes_result, data_address + 7
-'-------------------------------------------
-				add		um6_address, +1			'If it's a batch operation, then the next address needs to be set
-				
-	if_z		movs	:switch, #:state_6		'All done (with registers)!
-	if_nz		movs	:switch, #:state_5_0	'More registers to receive in batch
 	
+'-------------------------------------------
+				add		um6_address, #1			'If it's a batch operation, then the next address needs to be set
+				
+				sub		batch_length, #1	wz
+	if_z		movs	:switch, #:state_6		'All done (with registers)!
+	if_z		mov		write_raw, #0			'If all done, then we don't want to write checksums to hub
+	
+	if_nz		movs	:switch, #:state_5		'If not done, More registers to receive in batch
+	if_nz		jmp		#:state_4_batch			'Need to update UM6 address before receiving next byte...
+	
+				movs	:switch, #:state_6		'DEBUG
 				jmp		#receive
 
 
 
 '-------------------------------------------
 :state_6	'checksumA receive
+
 				mov		checksum_rec, rxdata	'set up the higher 8 bits of the checksum
 				shl		checksum_rec, #8
 				movs	:switch, #:state_7
@@ -671,23 +880,15 @@ state_machine
 				
 				or		checksum_rec, rxdata	'append the lower eight bits
 
-
-
-				
-				
-				
-				
-				
-				
 				cmp		checksum_calc, checksum_rec	wz
-
+				'TODO: write code to check checksum...
 				
 				jmp		#receive
 
 '-------------------------------------------------------------------
 				'The two lines below will output all eight LEDs
-				and		t1, #0 wz
-				muxz	outa, mask
+'				and		t1, #0 wz
+'				muxz	outa, mask
 				
 
 
@@ -740,56 +941,70 @@ transmit		jmpret	txcode,rxcode		'run chunk of rx code, then return
 '
 ' Uninitialized data
 '
-'the variables data_* are meant to be written to before the object starts.
-'temp			long	0'Don't use!
-data_offset		long	0					'Used to index into the current value for the data_* arrays
-data_count		long	0					'The number of registers to watch for
-data_register	long	0[16]				'The UM6 register to watch for (note: the max, 16, is hardcoded above...)
-'spacer_debug	long	0
-data_address	long	0[16]				'The HUB address to store the received long (4 bytes) to
 
-batch_length_debug	long	0
 
-filter_received	long	$1
+temp_mask_0		long	$800000	'Debug
+temp_mask_1		long	$400000	'Debug
+temp_mask_2		long	$200000	'Debug
+temp_mask_3		long	$100000	'Debug
+temp_mask_4		long	$080000	'Debug
+temp_mask_5		long	$040000	'Debug
+temp_mask_6		long	$020000	'Debug
+temp_mask_7		long	$010000	'Debug
+mask			long	$FF0000	'Debug
 
-temp_mask_0		long	$800000
-temp_mask_1		long	$400000
-temp_mask_2		long	$200000
-temp_mask_3		long	$100000
-temp_mask_4		long	$080000
-temp_mask_5		long	$040000
-temp_mask_6		long	$020000
-temp_mask_7		long	$010000
 
-mask			long	$FF0000
+snp_sum			long	337					' sum of ASCII values, 115+110+112
+write_raw		long	$1					'1 == write raw packet to hub, 0 == don't write current packet
+data_address	long	0[$85]		'The address in the hub to store a um6_register (indexed by the um6_register address)
+									'	Meant to be written to before start, and read only after start
+
+
+'hub_address_debug long	$F00
 'led				long	$0
 'state			long	$0					'For the snp comparison state machine
 'xornot			long	$FFFFFFFF
 'data			long	$0					'will be packed with the received data
-snp_sum			long	337					' sum of ASCII values, 115+110+112
+'temp			long	0'Don't use!
+'data_offset		long	0					'Used to index into the current value for the data_* arrays
+'data_count		long	0					'The number of registers to watch for
+'data_register	long	0[16]				'The UM6 register to watch for (note: the max, 16, is hardcoded above...)
+'spacer_debug	long	0
+'data_address	long	0[16]				'The HUB address to store the received long (4 bytes) to
 
-save_packet		long	$1
+'batch_length_debug	long	0
 
-hub_address_debug long	$F00
+'filter_received	long	$1
 
+
+
+'
+'
+' Uninitialized data
+'
+
+pt				res		1
 hub_address		res		1					'Location in the hub to store the data. 0 indicates do not store (if I decide to implement that part...?)
-
 has_data		res		1					'length of the received packet
 batch_length	res		1
-batch_length_copy res	1
 um6_address		res		1
 command_failed	res		1
-'current_byte	res		1
 checksum_calc	res		1
 checksum_rec	res		1
-
-'dn				res		16*4				
 data_bytes_result res	1		'This is where the received bytes get written to (formerly called dn[])
-batch_length_temp res	1
-
-batch_byte_index res	1				'Used in state_5 to indicate the current byte that it is receiving
 
 
+'batch_length_temp res	1
+
+'batch_byte_index res	1				'Used in state_5 to indicate the current byte that it is receiving
+'dn				res		16*4				
+'batch_length_copy res	1
+
+'current_byte	res		1
+
+
+
+'Original FullDuplexSerial Plus Constants
 t1				res		1
 t2				res		1
 t3				res		1
@@ -1037,6 +1252,104 @@ txcode			res		1
 
 
 
+
+
+
+
+
+
+
+
+
+
+			{
+				----Algorithm for Batch Writting a series of bytes to a hub buffer:
+				max_remaining = $F - buffer_index
+				
+				if num_bytes_to_write >  max_remaining
+					first_count = remaining
+					secound_count = num_bytes_to_write - first_count
+				else 'num_bytes_to_write =< max_remaining
+					first_count = num_bytes_to_write
+					second_count = 0
+				
+				----Some associated Code:
+				rdlong	buffer_index, par
+				mov		buffer_base, rxbuff
+				
+				mov		btw, #5			'Five bytes to write: snp pt addr(TO_DO: optimize by making into register)
+				mov		max_remaining, buffer_index
+				cmp		max_remaining, btw	wc 		' if btw > max_remaining , write C
+		if_c	mov		first_count, max_remaining
+		if_c	mov		second_count, btw
+		if_c	sub		second_count, first_count
+		if_nc	mov		first_count, btw
+		if_nc	mov		second_count, #0
+		
+		
+		
+				mov		t1, buffer_base
+:state_4_primary_loop
+				add		t1, buffer_index
+				'Need to comlete secondary loop
+				}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+' State 5 lookup table for um6_addresses...
+'				cmp		um6_address, data_register + 0 wz
+'	if_z		wrlong	data_bytes_result, data_address + 0
+'	
+'				cmp		um6_address, data_register + 1 wz
+'	if_z		wrlong	data_bytes_result, data_address + 1
+'	
+'				cmp		um6_address, data_register + 2 wz
+'	if_z		wrlong	data_bytes_result, data_address + 2
+'	
+'				cmp		um6_address, data_register + 3 wz
+'	if_z		wrlong	data_bytes_result, data_address + 3
+'	
+'				cmp		um6_address, data_register + 4 wz
+'	if_z		wrlong	data_bytes_result, data_address + 4
+'	
+'				cmp		um6_address, data_register + 5 wz
+'	if_z		wrlong	data_bytes_result, data_address + 5
+'	
+'				cmp		um6_address, data_register + 6 wz
+'	if_z		wrlong	data_bytes_result, data_address + 6
+'	
+'				cmp		um6_address, data_register + 7 wz
+'	if_z		wrlong	data_bytes_result, data_address + 7
+'			
+'				cmp		um6_address, data_register + 8 wz
+'	if_z		wrlong	data_bytes_result, data_address + 8
+'	
+'				cmp		um6_address, data_register + 9 wz
+'	if_z		wrlong	data_bytes_result, data_address + 9
+'	
+'				cmp		um6_address, data_register + 10 wz
+'	if_z		wrlong	data_bytes_result, data_address + 10
+	
+'				cmp		um6_address, data_register + 1 wz
+'	if_z		wrlong	data_bytes_result, data_address + 1
+'	
+'				cmp		um6_address, data_register + 1 wz
+'	if_z		wrlong	data_bytes_result, data_address + 1
+'	
 
 
 

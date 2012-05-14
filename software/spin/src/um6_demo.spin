@@ -7,22 +7,18 @@ For the latest code and support, please visit:
 http://code.anzhelka.com
 --------------------------------------------------------------------------------
 
-Title: CHR UM6 IMU
+Title: CHR UM6 IMU Demo Program
 Author: Cody Lewis
 Date: February 11, 2012
 
-Notes: Works with the CH Robotics UM6 9DOF IMU over a serial interface.
+This program shows how to use the um6.spin object.
 
-CHR_UM6 Checksum is calculated by the following:
-"The checksum is computed by summing the each unsigned character in the packet
-and storing the result in an unsigned 16-bit integer. If your sum treats the
-characters as signed, then that could generate inconsistent problems (ie.
-sometimes it works, sometimes it doesn't). I don't know if this is the problem,
-but it is something worth checking."
+Required hardware:
+--- Propeller Chip
+---	CHR UM6 IMU
+--- USB to Serial connection
 
 
-TODO
---- Receive Function tests for maximum packet length of 16. Shouldn't it be 4*16, or 64?
 
 }}
 CON
@@ -35,20 +31,23 @@ CON
 	DEBUG_RX_PIN  = 31
 	
 	IMU_RX_PIN = 0 'Note: direction is from Propeller IO port
-	IMU_TX_PIN = 1 'Note: direction is form Propeller IO port
+	IMU_TX_PIN = 2 'Note: direction is form Propeller IO port
 	
 'Settings
 
 VAR
+	byte um6_packet[20] 'Note: maximum size is theoretically 1 (addr) + 1 (length) + 16*4 (data) = 66 bytes
 
-	byte um6_packet[20] 'Note: should require only 18 bytes, but extra just in case...
-	
 	long	gyro_proc_xy
+	long	gyro_proc_z
 	long	accel_proc_xy
+	long	accel_proc_z
 	long	mag_proc_xy
+	long	mag_proc_z
 	long	euler_phi_theta
+	long	euler_psi
 
-	
+	long	temp_debug_stack[30]
 
 OBJ
 	debug : "FullDuplexSerialPlus.spin"
@@ -59,10 +58,14 @@ PUB Main | i, t1, addr, roll, pitch
 
 
 	imu.add_register($5C, @gyro_proc_xy)
+	imu.add_register($5D, @gyro_proc_z)
 	imu.add_register($5E, @accel_proc_xy)
+	imu.add_register($5F, @accel_proc_z)
 	imu.add_register($60, @mag_proc_xy)
-	imu.add_register($62, @euler_phi_theta)
-	
+	imu.add_register($61, @mag_proc_z)
+'	imu.add_register($62, @euler_phi_theta)
+	imu.add_register($63, @euler_psi)
+
 	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 230400)
 	waitcnt(clkfreq + cnt)
 	
@@ -76,23 +79,36 @@ PUB Main | i, t1, addr, roll, pitch
 	imu.start(IMU_RX_PIN, IMU_TX_PIN, 0, 115200)
 
 	waitcnt(clkfreq >> 2 + cnt)
-'	imu.str(@UM6_RESET_EKF)
-	waitcnt(clkfreq >> 2 + cnt)
+	
+	cognew(debug_transmit_commands, @temp_debug_stack)
+	
+'	repeat
+'		debug.hex(imu.rx, 2)
+'		debug.tx(" ")
+	
+'	imu.str(@UM6_RESET_EKF)	
+'	waitcnt(clkfreq >> 2 + cnt)
 '	imu.str(@UM6_SET_ACCEL_REF)
+'	waitcnt(clkfreq >> 2 + cnt)
 '	imu.str(@UM6_SET_MAG_REF)
+'	waitcnt(clkfreq >> 2 + cnt)
 '	imu.str(@UM6_ZERO_GYROS)
 
 
-	repeat
-		debug.hex(euler_phi_theta, 8)
-		debug.tx(9)
-		debug.hex(gyro_proc_xy, 8)
-		debug.tx(9)
-		debug.hex(accel_proc_xy, 8)
-		debug.tx(9)
-		debug.hex(mag_proc_xy, 8)
-		debug.tx(10)
-		debug.tx(13)
+'	repeat
+'		debug.hex(euler_phi_theta, 8)
+'		debug.tx(9)
+'		debug.hex(euler_psi, 8)
+'		debug.tx(9)
+'		debug.hex(gyro_proc_xy, 8)
+'		debug.tx(9)
+'		debug.hex(gyro_proc_z, 8)
+'		debug.tx(9)
+'		debug.hex(accel_proc_xy, 8)
+'		debug.tx(9)
+'		debug.hex(mag_proc_xy, 8)
+'		debug.tx(10)
+'		debug.tx(13)
 ''	
 '	
 '	AppendChecksum(@UM6_GET_FW_VERSION)
@@ -134,27 +150,49 @@ PUB Main | i, t1, addr, roll, pitch
 '		debug.tx(13)
 '		
 
+	'Print the received address, ORIGINAL
+'	repeat
+'		addr := ReceiveOriginalPacket(@um6_packet)
+'		
+'		if byte[addr][0] > $A9
+'			debug.hex(byte[addr][0], 2)
+'			debug.str(string(" Command"))
+'			debug.tx(10)
+'			debug.tx(13)
+
+
+	debug.str(string("Beginning Display of packets that make it past the filter:",10,13))
 	'This repeat loop receives packets and parses them to the terminal
 	repeat
-		addr := ReceivePacket(@um6_packet)
-		if addr <> @um6_packet
-		if addr <> @um6_packet
-			debug.str(string("Error in the return address from ReceivePacket: "))
-			debug.hex(addr, 8)
-			debug.tx("/")
-			debug.hex(@um6_packet, 8)
-			debug.str(string(" (given/expected)", 10, 13))
-		else
-			debug.str(string("Addr: $"))
-			debug.hex(byte[addr][0], 2)
-			debug.str(string(9, "Data($"))
-			debug.hex(byte[addr][1], 2)
-			debug.str(string("): "))
-			repeat i from 0 to byte[addr][1]-1
-				debug.hex(byte[addr][2+i], 2)
-				debug.tx(" ")
-			debug.tx(10)
-			debug.tx(13)
+		addr := imu.ReceiveFilteredPacket(@um6_packet)
+'		if addr <> @um6_packet
+'			debug.str(string("Error in the return address from ReceivePacket: "))
+'			debug.hex(addr, 8)
+'			debug.tx("/")
+'			debug.hex(@um6_packet, 8)
+'			debug.str(string(" (given/expected)", 10, 13))
+'		else
+'			debug.str(string("Addr: $"))
+'			debug.hex(byte[addr][0], 2)
+'			debug.str(string(9, "Data($"))
+'			debug.hex(byte[addr][1], 2)
+'			debug.str(string("): "))
+'			repeat i from 0 to byte[addr][1]-1
+'				debug.hex(byte[addr][2+i], 2)
+'				debug.tx(" ")
+'			debug.tx(10)
+'			debug.tx(13)
+
+		debug.str(string("Addr: $"))
+		debug.hex(byte[addr][0], 2)
+		debug.str(string(9, "Data[$"))
+		debug.hex(byte[addr][1], 2)
+		debug.str(string("]: "))
+		repeat i from 0 to byte[addr][1]-1
+			debug.hex(byte[addr][2+i], 2)
+			debug.tx(" ")
+		debug.tx(10)
+		debug.tx(13)
 
 	repeat
 		roll  := (euler_phi_theta & $FFFF0000) ~> 16
@@ -171,7 +209,7 @@ PUB Main | i, t1, addr, roll, pitch
 	debug.str(string("Hello..."))
 	repeat
 		'debug.str(string("Receive packet"))
-		addr := ReceivePacket(@um6_packet)
+		addr := imu.ReceiveFilteredPacket(@um6_packet)
 		if addr <> @um6_packet
 			debug.str(string("Error in the return address from ReceivePacket: "))
 			debug.hex(addr, 8)
@@ -285,212 +323,18 @@ PUB Main | i, t1, addr, roll, pitch
 			
 				
 				
-		
-
-PRI ReceivePacket(addr_i) | i, t1, addr, pt, um6_address, checksum, data_length, checksum_running_total, state, temp
-''Addr is the location to store the received string, should be large enough to hold everything (18 bytes...)
-
-{{
-Stores data in the following format:
-
-Byte Offset - Contents
-0 - type (um6_address)
-1 - data length (bytes)
-2+- data (if any)
-
-This function will block until data is received...
-}}
-
-	addr := addr_i 'Copy the value so we can return it at the end...
-
-'	s := n := p := false
-
-	state := 1
-
-	{state description:
-		1 -- Waiting for s
-		2 -- Received s
-		3 -- Received sn
-		
-		Each state then waits for the next char and transitions to state S[1-3] based on the received char.
-		Note that state 2 must check for 2 types of strings: "ssssssn_" and "sn_", both of which are valid.
-		
-	}
-		
-
-	repeat 
-		temp := imu.rx
-		if state == 1
-			if temp == "s"
-				state := 2
-		elseif state == 2
-			if temp == "s"
-				state := 2
-			elseif temp == "n"
-				state := 3
-			else
-				state := 1
-		elseif state == 3
-			if temp == "s"
-				state := 2
-			elseif temp == "p"
-				quit
-			else
-				state := 1
-		else
-			state := 1 'Should never happen
-	
-	
-'		debug.tx("*")
-'		if imu.rx == "s"
-''			debug.tx("+")
-'			s := true
-'			
-'			
-'		if imu.rx == "n" and s
-''			debug.tx("=")
-'			n := true
-'		else
-'			s := false
-'			
-'			
-'		if imu.rx == "p" and n
-'			quit 'break from loop
-'		else
-'			n := false
-	
-	pt := imu.rx
-
-
-	debug.str(string(10, 13))	
-	debug.str(string("pt == $"))
-	debug.hex(pt, 2)
-	debug.str(string(10, 13))	
-	
-	if (pt & %1000_0000) == 0 'then no data (has data bit is 0)
-		'debug.str(string(10, 13, "Data bit is set to 0"))
-		data_length := 0
-	elseif (pt & %0100_0000) == 0 'then has data, but no batch, so 4 bytes of data
-		'debug.str(string(10, 13, "Single register of data"))
-		data_length := 4
-	else 'then has data, is a batch, with length of:
-		'debug.str(string(10, 13, "Batch of data..."))
-		data_length := 4 * ((pt & %00111100) >> 2)
-	'Check to make sure the data_length size isn't corrupted
-	if data_length < 0 OR data_length > 48
-		debug.str(@RECEIVE_PACKET_ERROR)
-		debug.str(string("Invalid data_length: out of bounds.", 10, 13))
-		return -1
-		
-	'debug.str(string(10, 13, "getting um6_address...", 10, 13))
-	um6_address := imu.rx
-	
-	byte[addr++] := um6_address & $FF
-	byte[addr++] := data_length & $FF
-	
-	checksum_running_total := "s" + "n" + "p" + pt + um6_address
-	
-	if data_length <> 0
-		'Hmmm, the indicies on repeat are inclusive, so we need to take off 1. Right?
-		repeat i from 0 to data_length - 1 'If data_legth is 0, then the loop should never execute (right???)
-			'debug.str(string("getting data...", 10, 13))
-			t1 := imu.rx
-			byte[addr++] := t1
-			checksum_running_total += t1
-	
-	'debug.str(string("getting checksum...", 10, 13))
-	checksum := imu.rx << 8
-	checksum := checksum | imu.rx
-	
-	
-	
-	if checksum <> checksum_running_total
-		debug.str(@RECEIVE_PACKET_ERROR)
-		debug.str(string("Invalid Checksum: "))
-		debug.hex(checksum, 4)
-		debug.tx("/")
-		debug.hex(checksum_running_total, 4)
-		debug.str(string(" (given/calculated)", 10, 13))
-		return -1
-		
-
-	return addr_i 'return the original value
-	
-			
-
-PRI VerifyChecksum(addr)
-
-
-
-
-PRI AppendChecksum(addr) | i, data_length, t1
-	result := 0
-	
-'	debug.str(string(13, 10, "Starting Address: $"))
-'	debug.hex(addr, 8)
-	
-	'Check (and add) "snp" string
-	repeat i from 1 to 3 '1 to 3 because loopup is not zero based...
-		t1 := byte[addr++]
-		if t1 <> lookup(i: "s", "n", "p")
-			debug.str(@APPEND_CHECKSUM_ERROR)
-			debug.str(string("t1 should equal $"))
-			debug.hex(lookup(i: "s", "n", "p"), 2)
-			debug.str(string(" but is really $"))
-			debug.hex(t1, 2)
-			debug.tx(10)
-			debug.tx(13)
-			return -1
-		result += t1
-	
-	
-'	debug.str(string(13, 10, "Result == $"))
-'	debug.hex(result, 8)
-'	
-	
-	'Evaluate the PT byte
-	t1 := byte[addr++]
-	result += t1
-	
-	if (t1 & %1000_0000) == 0
-		'then no data (has data bit is 0)
-'		debug.str(string(10, 13, "Data bit is set to 0"))
-		data_length := 0
-	elseif (t1 & %0100_0000) == 0
-		'then has data, but no batch, so 4 bytes of data
-'		debug.str(string(10, 13, "Single register of data"))
-		data_length := 4
-	else
-		'then has data, is a batch, with length of:
-'		debug.str(string(10, 13, "Batch of data..."))
-		data_length := 4 * ((t1 & %0011_1100) >> 2)
-	
-	'Add in the address byte
-	result += byte[addr++]
-	
-	
-'	debug.str(string(13, 10, "Result == $"))
-'	debug.hex(result, 8)
-
-	if data_length <> 0
-		'Hmmm, the indicies on repeat are inclusive, so we need to take off 1. Right?
-		repeat i from 0 to data_length - 1 'If data_legth is 0, then the loop should never execute (right???)
-'			debug.str(string(10, 13, "In loop..."))
-			result += byte[addr++]
-	
-'	debug.str(string(13, 10, "Result == $"))
-'	debug.hex(result, 8)
-	
-	
-'	debug.str(string(13, 10, "Checksum Address: $"))
-'	debug.hex(addr, 8)
-	
-	
-	'Now, we have the checksum in result, and need to store it at addr
-	byte[addr++] := (result & $FF00) >> 8 'Upper portion first
-	byte[addr++] := (result & $FF) 'Lower portion second
-	
-	return result
+PRI debug_transmit_commands	
+	repeat	
+		imu.str(@UM6_GET_FW_VERSION)
+		waitcnt(clkfreq * 5 + cnt)
+		imu.str(@UM6_RESET_EKF)	
+		waitcnt(clkfreq * 5 + cnt)
+		imu.str(@UM6_SET_ACCEL_REF)
+		waitcnt(clkfreq * 5 + cnt)
+		imu.str(@UM6_SET_MAG_REF)
+		waitcnt(clkfreq * 5 + cnt)
+		imu.str(@UM6_ZERO_GYROS)
+		waitcnt(clkfreq * 5 + cnt)
 
 	
 DAT
@@ -498,14 +342,14 @@ DAT
 	APPEND_CHECKSUM_ERROR byte 10, 13, "ERROR: in string passed to AppendChecksum", 10, 13, 0
 	RECEIVE_PACKET_ERROR  byte 10, 13, "ERROR: in receiving a packet from UM6", 10, 13, 0
 	
-	UM6_GET_FW_VERSION byte "snp", %0_0_0000_0_0, $AA, $01, $FB, 0   '0 here, but should have a checksum of $1FB
+	UM6_GET_FW_VERSION 	byte "snp", %0_0_0000_0_0, $AA, $01, $FB, 0   '0 here, but should have a checksum of $1FB
 '	UM6_GET_FW_VERSION byte "snp", %0_0_0000_0_0, $AA, 0, 0, 0   '0 here, but should have a checksum of $1FB
 	
-	UM6_ZERO_GYROS byte "snp", %0_0_0000_0_0, $AC, $01, $FD, 0
-	UM6_RESET_EKF  byte "snp", %0_0_0000_0_0, $AD, $01, $FE, 0
-	UM6_SET_ACCEL_REF byte "snp", %0_0_0000_0_0, $AF, $02, $00, 0
-	UM6_SET_MAG_REF byte "snp", %0_0_0000_0_0, $AF, $02, $01, 0
-'	UM6_ZERO_GYROS byte "snp", %0_0_0000_0_0, $AC, $01, $FD, 0
+	UM6_ZERO_GYROS 		byte "snp", %0_0_0000_0_0, $AC, $01, $FD, 0
+	UM6_RESET_EKF  		byte "snp", %0_0_0000_0_0, $AD, $01, $FE, 0
+	UM6_SET_ACCEL_REF 	byte "snp", %0_0_0000_0_0, $AF, $02, $00, 0
+	UM6_SET_MAG_REF 	byte "snp", %0_0_0000_0_0, $B0, $02, $01, 0
+
 	
 		  
 {{
