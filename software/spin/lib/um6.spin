@@ -93,6 +93,7 @@ PUB main_debug
 
 PUB start_debug(rxpin, txpin, mode, baudrate) : okay
   {{
+
   DEBUG VERSION - Identical, except it doesnt't start a cog, and instead returns parameter address
 }}  
 
@@ -146,12 +147,14 @@ VAR
 PUB add_register(register, hub_address_a)
 {{ Adds a register to watch for to the current count.
 	Must be called before start method.
+
 	
 	The _a subscript is to prevent name errors with the long in the PASM cog of the same name...
 	
 	Note: if you plan on using batch mode, you need to call this function for each address.
 	You can do this with a for loop, like follows:
 	TODO: insert example code
+
 	
 	
 	 }}
@@ -172,6 +175,7 @@ PUB start(rxpin, txpin, mode, baudrate) : okay
     txpin - output sends signals to peripheral's RX pin
     mode  - bits in this variable configure signaling
                bit 0 inverts rx
+
                bit 1 inverts tx
                bit 2 open drain/source tx
                bit 3 ignor tx echo on rx
@@ -192,25 +196,11 @@ PUB start(rxpin, txpin, mode, baudrate) : okay
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 PUB ReceiveFilteredPacket(addr_i) | i, addr, rp_pt, rp_um6_address, checksum, data_length, checksum_running_total, state
 {{Addr is the location to store the received string, should be large enough to hold everything (18 bytes...)
 
 Stores data in the following format:
+
 
 Byte Offset - Contents
 0 - type (um6_address)
@@ -218,6 +208,7 @@ Byte Offset - Contents
 2+- data (if any)
 
 This function will block until data is received...
+
 
 Returns the address passed in.
 }}
@@ -252,6 +243,7 @@ PUB ReceiveOriginalPacket(addr_i) | i, addr, rp_pt, rp_um6_address, checksum, da
 {{
 Addr is the location to store the received string, should be large enough to hold everything (18 bytes...)
 
+
 Stores data in the following format:
 
 Byte Offset - Contents
@@ -259,12 +251,14 @@ Byte Offset - Contents
 1 - data length (bytes)
 2+- data (if any)
 
+
 This function will block (wait) until a valid packet is received.
 
 Return
 	addr	on	success
 	-1		on	checksum failure
 	-2		on	packet length error (via pt byte)
+
 }}
 
 	addr := addr_i 'Copy the value so we can return it at the end...
@@ -278,6 +272,7 @@ Return
 		2 -- Received s
 		3 -- Received sn
 		
+
 		Each state then waits for the next char and transitions to state S[1-3] based on the received char.
 		Note that state 2 must check for 2 types of strings: "ssssssn_" and "sn_", both of which are valid.
 		
@@ -357,6 +352,7 @@ PRI AppendChecksum(addr) | i, data_length
 This function still needs to be tested...
 
 I think it is correct, but I am unsure
+
 }}
 
 	result := 0
@@ -1080,40 +1076,40 @@ txcode			res		1
 
 
 
-':state_7_batch_loop		'Run once through for each register to write to hub
-''-------------------------------------------
-''Test for the various packet types (Fast(?) version)
-'{	Input: 
-'		data_count 			- number of added registers
-'		data_register[n] 	- register addresses to watch for
-'		um6_address 		- received address to search with
-'	
-'	Output:
-'		data_offset			- index of matching address, $FF if not found
-'}
-'				movs	:state_7_loop, #data_register-1
-'				mov		data_offset, data_count	'DEBUG:TO_DO: Make it so that the 8 is changeable...
-'												'Selected 8 because too many instructions here will make it unable to
-'												'receive the bits (it hangs...)
-'												
-'				add		data_offset, #1
-'				add		:state_7_loop, data_offset	'Set the loop index to the last (based on constant in previous instruction) instruction
-'				nop								'Can't modify the next instruction
-'					
-':state_7_loop	cmp		um6_address, 0-0 wz		'Test received address and the address in memory. Same?
-'	if_nz		sub		:state_7_loop, #1		'If different, decrement to next address
-'	if_nz		djnz	data_offset, #:state_7_loop		'If different, decrement index. If there's still more to check, jump
-'			
-'				'Add this point
-'				' data_offset - index+1 of matching address
-'	if_z		sub		data_offset, #1					'Because counter is +1 from the actual index (so it works with djnz)
-'	if_nz		mov		data_offset, #$FF		'$FF indicates no register match found
-''------------------------------------------
-'				
-'				'Test to see if we should write this register to the hub
-'				cmp		data_offset, #$FF	wz			'Did we find the offset, earlier?
-'	if_z		jmp		#:state_7_increment				'If not, then don't upload, and skip to next address
-'				
+:state_7_batch_loop		'Run once through for each register to write to hub
+'-------------------------------------------
+Test for the various packet types (Fast(?) version)
+{	Input: 
+		data_count 			- number of added registers
+		data_register[n] 	- register addresses to watch for
+		um6_address 		- received address to search with
+	
+	Output:
+		data_offset			- index of matching address, $FF if not found
+}
+				movs	:state_7_loop, #data_register-1
+				mov		data_offset, data_count	'DEBUG:TO_DO: Make it so that the 8 is changeable...
+												'Selected 8 because too many instructions here will make it unable to
+												'receive the bits (it hangs...)
+												
+				add		data_offset, #1
+				add		:state_7_loop, data_offset	'Set the loop index to the last (based on constant in previous instruction) instruction
+				nop								'Can't modify the next instruction
+					
+:state_7_loop	cmp		um6_address, 0-0 wz		'Test received address and the address in memory. Same?
+	if_nz		sub		:state_7_loop, #1		'If different, decrement to next address
+	if_nz		djnz	data_offset, #:state_7_loop		'If different, decrement index. If there's still more to check, jump
+			
+				'Add this point
+				' data_offset - index+1 of matching address
+	if_z		sub		data_offset, #1					'Because counter is +1 from the actual index (so it works with djnz)
+	if_nz		mov		data_offset, #$FF		'$FF indicates no register match found
+'------------------------------------------
+				
+				'Test to see if we should write this register to the hub
+				cmp		data_offset, #$FF	wz			'Did we find the offset, earlier?
+	if_z		jmp		#:state_7_increment				'If not, then don't upload, and skip to next address
+				
 ''------------------------------------------
 ''Save received data register to hub
 '{	Input: 
@@ -1264,6 +1260,7 @@ txcode			res		1
 
 			{
 				----Algorithm for Batch Writting a series of bytes to a hub buffer:
+
 				max_remaining = $F - buffer_index
 				
 				if num_bytes_to_write >  max_remaining
@@ -1271,12 +1268,14 @@ txcode			res		1
 					secound_count = num_bytes_to_write - first_count
 				else 'num_bytes_to_write =< max_remaining
 					first_count = num_bytes_to_write
+
 					second_count = 0
 				
 				----Some associated Code:
 				rdlong	buffer_index, par
 				mov		buffer_base, rxbuff
 				
+
 				mov		btw, #5			'Five bytes to write: snp pt addr(TO_DO: optimize by making into register)
 				mov		max_remaining, buffer_index
 				cmp		max_remaining, btw	wc 		' if btw > max_remaining , write C
@@ -1284,12 +1283,14 @@ txcode			res		1
 		if_c	mov		second_count, btw
 		if_c	sub		second_count, first_count
 		if_nc	mov		first_count, btw
+
 		if_nc	mov		second_count, #0
 		
 		
 		
 				mov		t1, buffer_base
 :state_4_primary_loop
+
 				add		t1, buffer_index
 				'Need to comlete secondary loop
 				}
@@ -1383,6 +1384,7 @@ txcode			res		1
 Copyright (c) 2012 Cody Lewis and Luke De Ruyter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
+
 this software and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
 use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
@@ -1390,12 +1392,14 @@ the Software, and to permit persons to whom the Software is furnished to do so,
 subject to the following conditions: 
 
 The above copyright notice and this permission notice shall be included in all
+
 copies or substantial portions of the Software. 
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
 FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------------------------------------------------------------------------
