@@ -28,7 +28,7 @@ echo
 #Set the tab stops, useful for when displaying the listing
 tabs 5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93
 
-./tool/bstc.linux -Ox -f -p0 -l -w1 -L test -L lib -L lib/bma $1 > bstoutput.txt
+./tool/bstc.linux -Ox -f -p0 -l -w1 -L src -L test -L lib -L lib/bma $1 > bstoutput.txt
 cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt

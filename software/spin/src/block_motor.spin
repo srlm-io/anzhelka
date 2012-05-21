@@ -15,13 +15,15 @@ Date: May 13, 2012
 Notes: 
 --- Implements the motor control block (#3) from the quadrotor mathematics document.
 TODO:
+--- On the SetXXX methods, convert the array access to LONGMOVE type instructions.
 
 }}
 
 
 OBJ
-	fp	: "Float32.spin"
-
+'	fp	: "Float32.spin"
+'    fp  : "Float.spin"
+	fp : "F32.spin"
 VAR
 ''Input Variables
 	long	force_z_addr
@@ -105,25 +107,12 @@ Output Variables:
 
 	fp.start
 	
-'PUB start
-'	'This function should be called in actual operation (ie, NOT DEBUG!!!)
-'	
-'	
-'	
-'	
-'	StartDebug
-'	
-'	
-'	repeat test_case from 0 to test_cases.get_num_test_cases -1
-'		SetTestCases
-'		TimeCalculate
-'		CheckResult(n_d_i_addr, @n_d_1, 4)
-'	PrintStats
-'
+
 PUB GetResultAddr
 	return @n_d_1
 	
-PUB SetValues
+PUB SetInput
+'Retrieves the input values and makes a local copy
 '	test_cases.set_test_values(force_z_addr, moment_addr, n_addr, diameter_addr, offset_addr, density_addr, k_t_addr, k_q_addr, k_p_i_addr, k_i_i_addr, n_d_i_addr)
 	
 	F_z := long[force_z_addr]
@@ -139,6 +128,15 @@ PUB SetValues
 	rho := long[density_addr]
 	K_T := long[k_t_addr]
 	K_Q := long[k_q_addr]	
+
+PUB SetOutput
+'Stores the most recently calculated output value
+
+	long[n_d_i_addr][0] := n_d_1
+	long[n_d_i_addr][1] := n_d_2
+	long[n_d_i_addr][2] := n_d_3
+	long[n_d_i_addr][3] := n_d_4
+
 
 PUB Calculate
 'One iteration of the calculations

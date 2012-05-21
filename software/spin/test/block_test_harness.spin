@@ -1,3 +1,6 @@
+#define BLOCK_MOMENT
+
+
 CON
   _clkmode = xtal1 + pll16x
   _xinfreq = 5_000_000
@@ -8,6 +11,15 @@ CON
 	
 	
 	ACCEPTABLE_ERROR_MARGIN = 0.00001
+	
+#ifdef BLOCK_MOMENT
+	RESULT_LENGTH = 3
+#elseifdef BLOCK_ALTITUDE
+	RESULT_LENGTH = 1
+#elseifdef BLOCK_MOTOR
+	RESULT_LENGTH = 4
+#endif
+	
 
 VAR
 	long min_time, max_time, average_time_running, time_count_running
@@ -17,6 +29,20 @@ VAR
 
 VAR
 
+#ifdef BLOCK_MOMENT
+'Moment Block
+	long	omega_b[3]
+	long	q[4]
+	long	q_d[4]
+	
+	long	K_PH, K_DH, K_P_z, K_D_z
+	
+	long	result_spin[3]
+	long	result_comp[3]
+#elseifdef BLOCK_ALTITUDE
+	long	placeholder
+
+#elseifdef BLOCK_MOTOR
 'Motor Block
 	'Input Variables
 	long	force_z
@@ -33,49 +59,46 @@ VAR
 	long	k_i_i
 	
 	'Output Variable
-	long	n_d_i[4]
-	
+	long	result_spin[4]
+	long	result_comp[4]
+#endif	
 
 OBJ
 	debug      : "FullDuplexSerialPlus.spin"	
-	test_cases : "block_motor_test_cases.spin"
+
 	fp         : "Float32.spin"
 	
 
-
-
-#define BLOCK_MOTOR
-
-
 #ifdef BLOCK_MOMENT
 	block      : "block_moment.spin"
+	test_cases : "block_moment_test_cases.spin"
 #elseifdef BLOCK_ALTITUDE
 	block      : "block_altitude.spin"
 #elseifdef BLOCK_MOTOR
 	block      : "block_motor.spin"
+	test_cases : "block_motor_test_cases.spin"
 #endif
 
 	
 
-PUB Main
+PUB Main | correct_addr
 
 	StartDebug
 	
 	
 #ifdef BLOCK_MOMENT
-	block.Start(
+	block.Start(@omega_b, @q, @q_d, @K_PH, @K_DH, @K_P_z, @K_D_z, @result_spin)
 #elseifdef BLOCK_ALTITUDE
 	block.Start(
 #elseifdef BLOCK_MOTOR
-	block.Start(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @n_d_i)
+	block.Start(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @result_spin)
 #endif
 
 
 	repeat test_case from 0 to test_cases.get_num_test_cases -1
 		SetTestCases
-		block.SetValues
 		TimeCalculate
-		CheckResult(@n_d_i, block.GetResultAddr, 4)
+		CheckResult(@result_comp, @result_spin, RESULT_LENGTH)
 	PrintStats
 
 PRI StartDebug
@@ -98,11 +121,11 @@ PRI StartDebug
 
 PRI SetTestCases
 #ifdef BLOCK_MOMENT
-	test_cases.set_test_values(
+	test_cases.set_test_values(@omega_b, @q, @q_d, @K_PH, @K_DH, @K_P_z, @K_D_z, @result_comp)
 #elseifdef BLOCK_ALTITUDE
 	test_cases.set_test_values(
 #elseifdef BLOCK_MOTOR
-	test_cases.set_test_values(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @n_d_i)
+	test_cases.set_test_values(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @result_comp)
 #endif
 		
 PRI CheckResult(correct_addr, test_addr, length) | correct_val, test_val, i, high_correct_val, low_correct_val, failed
@@ -110,8 +133,8 @@ PRI CheckResult(correct_addr, test_addr, length) | correct_val, test_val, i, hig
 	failed := 0
 	
 	repeat i from 0 to length -1
-		correct_val := long[correct_addr][i]
-		test_val    := long[test_addr][i]
+		correct_val := long[@result_comp][i]
+		test_val    := long[@result_spin][i]
 		
 		high_correct_val := fp.FAdd(correct_val, ACCEPTABLE_ERROR_MARGIN)
 		low_correct_val := fp.FSub(correct_val, ACCEPTABLE_ERROR_MARGIN)
@@ -169,7 +192,9 @@ PRI TimeCalculate | start_cnt, finish_cnt, time
 	
 
 	start_cnt := cnt
+	block.SetInput
 	block.Calculate
+	block.SetOutput
 	finish_cnt := cnt
 	
 'code here that checks if finish_cnt < start_cnt (ie, rollover)
