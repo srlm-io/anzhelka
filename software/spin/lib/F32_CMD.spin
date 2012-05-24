@@ -12,8 +12,13 @@ Author:
 Date:
 Notes:
 
+TODO:
 
-
+-Test the ASin, ACos functions
+-Implement the FLimitMax function (PASM)
+-Implement the PID function
+-The interpret routine can be optimized down a little bit to reduce a few longs (fnumA_addr, I'm looking at you!)
+-Make sure to test integration. Specifically, test to make sure that the cmd tables are correct...
 }}
 
 {{
@@ -32,7 +37,7 @@ Notes:
 
         Features:
 
-        * prop resources:       1 cog, 654 longs        (BST can remove unused Spin code, and the odds are
+        * prop resources:       1 cog, 688 longs        (BST can remove unused Spin code, and the odds are
                                                         good that you won't need all the functionality [8^)
 
         * faster:               _Pack, Add, Sub, Sqr, Sin, Cos, Tan, Float, Exp*, Log*, Pow, Mul, Div
@@ -49,7 +54,13 @@ Notes:
         * User-defined function mechanism (from Float32A)...does anyone use this?
 
         Ver          Date       Change Log:
-        1.3     Apr  28, 2011   - fixed a bug in FRound (max set's C is D<S...I wanted D<=S!  THANKS John Abshier!!)
+        1.5	April 27, 2012	- optimizations as suggested by kuroneko...THANKS!
+                                   * "jmp label_ret" is faster than "jmp #label_ret", but only works for ret.
+                                   * faster FCmp
+	                        - fixed offset table bug (Thanks ???)
+	1.4     Jan  31, 2012   - fixed bug in LOG due to _Table_Interp not handling table address overflow. 0 longs free [8^(  {mods by Marty Lawson...THANKS!}
+	1.3a    Aug   3, 2011   - added 'atof' - uses loops instead of Exp10 (which uses the log table in ROM, so can get errors there)
+	1.3     Apr  28, 2011   - fixed a bug in FRound (max set's C is D<S...I wanted D<=S!  THANKS John Abshier!!)
         1.2a    Dec  15, 2010   - found that "repeat <newline> while x" is faster than "repeat while x" on a single line (smaller too!)
         1.2     Nov  27, 2010   - added dispatch table constants, and the Cmd_ptr & Call_ptr functions
         1.0     Nov  19, 2010   - adding comments, adjusted call method (sorry heater!)
@@ -68,41 +79,81 @@ USAGE:
   * call start first (starts a new cog)
   * use functions as expected
   * realize that you are storing the result into a regular long variable type (signed 4-byte integer), _encoded_as_a_float_!
+
+Notes to self:
+  * CORDIC using floats would be very slow
+  * integer-only CORDIC isn't super accurate for tiny integers
+    - not pre-rounding before performing bit shifts
+    - SAR is used to handle negative numbers, but -1 >> 10 still = -1, instad of 0
+  * for small values of x, sin(x) ~= x, and cos(x) = 1.
+  * if x <= 0.0002, the approximations' error is < f32 resolution!
+
 }}
 
 CON
   ' the list of all the PASM functions' offsets in the dispatch table
   ' You probably only need this table can be used to call F32 routines from inside your own PASM code
-'  offAdd        = offGain * 0
-'  offSub        = offGain * 1
-'  offMul        = offGain * 2
-'  offDiv        = offGain * 3
-'  offFloat      = offGain * 4
-'  offTruncRound = offGain * 5
-'  offUintTrunc  = offGain * 6
-'  offSqr        = offGain * 7
-'  offCmp        = offGain * 8
-'  offSin        = offGain * 9
-'  offCos        = offGain * 11
-'  offTan        = offGain * 12
-'  offLog2       = offGain * 13
-'  offExp2       = offGain * 14
-'  offPow        = offGain * 15
-'  offFrac       = offGain * 16
-'  offMod        = offGain * 17
-'  offASinCos    = offGain * 18
-'  offATan2      = offGain * 19
-'  offCeil       = offGain * 20
-'  offFloor      = offGain * 21
-'  ' each entry is a long...4 bytes
-'  offGain       = 4
+  offAdd        = offGain * 0
+  offSub        = offGain * 1
+  offMul        = offGain * 2
+  offDiv        = offGain * 3
+  offFloat      = offGain * 4
+  offTruncRound = offGain * 5
+  offUintTrunc  = offGain * 6
+  offSqr        = offGain * 7
+  offCmp        = offGain * 8
+  offSin        = offGain * 9
+  offCos        = offGain * 10
+  offTan        = offGain * 11
+  offLog2       = offGain * 12
+  offExp2       = offGain * 13
+  offPow        = offGain * 14
+  offFrac       = offGain * 15
+  offMod        = offGain * 16
+  offASinCos    = offGain * 17
+  offATan2      = offGain * 18
+  offCeil       = offGain * 19
+  offFloor      = offGain * 20
+  ' each entry is a long...4 bytes
+  offGain       = 4
   
 VAR
 
   long  f32_Cmd
   byte  cog
   
-  long	calc_result
+'-----------------------------------------------
+
+
+	
+VAR
+	long sequence_base[10]
+	long sequence_pc[10]
+	
+PUB AddSequence(sequence, instruction_base)
+	sequence_base[sequence] := instruction_base
+	sequence_pc[sequence] := 0
+		
+PUB AddInstruction(sequence, op, ai_a_addr, ai_b_addr, ai_result_addr) | sequence_addr
+
+	
+	long[sequence_base[sequence]][0 + (sequence_pc[sequence] * 4)] := cmdCallTable[op]
+	long[sequence_base[sequence]][1 + (sequence_pc[sequence] * 4)] := ai_a_addr
+	long[sequence_base[sequence]][2 + (sequence_pc[sequence] * 4)] := ai_b_addr
+	long[sequence_base[sequence]][3 + (sequence_pc[sequence] * 4)] := ai_result_addr
+
+
+	sequence_pc[sequence] ++
+
+	
+PUB FInterpret(a)
+  result := cmdInterpret
+  f32_Cmd := @result
+  repeat
+  while f32_Cmd
+
+
+'----------------------------------------------
   
 PUB start
 {{
@@ -132,11 +183,44 @@ PUB Call_ptr
 }}
   return @cmdCallTable
 
-PRI wait( address )
-  f32_Cmd := address
+PUB atof( strptr ) : f | int, sign, dmag, mag, get_exp, b
+  ' get all the digits as if this is an integer (but track the exponent)
+  ' int := sign := dmag := mag := get_exp := 0
+  longfill( @int, 0, 5 )
   repeat
-  while f32_Cmd
-         
+    case b := byte[strptr++]
+      "-": sign := $8000_0000
+      "+": ' just ignore, but allow
+      "0".."9":
+           int := int*10 + b - "0"
+           mag += dmag
+      ".": dmag := -1
+      other: ' either done, or about to do exponent
+           if get_exp
+             ' we just finished processing the exponent
+             if sign
+               int := -int
+             mag += int
+             quit
+           else
+             ' convert int to a (signed) float
+             f := FFloat( int ) | sign
+             ' should we continue?
+             if (b == "E") or (b == "e")
+               ' int := sign := dmag := 0
+               longfill( @int, 0, 3 )
+               get_exp := 1
+             else
+               quit
+  ' Exp10 is the weak link...uses the Log table in P1 ROM
+  'f := FMul( f, Exp10( FFloat( mag ) ) )
+  ' use these loops for more precision (slower for large exponents, positive or negative)
+  b := 0.1
+  if mag > 0
+    b := 10.0
+  repeat ||mag
+    f := FMul( f, b )
+
 PUB FAdd(a, b)
 {{
   Addition: result = a + b
@@ -171,19 +255,11 @@ PUB FMul(a, b)
     b        32-bit floating point value
   Returns:   32-bit floating point value
 }}
-
-'  result  := cmdFMul
-'  f32_Cmd := @result
-'  repeat
-'  while f32_Cmd
-
-  calc_result  := cmdFMul
-  f32_Cmd := @calc_result 
+  result  := cmdFMul
+  f32_Cmd := @result
   repeat
   while f32_Cmd
 
-  result := calc_result
-         
 PUB FDiv(a, b)
 {{
   Division: result = a / b
@@ -343,7 +419,102 @@ PUB Tan(a)
   repeat
   while f32_Cmd
 
+'PUB Log(a) | b
+'{{
+'  Logarithm, base e.
+'  Parameters:
+'    a        32-bit floating point value
+'    b        constant used to convert base 2 to base e
+'  Returns:   32-bit floating point value
+'}}
+'  b       := 1.442695041
+'  result  := cmdFLog2
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
 
+'PUB Log2(a) | b
+'{{
+'  Logarithm, base 2.
+'  Parameters:
+'    a        32-bit floating point value
+'    b        0 is a flag to skip the base conversion (skips a multiplication by 1.0)
+'  Returns:   32-bit floating point value
+'}}
+'  b       := 0
+'  result  := cmdFLog2
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
+
+'PUB Log10(a) | b
+'{{
+'  Logarithm, base 10.
+'  Parameters:
+'    a        32-bit floating point value
+'    b        constant used to convert base 2 to base 10
+'  Returns:   32-bit floating point value
+'}}
+'  b       := 3.321928095
+'  result  := cmdFLog2
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
+
+'PUB Exp(a) | b
+'{{
+'  Exponential (e raised to the power a).
+'  Parameters:
+'    a        32-bit floating point value
+'    b        constant used to convert base 2 to base e
+'  Returns:   32-bit floating point value
+'}}
+'  b       := 1.442695041
+'  result  := cmdFExp2
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
+
+'PUB Exp2(a) | b
+'{{
+'  Exponential (2 raised to the power a).
+'  Parameters:
+'    a        32-bit floating point value
+'    b        0 is a flag to skip the base conversion (skips a division by 1.0)
+'  Returns:   32-bit floating point value
+'}}
+'  b       := 0
+'  result  := cmdFExp2
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
+
+'PUB Exp10(a) | b
+'{{
+'  Exponential (10 raised to the power a).
+'  Parameters:
+'    a        32-bit floating point value
+'    b        constant used to convert base 2 to base 10
+'  Returns:   32-bit floating point value
+'}}
+'  b       := 3.321928095
+'  result  := cmdFExp2
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
+
+'PUB Pow(a, b)
+'{{
+'  Power (a to the power b).
+'  Parameters:
+'    a        32-bit floating point value
+'    b        32-bit floating point value  
+'  Returns:   32-bit floating point value
+'}}
+'  result  := cmdFPow
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
 
 PUB Frac(a)
 {{
@@ -435,7 +606,18 @@ PUB FMax(a, b)
     return b
   return a
 
-
+'PUB FMod(a, b)
+'{{
+'  Floating point remainder: result = the remainder of a / b.
+'  Parameters:
+'    a        32-bit floating point value
+'    b        32-bit floating point value  
+'  Returns:   32-bit floating point value
+'}}
+'  result  := cmdFMod
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
 
 PUB ASin(a) | b
 {{
@@ -493,7 +675,29 @@ PUB ATan2(a, b)
   repeat
   while f32_Cmd
 
+'PUB Floor(a)
+'{{
+'  Calculate the floating point value of the nearest integer <= a.
+'  Parameters:
+'    a        32-bit floating point value
+'  Returns:   32-bit floating point value
+'}}
+'  result  := cmdFloor
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
 
+'PUB Ceil(a)
+'{{
+'  Calculate the floating point value of the nearest integer >= a.
+'  Parameters:
+'    a        32-bit floating point value
+'  Returns:   32-bit floating point value
+'}}
+'  result  := cmdCeil
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
 
 
 CON
@@ -527,8 +731,7 @@ f32_entry               rdlong  ret_ptr, par wz         ' wait for command to be
 :execCmd                nop                             ' execute command, which was replaced by getCommand
 
 :finishCmd              wrlong  fnumA, ret_ptr          ' store the result (2 longs before fnumB)
-                        mov     t1, #0                  ' zero out the command register
-                        wrlong  t1, par                 ' clear command status
+                        wrlong  outb, par               ' clear command status (outb is initialized to 0)
                         jmp     #f32_entry              ' wait for next command
 
 
@@ -537,10 +740,8 @@ f32_entry               rdlong  ret_ptr, par wz         ' wait for command to be
 ' fnumA = fnumA +- fnumB
 '----------------------------
 _FSub                   xor     fnumB, Bit31            ' negate B
-                        jmp     #_FAdd                  ' add values
-
-_FAdd                   call    #_Unpack2               ' unpack two variables                    
-          if_c_or_z     jmp     #_FAdd_ret              ' check for NaN or B = 0
+_FAdd                   call    #_Unpack2               ' unpack two variables
+          if_c_or_z     jmp     _FAdd_ret              ' check for NaN or B = 0
 
                         test    flagA, #SignFlag wz     ' negate A mantissa if negative
           if_nz         neg     manA, manA
@@ -569,12 +770,34 @@ _FAdd_ret               ret
 ' fnumA *= fnumB
 '----------------------------
 _FMul                   call    #_Unpack2               ' unpack two variables
-              if_c      jmp     #_FMul_ret              ' check for NaN
+              if_c      jmp     _FMul_ret              ' check for NaN
 
                         xor     flagA, flagB            ' get sign of result
                         add     expA, expB              ' add exponents
 
-                        ' standard method: 404 counts for this block
+                        '{ new method: 4 * (4 * 24 + 10) = 424 counts for this block,
+                        ' worst case.  But, it is within the window of the calling Spin
+                        ' repeat loop, so un-noticable.  And the best case scenario is
+                        ' better.
+                        neg     t1, manA                ' isolate the low bit of manA
+                        and     t1, manA
+                        neg     t2, manB                ' isolate the low bit of manB
+                        and     t2, manB
+                        cmp     t1, t2 wc               ' who has the greater low bit?  After reversal, this will go to 0 faster.
+              if_c      mov     t1, manA wz             ' if t1 is 0, we'll just skip through everything              '
+              if_nc     mov     t1, manB wz             ' ditto, only t1 is manB
+              if_nc     mov     manB, manA              ' and in this case we wanted manA to be the multiplier mask
+
+                        mov     manA, #0                ' manA is my new accumulator
+                        rev     manB, #32-30            ' start by right aligning the reverse of the B mantissa
+
+:multiply     if_nz     shr     manB, #1 wc,wz          ' get multiplier bit, and take note if we hit 0 (skip if t1 was already 0!)
+              if_c      add     manA, t1                ' if the bit was set, add in the multiplicand
+                        shr     t1, #1                  ' adjust my increment value's bit alignment
+              if_nz     jmp     #:multiply              ' go back for more
+                        '}
+
+                        { standard method: 404 counts for this block
                         mov     t1, #0                  ' t1 is my accumulator
                         mov     t2, #24                 ' loop counter for multiply (only do the bits needed...23 + implied 1)
                         shr     manB, #6                ' start by right aligning the B mantissa
@@ -584,6 +807,7 @@ _FMul                   call    #_Unpack2               ' unpack two variables
               if_c      add     t1, manA                ' if the bit was set, add in the multiplicand
                         djnz    t2, #:multiply          ' go back for more
                         mov     manA, t1                ' yes, that's my final answer.
+                        '}
 
                         call    #_Pack
 _FMul_ret               ret
@@ -595,7 +819,7 @@ _FMul_ret               ret
 '----------------------------
 _FDiv                   call    #_Unpack2               ' unpack two variables
           if_c_or_z     mov     fnumA, NaN              ' check for NaN or divide by 0
-          if_c_or_z     jmp     #_FDiv_ret
+          if_c_or_z     jmp     _FDiv_ret
         
                         xor     flagA, flagB            ' get sign of result
                         sub     expA, expB              ' subtract exponents
@@ -620,8 +844,7 @@ _FDiv_ret               ret
 ' fnumA = float(fnumA)
 '------------------------------------------------------------------------------
 _FFloat                 abs     manA, fnumA     wc,wz   ' get |integer value|
-              if_z      jmp     #_FFloat_ret            ' if zero, exit
-                        mov     flagA, #0               ' set the sign flag
+              if_z      jmp     _FFloat_ret            ' if zero, exit
                         muxc    flagA, #SignFlag        ' depending on the integer's sign
                         mov     expA, #29               ' set my exponent
                         call    #_Pack                  ' pack and exit
@@ -651,7 +874,7 @@ _FTruncRound            mov     t1, fnumA               ' grab a copy of the inp
               if_z_and_nc jmp   #:check_sign
               
               if_nz_and_nc mov  fnumA, t1                ' float output, and we're already all integer
-              if_nz_and_nc jmp  #_FTruncRound_ret
+              if_nz_and_nc jmp  _FTruncRound_ret
                         
                         ' well, I need to kill off some bits, so let's do it
                         cmp     expA, #32       wc      ' DO set the C flag here...I want to know if expA =< 31, aka < 32
@@ -664,7 +887,7 @@ _FTruncRound            mov     t1, fnumA               ' grab a copy of the inp
 
                         mov     expA, #29
                         call    #_Pack
-                        jmp     #_FTruncRound_ret
+                        jmp     _FTruncRound_ret
 
 :check_sign             test    flagA, #signFlag wz     ' check sign and exit
                         negnz   fnumA, manA
@@ -676,18 +899,18 @@ _FTruncRound_ret        ret
 ' truncation to unsigned integer
 ' fnumA = unsigned int(fnumA), clamped to 0
 '------------------------------------------------------------------------------
-'_UintTrunc              call    #_Unpack
-'                        mov     fnumA, #0
-'                        test    flagA, #SignFlag wc
-'              if_c_or_z jmp     #_UintTrunc_ret         ' if the input number was negative or zero, we're done
-'                        shl     manA, #2                ' left justify mantissa
-'                        sub     expA, #31               ' our target exponent is 31
-'                        abs     expA, expA      wc,wz
-'              if_a      neg     fnumA, #1               ' if we needed to shift left, we're already maxed out
-'              if_be     cmp     expA, #32       wc      ' otherwise, if we need to shift right by more than 31, the answer is 0
-'              if_c      shr     manA, expA              ' OK, shift it down
-'              if_c      mov     fnumA, manA
-'_UintTrunc_ret          ret
+_UintTrunc              call    #_Unpack
+                        mov     fnumA, #0
+                        test    flagA, #SignFlag wc
+              if_c_or_z jmp     _UintTrunc_ret         ' if the input number was negative or zero, we're done
+                        shl     manA, #2                ' left justify mantissa
+                        sub     expA, #31               ' our target exponent is 31
+                        abs     expA, expA      wc,wz
+              if_a      neg     fnumA, #1               ' if we needed to shift left, we're already maxed out
+              if_be     cmp     expA, #32       wc      ' otherwise, if we need to shift right by more than 31, the answer is 0
+              if_c      shr     manA, expA              ' OK, shift it down
+              if_c      mov     fnumA, manA
+_UintTrunc_ret          ret
 
                                   
 '------------------------------------------------------------------------------
@@ -695,10 +918,10 @@ _FTruncRound_ret        ret
 ' fnumA = sqrt(fnumA)
 '------------------------------------------------------------------------------
 _FSqr                   call    #_Unpack                 ' unpack floating point value
-          if_c_or_z     jmp     #_FSqr_ret               ' check for NaN or zero
+          if_c_or_z     jmp     _FSqr_ret               ' check for NaN or zero
                         test    flagA, #signFlag wz      ' check for negative
           if_nz         mov     fnumA, NaN               ' yes, then return NaN                       
-          if_nz         jmp     #_FSqr_ret
+          if_nz         jmp     _FSqr_ret
 
                         sar     expA, #1 wc             ' if odd exponent, shift mantissa
           if_c          shl     manA, #1
@@ -729,29 +952,15 @@ _FSqr_ret               ret
 '       -1 if fnumA < fnumB
 '       0 if fnumA = fnumB
 '------------------------------------------------------------------------------
-_FCmp                   mov     t1, fnumA               ' compare signs
-                        xor     t1, fnumB
-                        and     t1, Bit31 wz
-          if_z          jmp     #:cmp1                  ' same, then compare magnitude
-          
-                        mov     t1, fnumA               ' check for +0 or -0 
-                        or      t1, fnumB
-                        andn    t1, Bit31 wz,wc
-          if_z          jmp     #:exit
-                    
-                        test    fnumA, Bit31 wc         ' compare signs
-                        jmp     #:exit
-
-:cmp1                   test    fnumA, Bit31 wz         ' check signs
-          if_nz         jmp     #:cmp2
-                        cmp     fnumA, fnumB wz,wc
-                        jmp     #:exit
-
-:cmp2                   cmp     fnumB, fnumA wz,wc      ' reverse test if negative
-
-:exit                   mov     fnumA, #1               ' if fnumA > fnumB, t1 = 1
-          if_c          neg     fnumA, fnumA            ' if fnumA < fnumB, t1 = -1
-          if_z          mov     fnumA, #0               ' if fnumA = fnumB, t1 = 0
+_FCmp                   mov     t1, fnumA               ' if both values...
+                        and     t1, fnumB               '  are negative...
+                        shl     t1, #1 wc               ' (bit 31 high)...
+                        negc    t1, #1                  ' then the comparison will be reversed
+                        cmps    fnumA, fnumB wc,wz      ' do the signed comparison, save result in flags C Z
+              if_z      mov     t1, #0
+                        or      fnumA, fnumB            ' +0 == -0, so compare for both being 0...
+                        andn    fnumA, Bit31 wz         ' ignoring bit 31, will be 0 if both fA and fB were zero
+              if_nz     negc    fnumA, t1               ' if it's not zero
 _FCmp_ret               ret
 
 
@@ -768,12 +977,17 @@ _Table_Interp           ' store the fractional part
                         rev     t4, #12                 ' ignore the top 12 bits, and reverse the rest
                         ' align the input number to get the table offset, multiplied by 2
                         shr     t1, #19
+                        test    t2, SineTable    wc      'C = 1 if we're doing a SINE table lookup.  added to fix LOG and SIN
                         add     t2, t1
                         ' read the 2 intermediate values, and scale them for interpolation
                         rdword  t1, t2
                         shl     t1, #14
+                        
                         add     t2, #2
-                        rdword  t2, t2
+                        
+                        test    t2, TableMask   wz      'table address has overflowed.  added to fix LOG          
+        if_z_and_nc     mov     t2, Bit16               'fix table value unless we're doing the SINE table.  added to fix LOG            
+        if_nz_or_c      rdword  t2, t2                  'else, look up the correct value.  conditional added to fix LOG
                         shl     t2, #14
                         ' interpolate
                         sub     t2, t1                  ' change from 2 points to delta
@@ -855,6 +1069,139 @@ _Tan                    call    #_Sin
 _Tan_ret                ret
 
 
+''------------------------------------------------------------------------------
+'' log2
+'' fnumA = log2(fnumA)
+'' may be divided by fnumB to change bases
+''------------------------------------------------------------------------------
+'_Log2                   call    #_Unpack                ' unpack variable
+'          if_nz_and_nc  test    flagA, #SignFlag wc     ' if NaN or <= 0, return NaN
+'          if_z_or_c     jmp     #:exitNaN
+
+'                        mov     t1, manA
+'                        shl     t1, #3
+'                        shr     t1, #1
+'                        mov     t2, LogTable
+'                        call    #_Table_Interp
+'                        ' store the interpolated table lookup
+'                        mov     manA, t1
+'                        shr     manA, #5                  ' clear the top 7 bits (already 2 free
+'                        ' process the exponent
+'                        abs     expA, expA      wc
+'                        muxc    flagA, #SignFlag
+'                        ' recombine exponent into the mantissa
+'                        shl     expA, #25
+'                        negc    manA, manA
+'                        add     manA, expA
+'                        mov     expA, #4
+'                        ' make it a floating point number
+'                        call    #_Pack
+'                        ' convert the base
+'                        cmp     fnumB, #0    wz         ' check that my divisor isn't 0 (which flags that we're doing log2)
+'              if_nz     call    #_FDiv                  ' convert the base (unless fnumB was 0)
+'                        jmp     _Log2_ret
+
+':exitNaN                mov     fnumA, NaN              ' return NaN
+'_Log2_ret               ret
+
+''------------------------------------------------------------------------------
+'' exp2
+'' fnumA = 2 ** fnumA
+'' may be multiplied by fnumB to change bases
+''------------------------------------------------------------------------------
+'                        ' 1st off, convert the base
+'_Exp2                   cmp     fnumB, #0       wz
+'              if_nz     call    #_FMul
+
+'                        call    #_Unpack
+'                        shl     manA, #2                ' left justify mantissa
+'                        mov     t1, expA                ' copy the local exponent
+
+'                        '        OK, get the whole number
+'                        sub     t1, #30                 ' our target exponent is 31
+'                        abs     expA, t1      wc        ' adjust for exponent sign, and track if it was negative
+'              if_c      jmp     #:cont_Exp2
+
+'                        ' handle this case depending on the sign
+'                        test    flagA, #signFlag wz
+'              if_z      mov     fnumA, NaN              ' nope, was positive, bail with NaN (happens to be the largest positive integer)
+'              if_nz     mov     fnumA, #0
+'                        jmp     _Exp2_ret
+
+':cont_Exp2              mov     t2, manA
+'                        max     expA, #31
+'                        shr     t2, expA
+'                        shr     t2, #1
+'                        mov     expA, t2
+
+'                        ' get the fractional part
+'                        add     t1, #31
+'                        abs     t2, t1          wc
+'              if_c      shr     manA, t2
+'              if_nc     shl     manA, t2
+
+'                        ' do the table lookup
+'                        mov     t1, manA
+'                        shr     t1, #1
+'                        mov     t2, ALogTable
+'                        call    #_Table_Interp
+
+'                        ' store a copy of the sign
+'                        mov     t6, flagA
+
+'                        ' combine
+'                        mov     manA, t1
+'                        or      manA, bit30
+'                        sub     expA, #1
+'                        mov     flagA, #0
+
+'                        call    #_Pack
+
+'                        test    t6, #signFlag wz        ' check sign and store this back in the exponent
+'              if_z      jmp     _Exp2_ret
+'                        mov     fnumB, fnumA            ' yes, then invert
+'                        mov     fnumA, One
+'                        call    #_FDiv
+
+'_Exp2_ret               ret
+
+
+''------------------------------------------------------------------------------
+'' power
+'' fnumA = fnumA raised to power fnumB
+''------------------------------------------------------------------------------
+'_Pow                    mov     t7, fnumA wc            ' save sign of result
+'          if_nc         jmp     #:pow3                  ' check if negative base
+
+'                        mov     fnumA, fnumB            ' check exponent
+'                        call    #_Unpack
+'                        mov     fnumA, t7               ' restore base
+'          if_z          jmp     #:pow2                  ' check for exponent = 0
+'          
+'                        test    expA, Bit31 wz          ' if exponent < 0, return NaN
+'          if_nz         jmp     #:pow1
+
+'                        max     expA, #23               ' check if exponent = integer
+'                        shl     manA, expA    
+'                        and     manA, Mask29 wz, nr                         
+'          if_z          jmp     #:pow2                  ' yes, then check if odd
+'          
+':pow1                   mov     fnumA, NaN              ' return NaN
+'                        jmp     _Pow_ret
+
+':pow2                   test    manA, Bit29 wz          ' if odd, then negate result
+'          if_z          andn    t7, Bit31
+
+':pow3                   andn    fnumA, Bit31            ' get |fnumA|
+'                        mov     t6, fnumB               ' save power
+'                        call    #_Log2                  ' get log of base
+'                        mov     fnumB, t6               ' multiply by power
+'                        call    #_FMul
+'                        call    #_Exp2                  ' get result      
+
+'                        test    t7, Bit31 wz            ' check for negative
+'          if_nz         xor     fnumA, Bit31
+'_Pow_ret                ret
 
 
 '------------------------------------------------------------------------------
@@ -890,7 +1237,7 @@ _Frac_ret               ret
 _Unpack2                mov     t1, fnumA               ' save A
                         mov     fnumA, fnumB            ' unpack B to A
                         call    #_Unpack
-          if_c          jmp     #_Unpack2_ret           ' check for NaN
+          if_c          jmp     _Unpack2_ret           ' check for NaN
 
                         mov     fnumB, fnumA            ' save B variables
                         mov     flagB, flagA
@@ -986,6 +1333,26 @@ _Pack                   cmp     manA, #0 wz             ' check for zero
 _Pack_ret               ret
 
 
+''------------------------------------------------------------------------------
+'' modulo
+'' fnumA = fnumA mod fnumB
+''------------------------------------------------------------------------------
+'_FMod                   mov     t4, fnumA               ' save fnumA
+'                        mov     t5, fnumB               ' save fnumB
+'                        call    #_FDiv                  ' a - float(fix(a/b)) * b
+'                        mov     fnumB, #0
+'                        call    #_FTruncRound
+'                        call    #_FFloat
+'                        mov     fnumB, t5
+'                        call    #_FMul
+'                        or      fnumA, Bit31
+'                        mov     fnumB, t4
+'                        andn    fnumB, Bit31
+'                        call    #_FAdd
+'                        test    t4, Bit31 wz            ' if a < 0, set sign
+'          if_nz         or      fnumA, Bit31
+'_FMod_ret               ret
+
 
 '------------------------------------------------------------------------------
 ' arctan2
@@ -1050,6 +1417,11 @@ CORDIC_Angles           long $c90fdaa, $76b19c1, $3eb6ebf, $1fd5ba9, $ffaadd
 ' asin( x ) = atan2( x, sqrt( 1 - x*x ) )
 ' acos( x ) = atan2( sqrt( 1 - x*x ), x )
 '------------------------------------------------------------------------------
+_ACos                   mov     fnumB, #0 'Signify that this is a acos operation
+                        jmp		#_ASinCos
+                        
+_ASin                   mov     fnumB, #1 'Signify that this is a asin operation
+
 _ASinCos                ' grab a copy of both operands
                         mov     t5, fnumA
                         mov     t6, fnumB
@@ -1062,7 +1434,7 @@ _ASinCos                ' grab a copy of both operands
                         '       quick error check
                         test    fnumA, bit31    wc
               if_c      mov     fnumA, NaN
-              if_c      jmp     #_ASinCos_ret
+              if_c      jmp     _ASinCos_ret
                         ' carry on
                         call    #_FSqr
                         ' check if this is sine or cosine (determines which goes into fnumA and fnumB)
@@ -1071,11 +1443,120 @@ _ASinCos                ' grab a copy of both operands
               if_nz     mov     fnumB, fnumA
               if_nz     mov     fnumA, t5
                         call    #_ATan2
+_ASin_ret
+_ACos_ret
 _ASinCos_ret            ret
 
 
+'------------------------------------------------------------------------------
+' _Floor fnumA = floor(fnumA)
+' _Ceil fnumA = ceil(fnumA)
+'------------------------------------------------------------------------------
+'_Ceil                   mov     t6, #1                  ' set adjustment value
+'                        jmp     #floor2
+'                        
+'_Floor                  neg     t6, #1                  ' set adjustment value
+
+'floor2                  call    #_Unpack                ' unpack variable
+'          if_c          jmp     _Floor_ret             ' check for NaN
+'                        cmps     expA, #23 wc, wz       ' check for no fraction
+'          if_nc         jmp     _Floor_ret
+
+'                        mov     t4, fnumA               ' get integer value
+'                        mov     fnumB, #0
+'                        call    #_FTruncRound
+'                        mov     t5, fnumA
+'                        xor     fnumA, t6
+'                        test    fnumA, Bit31 wz
+'          if_nz         jmp     #:exit
+
+'                        mov     fnumA, t4               ' get fraction  
+'                        call    #_Frac
+
+'                        or      fnumA, fnumA wz
+'          if_nz         add     t5, t6                  ' if non-zero, then adjust
+
+':exit                   mov     fnumA, t5               ' convert integer to float 
+'                        call    #_FFloat                '}                
+'_Ceil_ret
+'_Floor_ret              ret
+
 _PID                    nop
 _PID_ret                ret
+
+
+
+
+_FNeg                  xor     fnumA, Neg_Mask
+_FNeg_ret              ret
+Neg_Mask               long $8000_0000
+
+
+_FAbs                  and     fnumA, Abs_Mask
+_FAbs_ret              ret
+Abs_Mask               long $7FFF_FFFF
+
+_FLimitMin				mov		fnumA_copy, fnumA
+						mov		fnumB_copy, fnumB
+						call	#_FCmp
+						cmp		fnumA, #1 wz
+				if_z	mov		fnumA, fnumA_copy
+				if_nz	mov		fnumA, fnumB_copy
+_FLimitMin_ret			ret
+
+fnumA_copy  long	0
+fnumB_copy  long	0
+
+_FLimitMax              nop
+_FLimitMax_ret          ret
+
+
+'------------------------------------------------------------------------------
+' User Defined Command Interpreter
+' fnumA = Starting Address of instruction sequence
+
+'------------------------------------------------------------------------------
+
+_Interpret				
+						mov		interpret_pc, fnumA 'make a copy
+
+						
+:loop
+						rdlong	:function_call, interpret_pc wz 'Get the instruction operation
+						add		interpret_pc, #4
+			if_z		jmp		#:done
+			
+						rdlong	fnumA_addr, interpret_pc 'Get the fnumA address
+						add		interpret_pc, #4
+						movs	t1, #:GetFNumA
+
+						rdlong	fnumB_addr, interpret_pc 'Get the fnumB address
+						add		interpret_pc, #4
+						movs	t1, #:GetFNumB
+						
+						rdlong	result_addr, interpret_pc 'Get the result address
+						add		interpret_pc, #4
+						
+:GetFNumA				rdlong	fnumA, fnumA_addr 	'Get actual value
+:GetFNumB				rdlong	fnumB, fnumB_addr  'Get actual value
+						
+'						mov		dira, LED_MASK
+'						mov		outa, LED_MASK
+												
+:function_call			nop						'will be replaced with a call
+
+						wrlong	fnumA, result_addr 'Result is in fnumA
+
+						jmp		#:loop
+						
+:done
+_Interpret_ret			ret
+
+interpret_pc			long	0
+result_addr				long	0
+fnumA_addr				long	0
+fnumB_addr				long	0
+
 
 '-------------------- constant values -----------------------------------------
 
@@ -1084,11 +1565,13 @@ NaN                     long    $7FFF_FFFF
 Minus23                 long    -23
 Mask23                  long    $007F_FFFF
 Mask29                  long    $1FFF_FFFF
+TableMask               long    $0FFE           'added to fix LOG
+Bit16                   long    $0001_0000       'added to fix LOG
 Bit29                   long    $2000_0000
 Bit30                   long    $4000_0000
 Bit31                   long    $8000_0000
-'LogTable                long    $C000
-'ALogTable               long    $D000
+LogTable                long    $C000
+ALogTable               long    $D000
 SineTable               long    $E000
 
 '-------------------- initialized variables -----------------------------------
@@ -1103,7 +1586,6 @@ t4                      res     1
 t5                      res     1
 t6                      res     1
 t7                      res     1
-'t8                      res     1
 
 fnumA                   res     1               ' floating point A value
 flagA                   res     1
@@ -1118,7 +1600,30 @@ manB                    res     1
 fit 496 ' A cog has 496 longs available, the last 16 (to make it up to 512) are register shadows.
 
 ' command dispatch table: must be compiled along with PASM code in
-' Cog RAM to know the addresses, but does not need to fit in it.
+' Cog RAM to know the addresses, but does not neet to fit in it.
+'cmdCallTable
+'cmdFAdd                 call    #_FAdd
+'cmdFSub                 call    #_FSub
+'cmdFMul                 call    #_FMul
+'cmdFDiv                 call    #_FDiv
+'cmdFFloat               call    #_FFloat
+'cmdFTruncRound          call    #_FTruncRound
+'cmdUintTrunc            call    #_UintTrunc
+'cmdFSqr                 call    #_FSqr
+'cmdFCmp                 call    #_FCmp
+'cmdFSin                 call    #_Sin
+'cmdFCos                 call    #_Cos
+'cmdFTan                 call    #_Tan
+'cmdFLog2                call    #_Log2
+'cmdFExp2                call    #_Exp2
+'cmdFPow                 call    #_Pow
+'cmdFFrac                call    #_Frac
+'cmdFMod                 call    #_FMod
+'cmdASinCos              call    #_ASinCos
+'cmdATan2                call    #_ATan2
+'cmdCeil                 call    #_Ceil
+'cmdFloor                call    #_Floor
+
 cmdCallTable
 cmdFAdd                 call    #_FAdd
 cmdFSub                 call    #_FSub
@@ -1126,42 +1631,64 @@ cmdFMul                 call    #_FMul
 cmdFDiv                 call    #_FDiv
 cmdFFloat               call    #_FFloat
 cmdFTruncRound          call    #_FTruncRound
-'cmdUintTrunc            call    #_UintTrunc
 cmdFSqr                 call    #_FSqr
 cmdFCmp                 call    #_FCmp
 cmdFSin                 call    #_Sin
 cmdFCos                 call    #_Cos
 cmdFTan                 call    #_Tan
-'cmdFLog2                call    #_Log2
-'cmdFExp2                call    #_Exp2
-'cmdFPow                 call    #_Pow
 cmdFFrac                call    #_Frac
-'cmdFMod                 call    #_FMod
 cmdASinCos              call    #_ASinCos
+cmdASin                 call    #_ASin
+cmdACos                 call    #_ACos
 cmdATan2                call    #_ATan2
-'cmdCeil                 call    #_Ceil
-'cmdFloor                call    #_Floor
 cmdPID                  call    #_PID
+cmdInterpret            call    #_Interpret
+cmdFNeg                 call    #_FNeg
+cmdFAbs                 call    #_FAbs
+cmdFLimitMin            call    #_FLimitMin
+cmdFLimitMax            call    #_FLimitMax
+'TODO Warning! The constant in the command table must be updated when these commands are changes (FCopyCmdTable)
+
+CON
+	FPAdd        = 0
+	FPSub        = 1
+	FPMul        = 2
+	FPDiv        = 3
+	FPFloat      = 4
+	FPTruncRound = 5
+	FPSqr        = 6
+	FPCmp        = 7
+	FPSin        = 8
+	FPCos        = 9
+	FPTan        = 10
+	FPFrac       = 11
+	FPAsinCos    = 12
+	FPASin       = 13
+	FPACos       = 14
+	FPATan2      = 15
+	FPPID        = 16
+	FPInterpret  = 17
+	FPNeg        = 18
+	FPAbs        = 19
+	FPLimitMin   = 20
+	FPLimitMax   = 21
 
 {{
---------------------------------------------------------------------------------  
-Copyright (c) 2012 Cody Lewis and Luke De Ruyter
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions: 
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software. 
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
---------------------------------------------------------------------------------
++------------------------------------------------------------------------------------------------------------------------------+
+|                                                   TERMS OF USE: MIT License                                                  |                                                            
++------------------------------------------------------------------------------------------------------------------------------+
+|Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation    | 
+|files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,    |
+|modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software|
+|is furnished to do so, subject to the following conditions:                                                                   |
+|                                                                                                                              |
+|The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.|
+|                                                                                                                              |
+|THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE          |
+|WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR         |
+|COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,   |
+|ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         |
++------------------------------------------------------------------------------------------------------------------------------+
 }}

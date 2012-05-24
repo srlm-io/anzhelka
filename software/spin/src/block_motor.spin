@@ -21,9 +21,8 @@ TODO:
 
 
 OBJ
-'	fp	: "Float32.spin"
-'    fp  : "Float.spin"
-	fp : "F32.spin"
+
+	fp : "F32_CMD.spin"
 VAR
 ''Input Variables
 	long	force_z_addr
@@ -64,7 +63,7 @@ VAR
 	long	n_d_1, n_d_2, n_d_3, n_d_4
 
 
-
+	long	t_5 'Do I really need this?
 
 
 
@@ -106,7 +105,57 @@ Output Variables:
 
 
 	fp.start
+	Init_Instructions
 	
+	
+VAR
+	long	temp1, temp2, temp3
+'	long	const_4, const_2, const_pi, const_0
+	
+	long	const_2_pi 'Calculated constants
+	
+	long cmp_F_1, cmp_F_2, cmp_F_3, cmp_F_4
+	
+
+
+
+
+{{AZM_MATH MOTOR_BLOCK
+
+t_5 = 2 * offset
+const_2_pi = 2 * pi
+
+c = (K_Q * diameter) / K_T
+t_1 = M_z / (4*c)
+t_2 = M_y / t_5
+t_3 = M_x / t_5
+t_4 = F_z / 4
+
+F_1 = (t_4 + (t_1 - t_2)) #> 0
+F_2 = (t_4 - (t_1 + t_3)) #> 0
+F_3 = (t_4 + (t_1 + t_2)) #> 0
+F_4 = (t_4 + (t_3 - t_1)) #> 0
+
+
+t_1 = const_2_pi / (diameter * diameter)
+t_2 = rho * K_T
+
+omega_d_1 = t_1 * ((F_1 / t_2) sqrt 0)
+omega_d_2 = t_1 * ((F_2 / t_2) sqrt 0)
+omega_d_3 = t_1 * ((F_3 / t_2) sqrt 0)
+omega_d_4 = t_1 * ((F_4 / t_2) sqrt 0)
+
+n_d_1 = omega_d_1 / const_2_pi
+n_d_2 = omega_d_2 / const_2_pi
+n_d_3 = omega_d_3 / const_2_pi
+n_d_4 = omega_d_4 / const_2_pi
+
+'n_d_1 = 2 * 3
+
+}}
+
+
+
 
 PUB GetResultAddr
 	return @n_d_1
@@ -132,60 +181,18 @@ PUB SetInput
 PUB SetOutput
 'Stores the most recently calculated output value
 
-	long[n_d_i_addr][0] := n_d_1
-	long[n_d_i_addr][1] := n_d_2
-	long[n_d_i_addr][2] := n_d_3
-	long[n_d_i_addr][3] := n_d_4
-
+'	long[n_d_i_addr][0] := n_d_1
+'	long[n_d_i_addr][1] := n_d_2
+'	long[n_d_i_addr][2] := n_d_3
+'	long[n_d_i_addr][3] := n_d_4
+'	
+	longmove(n_d_i_addr, @n_d_1, 4)
 
 PUB Calculate
 'One iteration of the calculations
 'Should be called from a repeat loop...
 'Writes object local variables, does not write to address
-
-	c := fp.FDiv( fp.FMul(K_Q, diameter), K_T)
-	
-	t_1 := fp.FDiv( M_z, fp.FMul(float(4), c))
-	
-	t_2 := fp.FDiv( M_y, fp.FMul(float(2), offset))
-	
-	t_3 := fp.FDiv( M_x, fp.FMul(float(2), offset))
-	
-	t_4 := fp.FDiv( F_z, float(4))
-	
-	F_1 := fp.FAdd(t_1, fp.FAdd(fp.FNeg(t_2), t_4))
-	if fp.FCmp(F_1, float(0)) < 0 'Force is negative
-		F_1 := float(0) 
-	
-	F_2 := fp.FAdd(fp.FNeg(t_1), fp.FAdd(fp.FNeg(t_3), t_4))
-	if fp.FCmp(F_2, float(0)) < 0 'Force is negative
-		F_2 := float(0)
-		
-	F_3 := fp.FAdd(t_1, fp.FAdd(t_2, t_4))
-	if fp.FCmp(F_3, float(0)) < 0 'Force is negative
-		F_3 := float(0)
-	
-	F_4 := fp.FAdd(fp.FNeg(t_1), fp.FAdd(t_3, t_4))
-	if fp.FCmp(F_4, float(0)) < 0 'Force is negative
-		F_4 := float(0)
-	
-	t_1 := fp.FDiv(fp.FMul(float(2), pi), fp.FMul(diameter, diameter))
-	
-	t_2 := fp.FMul(rho, K_T)
-	
-	omega_d_1 := fp.FMul(t_1, fp.FSqr( fp.FDiv(F_1, t_2) ) )
-	
-	omega_d_2 := fp.FMul(t_1, fp.FSqr( fp.FDiv(F_2, t_2) ) )
-	
-	omega_d_3 := fp.FMul(t_1, fp.FSqr( fp.FDiv(F_3, t_2) ) )
-	
-	omega_d_4 := fp.FMul(t_1, fp.FSqr( fp.FDiv(F_4, t_2) ) )
-	
-	n_d_1 := fp.FDiv(omega_d_1, fp.FMul(float(2), pi))
-	n_d_2 := fp.FDiv(omega_d_2, fp.FMul(float(2), pi))
-	n_d_3 := fp.FDiv(omega_d_3, fp.FMul(float(2), pi))
-	n_d_4 := fp.FDiv(omega_d_4, fp.FMul(float(2), pi))
-
+	fp.FInterpret(@MOTOR_BLOCK_INSTRUCTIONS)
 
 {{
 --------------------------------------------------------------------------------  

@@ -1,6 +1,17 @@
 #!/bin/bash
 
-#(c)2012 Anzhelka Project
+#--------------------------------------------------------------------------------
+#Anzhelka Project
+#(c) 2012
+
+#For the latest code and support, please visit:
+#http://code.anzhelka.com
+#--------------------------------------------------------------------------------
+
+#Title: compile.sh
+#Author: Cody Lewis
+#Date: May 23, 2012
+#Notes:
 
 #This script will compile, download, and open a terminal
 #If any errors are encountered then it will stop at the appropriate point.
@@ -48,7 +59,7 @@ else
 		echo
 		echo To exit picocom, type C-A then C-X
 		echo
-		rm bstoutput.txt
+#		rm bstoutput.txt
 		
 		if [ "$2" = "--list" ] ; then #Quotes around the $2 to make a binary operator (http://linuxcommand.org/wss0100.php)
 			if [ $# -gt 2 ]; then
@@ -105,4 +116,31 @@ rm bstoutput.txt
 #do
 #  echo "$flag" $OPTIND $OPTARG
 #done
+
+
+
+
+
+
+#--------------------------------------------------------------------------------  
+#Copyright (c) 2012 Cody Lewis and Luke De Ruyter
+
+#Permission is hereby granted, free of charge, to any person obtaining a copy of
+#this software and associated documentation files (the "Software"), to deal in
+#the Software without restriction, including without limitation the rights to
+#use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+#the Software, and to permit persons to whom the Software is furnished to do so,
+#subject to the following conditions: 
+
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software. 
+
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+#FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+#COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+#IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+#CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#--------------------------------------------------------------------------------
+
 

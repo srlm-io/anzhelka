@@ -13,16 +13,15 @@ Author: Cody Lewis
 Date: May 13, 2012
 
 Notes: 
---- Implements the motor control block (#3) from the quadrotor mathematics document.
+--- Implements the momoment control block (#1) from the quadrotor mathematics document.
 TODO:
 
 }}
 
-
 OBJ
-'	fp	: "Float32.spin"
-'    fp  : "Float.spin"
-	fp : "F32.spin"
+	fp  : "F32_CMD.spin"
+
+
 VAR
 ''Input Variables
 	long omega_b_addr
@@ -41,15 +40,42 @@ VAR
 VAR
 'Given Variables (with addresses)
 	long	omega_b_x, omega_b_y, omega_b_z
-	long	q_1, q_2, q_3, q_4
-	long	q_d_1, q_d_2, q_d_3, q_d_4
+	long	q_0, q_1, q_2, q_3
+	long	q_d_0, q_d_1, q_d_2, q_d_3
 	
 	long	K_PH, K_DH, K_P_z, K_D_z
 	
 	long	M_x, M_y, M_z
 	
 'Intermediate Variables (local only, not written out or in)
+	
+	long alpha
+	long alpha_H
+	long beta_h
+	long phi
+	long q_temp_0
+	long q_temp_1
+	long q_temp_2
+	long q_temp_3
+	long q_tilde_0
+	long q_tilde_1
+	long q_tilde_2
+	long q_tilde_3
+	long q_tilde_b_1
+	long q_tilde_b_2
+	long q_tilde_b_3
+	long q_tilde_b_4
+	long r_b_1
+	long r_b_2
+	long r_b_3
+	long r_e_1
+	long r_e_2
+	long r_e_3
+	long r_x
+	long r_y
 	long t_1
+	long t_2
+	long t_3
 
 
 PUB Start({
@@ -79,10 +105,12 @@ Output Variables:
 	M_addr       := M_addr_
 
 	fp.start
+	Init_Instructions
 
 
-PUB GetResultAddr
-	return @M_x
+
+'PUB GetResultAddr
+'	return @M_x
 	
 PUB SetInput
 
@@ -90,15 +118,15 @@ PUB SetInput
 	omega_b_y := long[omega_b_addr][1]
 	omega_b_z := long[omega_b_addr][2]
 	
-	q_1 := long[q_addr][0]
-	q_2 := long[q_addr][1]
-	q_3 := long[q_addr][2]
-	q_4 := long[q_addr][3]
+	q_0 := long[q_addr][0]
+	q_1 := long[q_addr][1]
+	q_2 := long[q_addr][2]
+	q_3 := long[q_addr][3]
 	
-	q_d_1 := long[q_d_addr][0]
-	q_d_2 := long[q_d_addr][1]
-	q_d_3 := long[q_d_addr][2]
-	q_d_4 := long[q_d_addr][3]
+	q_d_0 := long[q_d_addr][0]
+	q_d_1 := long[q_d_addr][1]
+	q_d_2 := long[q_d_addr][2]
+	q_d_3 := long[q_d_addr][3]
 	
 	K_PH := long[K_PH_addr]
 	K_DH := long[K_DH_addr]
@@ -108,148 +136,79 @@ PUB SetInput
 
 
 PUB SetOutput
-	long[M_addr][0] := M_x
-	long[M_addr][1] := M_y
-	long[M_addr][2] := M_z
+	long[M_addr][0] := r_x
+	long[M_addr][1] := r_y
+	long[M_addr][2] := beta_H
 
 	
 PUB Calculate
 'One iteration of the calculations
 'Should be called from a repeat loop...
 'Writes object local variables, does not write to address
-'	M_x := fp.FMul(omega_b_x, float(3))
-'	M_y := fp.FMul(omega_b_y, float(3))
-'	M_z := fp.FMul(omega_b_z, float(3))
-	QuatMul(@q_1, @q_d_1, @q_1)
 	
-	M_x := q_1
-	M_y := q_2
-	M_z := q_4
+	fp.FInterpret(@MOMENT_BLOCK_INSTRUCTIONS)
+	
+{{AZM_MATH MOMENT_BLOCK
+
+
+'q star:
+q_1 = 0 - q_1
+q_2 = 0 - q_2
+q_3 = 0 - q_3
+
+'Moment Block, first Quat Mul
+q_tilde_0 = ((q_d_0*q_0) - (q_d_1*q_1)) - ((q_d_2*q_2) - (q_d_3*q_3))
+q_tilde_1 = ((q_d_0*q_1) + (q_d_1*q_0)) + ((q_d_2*q_3) - (q_d_3*q_2))
+q_tilde_2 = ((q_d_0*q_2) - (q_d_1*q_3)) + ((q_d_2*q_0) + (q_d_3*q_1))
+q_tilde_3 = ((q_d_0*q_3) + (q_d_1*q_2)) - ((q_d_2*q_1) + (q_d_3*q_0))
+
+alpha = 2 * (q_tilde_0 arc_c 0)
+
+
+t_1 = (alpha / 2) sin 0
+
+r_e_1 = q_tilde_1 / t_1
+r_e_2 = q_tilde_2 / t_1
+r_e_3 = q_tilde_3 / t_1
+
+'Moment Block, r_b first (lhs) quat mult:
+q_temp_0 = ((q_0*0) - (q_1*r_e_1)) - ((q_2*r_e_2) - (q_3*r_e_3))
+q_temp_1 = ((q_0*r_e_1) + (q_1*0)) + ((q_2*r_e_3) - (q_3*r_e_2))
+q_temp_2 = ((q_0*r_e_2) - (q_1*r_e_3)) + ((q_2*0) + (q_3*r_e_1))
+q_temp_3 = ((q_0*r_e_3) + (q_1*r_e_2)) - ((q_2*r_e_1) + (q_3*0))
+
+
+'q star:
+q_1 = 0 - q_1
+q_2 = 0 - q_2
+q_3 = 0 - q_3
+
+'Moment Block, r_b second (rhs) quat mult:
+'0 = ((q_temp_0*q_0) - (q_temp_1*q_1)) - ((q_temp_2*q_2) - (q_temp_3*q_3))
+r_b_1 = ((q_temp_0*q_1) + (q_temp_1*q_0)) + ((q_temp_2*q_3) - (q_temp_3*q_2))
+r_b_2 = ((q_temp_0*q_2) - (q_temp_1*q_3)) + ((q_temp_2*q_0) + (q_temp_3*q_1))
+r_b_3 = ((q_temp_0*q_3) + (q_temp_1*q_2)) - ((q_temp_2*q_1) + (q_temp_3*q_0))
+
+q_tilde_b_1 = (alpha / 2) sin 0
+q_tilde_b_2 = t_1 * r_b_1
+q_tilde_b_3 = t_1 * r_b_2
+q_tilde_b_4 = t_1 * r_b_3
+
+alpha_H =  (1- (2 * ((q_1 * q_1) + (q_2 * q_2)))) arc_c 0
+phi = 2 * (q_3 arc_t2 q_0)
+
+t_1 = (phi / 2) cos 0
+t_2 = (phi / 2) sin 0
+t_3 = (alpha_H / 2) sin 0
+
+r_x = ((t_1 * q_1) - (t_2 * q_2)) / t_3
+r_y = ((t_2 * q_1) - (t_1 * q_2)) / t_3
+beta_H = r_y arc_t2 r_x
+
+}}
 
 
 
-
-
-
-
-PUB VectNorm(v_addr, v_result_addr) | a, b, c, t1, t2, t3, norm
-
-	a := long[v_addr][0]
-	b := long[v_addr][1]
-	c := long[v_addr][2]
-	
-	t1 := fp.FMul(a, a)
-	t2 := fp.FMul(b, b)
-	t3 := fp.FMul(c, c)
-	
-	norm := fp.FAdd(t1, t2) 'Not Parallel
-	norm := fp.FAdd(t1, t3) 'Not Parallel
-	
-	a := fp.FDiv(a, norm)
-	b := fp.FDiv(b, norm)
-	c := fp.FDiv(c, norm)
-	
-	long[v_result_addr][0] := a
-	long[v_result_addr][1] := b
-	long[v_result_addr][2] := c
-	
-PUB VectDot(v_1_addr, v_2_addr, v_result_addr)
-
-	long[v_result_addr][0] := fp.FMul(long[v_1_addr][0], long[v_2_addr][0])
-	long[v_result_addr][1] := fp.FMul(long[v_1_addr][1], long[v_2_addr][1])
-	long[v_result_addr][2] := fp.FMul(long[v_1_addr][2], long[v_2_addr][2])
-	
-PUB QuatStar(q_1_addr, q_result_addr)
-	
-	long[q_result_addr][0] :=         long[q_1_addr][0]
-	long[q_result_addr][1] := fp.FNeg(long[q_1_addr][1])
-	long[q_result_addr][2] := fp.FNeg(long[q_1_addr][2])
-	long[q_result_addr][3] := fp.FNeg(long[q_1_addr][3])
-
-PUB QuatMul(q_1_addr, q_2_addr, q_result_addr) | w, x, y, z, t1, t2, t3, t4, w1, x1, y1, z1, w2, x2, y2, z2
-'	w1, x1, y1, z1 = q1
-'	w2, x2, y2, z2 = q2
-'	
-	w1 := long[q_1_addr][0]
-	x1 := long[q_1_addr][1]
-	y1 := long[q_1_addr][2]
-	z1 := long[q_1_addr][3]
-
-	w2 := long[q_2_addr][0]
-	x2 := long[q_2_addr][1]
-	y2 := long[q_2_addr][2]
-	z2 := long[q_2_addr][3]
-
-
-'	w = ([w1*w2] - x1*x2 - y1*y2 - z1*z2)
-'	x = ([w1*x2] + x1*w2 + y1*z2 - z1*y2)
-'	y = ([w1*y2] - x1*z2 + y1*w2 + z1*x2)
-'	z = ([w1*z2] + x1*y2 - y1*x2 + z1*w2)
-	w := fp.FMul(w1,w2)
-	x := fp.FMul(w1,x2)
-	y := fp.FMul(w1,y2)
-	z := fp.FMul(w1,z2)
-	
-'	w = (w1*w2 - [x1*x2] - y1*y2 - z1*z2)
-'	x = (w1*x2 + [x1*w2] + y1*z2 - z1*y2)
-'	y = (w1*y2 - [x1*z2] + y1*w2 + z1*x2)
-'	z = (w1*z2 + [x1*y2] - y1*x2 + z1*w2)
-	t1 := fp.FMul(x1,x2)
-	t2 := fp.FMul(x1,w2)
-	t3 := fp.FMul(x1,z2)
-	t4 := fp.FMul(x1,y2)
-	
-	
-'	w = ([w1*w2 - x1*x2] - y1*y2 - z1*z2)
-'	x = ([w1*x2 + x1*w2] + y1*z2 - z1*y2)
-'	y = ([w1*y2 - x1*z2] + y1*w2 + z1*x2)
-'	z = ([w1*z2 + x1*y2] - y1*x2 + z1*w2)
-	w := fp.FSub(w, t1)
-	x := fp.FAdd(x, t2)
-	y := fp.FSub(y, t3)
-	z := fp.FAdd(z, t4)
-		
-'	w = (w1*w2 - x1*x2 - [y1*y2] - z1*z2)
-'	x = (w1*x2 + x1*w2 + [y1*z2] - z1*y2)
-'	y = (w1*y2 - x1*z2 + [y1*w2] + z1*x2)
-'	z = (w1*z2 + x1*y2 - [y1*x2] + z1*w2)
-	t1 := fp.FMul(y1,y2)
-	t2 := fp.FMul(y1,z2)
-	t3 := fp.FMul(y1,w2)
-	t4 := fp.FMul(y1,x2)
-	
-'	w = ([w1*w2 - x1*x2 - y1*y2] - z1*z2)
-'	x = ([w1*x2 + x1*w2 + y1*z2] - z1*y2)
-'	y = ([w1*y2 - x1*z2 + y1*w2] + z1*x2)
-'	z = ([w1*z2 + x1*y2 - y1*x2] + z1*w2)
-	w := fp.FSub(w, t1)
-	x := fp.FAdd(x, t2)
-	y := fp.FAdd(y, t3)
-	z := fp.FSub(z, t4)
-	
-'	w = (w1*w2 - x1*x2 - y1*y2 - [z1*z2])
-'	x = (w1*x2 + x1*w2 + y1*z2 - [z1*y2])
-'	y = (w1*y2 - x1*z2 + y1*w2 + [z1*x2])
-'	z = (w1*z2 + x1*y2 - y1*x2 + [z1*w2])
-	t1 := fp.FMul(z1,z2)
-	t2 := fp.FMul(z1,y2)
-	t3 := fp.FMul(z1,x2)
-	t4 := fp.FMul(z1,w2)
-	
-'	w = ([w1*w2 - x1*x2 - y1*y2 - z1*z2])
-'	x = ([w1*x2 + x1*w2 + y1*z2 - z1*y2])
-'	y = ([w1*y2 - x1*z2 + y1*w2 + z1*x2])
-'	z = ([w1*z2 + x1*y2 - y1*x2 + z1*w2])
-	w := fp.FSub(w, t1)
-	x := fp.FSub(x, t2)
-	y := fp.FAdd(y, t3)
-	z := fp.FAdd(z, t4)
-	
-
-	long[q_result_addr][0] := w
-	long[q_result_addr][1] := x
-	long[q_result_addr][2] := y
-	long[q_result_addr][3] := z
 
 {{
 --------------------------------------------------------------------------------  

@@ -56,8 +56,41 @@ M_z = 0.0
 
 
 def block_moment(omega_b_x, omega_b_y, omega_b_z, q, q_d, K_PH, K_DH, K_P_z, K_D_z):
-	w,x,y,z = quat_multiply(q, q_d)
-	return (w,x,z)
+	q_tilde = quat_multiply(q_d, quat_star(q))
+	alpha = 2.0 * math.acos(q_tilde[0])
+	t_1 = math.sin(alpha / 2.0)
+	
+	r_e_1 = q_tilde[1] / t_1
+	r_e_2 = q_tilde[2] / t_1
+	r_e_3 = q_tilde[3] / t_1
+	
+#	return (q_tilde[1], t_1, r_e_1)	
+	
+	null, r_b_1, r_b_2, r_b_3 = quat_multiply(quat_multiply(quat_star(q), (0, r_e_1, r_e_2, r_e_3)), q)
+	
+	q_tilde_b = (math.cos(alpha / 2), math.sin(alpha / 2) * r_b_1, math.sin(alpha / 2) * r_b_2, math.sin(alpha / 2) * r_b_3)
+	
+	alpha_H = math.acos(1 - 2 * (q[1]*q[1] + q[2]*q[2]))
+	
+	phi = 2 * math.atan2(q[3], q[0])
+	
+	t_1 = math.cos(phi / 2)
+	t_2 = math.sin(phi / 2)
+	t_3 = math.sin(alpha_H / 2)
+	
+#	return (t_1, t_2, t_3)
+	
+	r_x = ((t_1 * q[1]) - (t_2 * q[2])) / t_3
+	r_y = ((t_2 * q[1]) - (t_1 * q[2])) / t_3
+	
+	beta_H = math.atan2(r_y, r_x)
+	
+
+	
+	return (r_x, r_y, beta_H)
+	
+	
+#	return (w,x,z)
 #	return (M_x, M_y, M_z)
 
 
