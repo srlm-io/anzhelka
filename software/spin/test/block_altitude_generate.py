@@ -8,10 +8,10 @@
 #http://code.anzhelka.com
 #--------------------------------------------------------------------------------
 
-#Title: block_motor_generate.py
+#Title: block_altitude_generate.py
 #Author: Cody Lewis
 #Date: May 14, 2012
-#Notes: This program will automatically generate test cases for the block_motor.spin file
+#Notes: This program will automatically generate test cases for the block_altitude.spin file
 
 import math
 import random
@@ -107,7 +107,6 @@ def	block_motor(force_z, moment_x, moment_y, moment_z, n_1, n_2, n_3, n_4, diame
 	n_d_4 = omega_d_4 / (2 * math.pi)
 
 	return (n_d_1, n_d_2, n_d_3, n_d_4)
-#	return (F_1, F_2, F_3, F_4)
 
 def main():
 
@@ -162,26 +161,26 @@ def main():
 
 
 
-	mystr =  "'test#".ljust(12)
-	mystr += "f_z".rjust(8)
-	mystr += "m_x".rjust(8)
-	mystr += "m_y".rjust(8)
-	mystr += "m_z".rjust(8)
-	mystr += "n_1".rjust(8)
-	mystr += "n_2".rjust(8)
-	mystr += "n_3".rjust(8)
-	mystr += "n_4".rjust(8)
-	mystr += "dia".rjust(8)
-	mystr += "off".rjust(8)
-	mystr += "rho".rjust(8)
-	mystr += "k_t".rjust(8)
-	mystr += "k_q".rjust(8)
-	mystr += "k_p".rjust(8)
-	mystr += "k_i".rjust(8)
-	mystr += "n_d_1".rjust(12)
-	mystr += "n_d_2".rjust(12)
-	mystr += "n_d_3".rjust(12)
-	mystr += "n_d_4".rjust(12)
+	mystr =  "'test# \tlong\t" #+ str(a) + ",\t" + str(b) + ",\t" + str(c) 
+	mystr += "f_z " + ",\t"
+	mystr += "m_x " + ",\t"
+	mystr += "m_y " + ",\t"
+	mystr += "m_z " + ",\t"
+	mystr += "n_1" + ",\t"
+	mystr += "n_2" + ",\t"
+	mystr += "n_3" + ",\t"
+	mystr += "n_4" + ",\t"
+	mystr += "dia" + ",\t"
+	mystr += "off" + ",\t"
+	mystr += "rho" + ",\t"
+	mystr += "k_t" + ",\t"
+	mystr += "k_q" + ",\t"
+	mystr += "k_p" + ",\t"
+	mystr += "k_i" + ",\t"
+	mystr += "n_d_1        " + ",\t"
+	mystr += "n_d_2        " + ",\t"
+	mystr += "n_d_3        " + ",\t"
+	mystr += "n_d_4        " + ",\t"
 
 	print mystr
 
@@ -213,28 +212,28 @@ def main():
 
 
 
-		mystr =  ("test" + str(n)).ljust(7) + " long " #+ str(a) + ",\t" + str(b) + ",\t" + str(c) 
-		mystr += (str(force_z) + ",").rjust(8)
-		mystr += (str(moment_x) + ",").rjust(8)
-		mystr += (str(moment_y) + ",").rjust(8)
-		mystr += (str(moment_z) + ",").rjust(8)
-		mystr += (str(n_1) + ",").rjust(8)
-		mystr += (str(n_2) + ",").rjust(8)
-		mystr += (str(n_3) + ",").rjust(8)
-		mystr += (str(n_4) + ",").rjust(8)
-		mystr += (str(diameter) + ",").rjust(8)
-		mystr += (str(offset) + ",").rjust(8)
-		mystr += (str(density) + ",").rjust(8)
-		mystr += (str(k_t) + ",").rjust(8)
-		mystr += (str(k_q) + ",").rjust(8)
-		mystr += (str(k_p) + ",").rjust(8)
-		mystr += (str(k_i) + ",").rjust(8)
+		mystr =  "test" + str(n) + " \tlong\t" #+ str(a) + ",\t" + str(b) + ",\t" + str(c) 
+		mystr += str(force_z) + ",\t"
+		mystr += str(moment_x) + ",\t"
+		mystr += str(moment_y) + ",\t"
+		mystr += str(moment_z) + ",\t"
+		mystr += str(n_1) + ",\t"
+		mystr += str(n_2) + ",\t"
+		mystr += str(n_3) + ",\t"
+		mystr += str(n_4) + ",\t"
+		mystr += str(diameter) + ",\t"
+		mystr += str(offset) + ",\t"
+		mystr += str(density) + ",\t"
+		mystr += str(k_t) + ",\t"
+		mystr += str(k_q) + ",\t"
+		mystr += str(k_p) + ",\t"
+		mystr += str(k_i) + ",\t"
 
 		n_d_1, n_d_2, n_d_3, n_d_4 = block_motor(force_z, moment_x, moment_y, moment_z, n_1, n_2, n_3, n_4, diameter, offset, density, k_t, k_q, k_p, k_i)
-		mystr += (str(n_d_1) + ",").rjust(12)
-		mystr += (str(n_d_2) + ",").rjust(12)
-		mystr += (str(n_d_3) + ",").rjust(12)
-		mystr += (str(n_d_4)).rjust(12)
+		mystr += str(n_d_1) + ",\t"
+		mystr += str(n_d_2) + ",\t"
+		mystr += str(n_d_3) + ",\t"
+		mystr += str(n_d_4)# + ",\t"
 
 		print mystr
 
