@@ -9,6 +9,8 @@
 % TODO: Additional material
 % --- Section 2.1 still needs more content
 
+% Needs approval and over sight from Cody :)
+
 
 \documentclass[english]{article}
 
@@ -272,55 +274,234 @@ Anzhelka is equipped with a Parallax Propeller multicore processor. The quadroto
 
 
 \subsubsection{Functional Requirements}
-
+\bigskip
 \subsection{Altitude Control}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. Altitude drops by 5cm &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item Quadrotor loses 5cm in altitude
+\item Altitude sensor on the Quadrotor triggers an alarm within controll loop
+\item Altittude mathematical control loop gains change to compensate
+\item Quadrotor adjusts motor speed based on control loop result
+\item Quadrotor achieves desired altitude
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Highly Manueverable}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. Quadrotor is programmed to do a barrel roll &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item Quadrotor is triggered to preform a barrel roll
+\item Current IMU and Altitude readings are stored
+\item The trajectory math is calculated by the barrel roll function
+\item Motors are changed to the desired speeds calculated by the math
+\item The Quadrotor is then returned back to its starting Attitude and Alitude readings
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{User Programmable}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. User wants to program the Quadrotor with a new trajectory plan &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item User plugs the SD card into their computer
+\item User launches the programming software
+\item Trajectories are entered into the software
+\item When the user is ready they can press the "Write to SD Card" Button
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Modularized} 
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to fix one of the motor booms &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user can dissasemble the parts of the frame that were broken
+\item The parts can be reassembled together with new or used parts
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Ground Station}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to get data from the quadrotor in real time &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user would turn on the ground station
+\item Next they would locate the switch on the control board labeled wireless
+\item Toggle the switch to the ON position
+\item Connect the ground station to your computer
+\item Launch the ground station software 
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Waypoint Control}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to control the quadrotor to fly in an contiunous patern &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item While the user is using the programming software select the waypoint tab
+\item The user then selects the waypoint patern
+\item Once that is complete the user can select the contuinous run box
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Object Tracking}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to enable the object avoidance software &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user needs to locate the Object Avoidance switch on the control board
+\item The user would then need to toggle the switch into the ON position
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Intuitive User Control}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to control the quadrotor manually/ without programming flight data &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user needs to locate the manual flight switch on the control board
+\item The user would then need to toggle the switch into the user position
+\item The user would now use the remote control to fly the quadrotor
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Comprehensive Datalogging}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
-\subsubsection{Functional Requirements}
 
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wishes to log all flight data &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user needs to locate the logging switch on the control board
+\item The user would then need to toggle the switch into the logging position
+\item Recording begins once flight has been initiated
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
+\subsubsection{Functional Requirements}
+\bigskip
 \subsection{Open Community Support}
 \subsubsection{Description and Priority}
 \subsubsection{Stimulus/Response Sequences}
+
+\begin{longtable}{p{3cm} | p{10cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user has a problem with troubleshooting a problem that they are having. &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user can browse to our forum website forums.anzhelka.com
+\item They can then select the Troubleshooting directory
+\item They would then need to log in or create a new account
+\item Click on the "Create a new Thread" button
+\item They would then need to come up with a descriptive title for their problem.
+\item Now the would need to explain in great detail what their problems are and what they have tried to do to solve it.
+\item The user should check back regularly to see if anyone has commented on their thread.
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+
+
+
 \subsubsection{Functional Requirements}
 
 

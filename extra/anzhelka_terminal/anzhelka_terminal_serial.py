@@ -11,6 +11,7 @@ import serial
 
 rx_buffer_lock = Lock()
 rx_buffer = []
+thread = Thread()
 #last_received = ''
 
 
@@ -103,7 +104,7 @@ class DataGen(object):
 	def __init__(self, init=50):
 		try:
 			self.ser = ser = serial.Serial(
-				port='/dev/ttyUSB0',
+				port='COM11',
 				baudrate=115200,
 				bytesize=serial.EIGHTBITS,
 				parity=serial.PARITY_NONE,
@@ -117,7 +118,7 @@ class DataGen(object):
 			#no serial connection
 			self.ser = None
 		else:
-			Thread(target=receiving, args=(self.ser,)).start()
+			thread = Thread(target=receiving, args=(self.ser,)).start()
 		
 #	def next(self):
 #		if not self.ser:
@@ -133,16 +134,11 @@ class DataGen(object):
 #				print 'bogus data',raw_line
 #				time.sleep(.5)
 #		return 0.
-	def __del__(self):
-		if self.ser:
-			self.ser.close()
 
 
-
-
-
-
-
+def cleanup():
+	print "Ending and cleaning up"
+	thread.exit()
 
 
 if __name__=='__main__':
@@ -151,3 +147,4 @@ if __name__=='__main__':
 	while True:
 		time.sleep(.015)
 		print s.next()
+

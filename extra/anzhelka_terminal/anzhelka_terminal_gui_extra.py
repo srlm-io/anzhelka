@@ -31,7 +31,7 @@ REFRESH_INTERVAL_MS = 50
 paused = False
 
 motor_num = 4
-motor_settings = ["Motor", "RPM", "DRPM", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
+motor_settings = ["Motor", "RPS", "DRPM", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
 
 
 class BoundControlBox(wx.Panel):
@@ -355,6 +355,7 @@ class RPMGraph(wx.Panel):
 	
 	def on_exit(self, event):
 		self.Destroy()
+		
 	
 	def flash_status_message(self, msg, flash_len_ms=1500):
 		self.statusbar.SetStatusText(msg)
@@ -368,6 +369,196 @@ class RPMGraph(wx.Panel):
 	def on_flash_status_off(self, event):
 		self.statusbar.SetStatusText('')
 
+class AdjustmentTable(wx.Panel):
+	def __init__(self, parent, id):
+		wx.Panel.__init__(self, parent, -1)
+
+		topSizer = wx.BoxSizer(wx.VERTICAL)
+		
+		sizer = wx.GridBagSizer(hgap=5, vgap=5)
+		
+		self.dropbox = wx.ComboBox(self, -1, choices=["9600", "19200", "38400", "57600", "115200"], style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
+		self.sliderbox = wx.Slider(self, -1, 1, 20, 10000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_TOP)
+		self.sliderbox.SetTickFreq(1000, 1)
+		self.sliderboxval = self.sliderbox.GetValue()
+		self.button1 = wx.Button(self, 1, 'Update')
+		self.button2 = wx.Button(self, 2, 'Box2Slider')
+		self.display.SetValue(str(self.sliderboxval))
+		
+		sizer.Add(self.dropbox, pos=(1,0), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.display, pos=(2,0), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.sliderbox, pos=(3,0), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.button1, pos=(4,0), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		sizer.Add(self.button2, pos=(4,1), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		
+		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
+		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
+		
+		topSizer.Add(sizer, 0, wx.ALL|wx.EXPAND, 5)
+
+		self.SetSizer(topSizer)
+
+		topSizer.Fit(self)
+
+
+	def OnUpdate(self, event):
+		self.sliderboxval = self.sliderbox.GetValue()
+		self.display.SetValue(str(self.sliderboxval))
+
+	def OnBox2Slider(self, event):
+		self.sliderboxval = self.display.GetValue()
+		self.sliderbox.SetValue(int(self.sliderboxval))
+
+
+class DoubleAdjustmentTable(wx.Panel):
+	def __init__(self, parent, id):
+		wx.Panel.__init__(self, parent, -1)
+
+		topSizer = wx.BoxSizer(wx.VERTICAL)
+		
+		sizer = wx.GridBagSizer(hgap=5, vgap=5)
+		
+		self.dropbox = wx.ComboBox(self, -1, choices=["9600", "19200", "38400", "57600", "115200"], style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.dropbox2 = wx.ComboBox(self, -1, choices=["9600", "19200", "38400", "57600", "115200"], style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
+		self.display2 = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
+		self.sliderbox = wx.Slider(self, -1, 1, 20, 10000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_TOP)
+		self.sliderbox2 = wx.Slider(self, -1, 1, 20, 10000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_TOP)
+		self.sliderbox.SetTickFreq(1000, 1)
+		self.sliderbox2.SetTickFreq(1000, 1)
+		self.sliderboxval = self.sliderbox.GetValue()
+		self.sliderboxval2 = self.sliderbox2.GetValue()
+		self.button1 = wx.Button(self, 1, 'Update')
+		self.button12 = wx.Button(self, 3, 'Update')
+		self.button2 = wx.Button(self, 2, 'Box2Slider')
+		self.button22 = wx.Button(self, 4, 'Box2Slider')
+		self.display.SetValue(str(self.sliderboxval))
+		self.display2.SetValue(str(self.sliderboxval2))
+
+		sizer.Add(self.dropbox, pos=(1,0), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.dropbox2, pos=(1,2), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.display, pos=(2,0), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.display2, pos=(2,2), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.sliderbox, pos=(3,0), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.sliderbox2, pos=(3,2), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.button1, pos=(4,0), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		sizer.Add(self.button12, pos=(4,2), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		sizer.Add(self.button2, pos=(4,1), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		sizer.Add(self.button22, pos=(4,3), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+
+		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
+		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
+		self.Bind(wx.EVT_BUTTON, self.OnUpdate2, id=3)
+		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider2, id=4)
+		
+		topSizer.Add(sizer, 0, wx.ALL|wx.EXPAND, 5)
+
+		self.SetSizer(topSizer)
+
+		topSizer.Fit(self)
+
+
+	def OnUpdate(self, event):
+		self.sliderboxval = self.sliderbox.GetValue()
+		self.display.SetValue(str(self.sliderboxval))
+
+	def OnBox2Slider(self, event):
+		self.sliderboxval = self.display.GetValue()
+		self.sliderbox.SetValue(int(self.sliderboxval))
+
+	def OnUpdate2(self, event):
+		self.sliderboxval2 = self.sliderbox2.GetValue()
+		self.display2.SetValue(str(self.sliderboxval2))
+
+	def OnBox2Slider2(self, event):
+		self.sliderboxval2 = self.display2.GetValue()
+		self.sliderbox2.SetValue(int(self.sliderboxval2))
+
+
+class OlderAdjustmentTable(wx.Panel):
+	def __init__(self, parent, id):
+		wx.Panel.__init__(self, parent, -1)
+                
+		panel = wx.Panel(self, -1)
+
+		#grid_sizer_1 = wx.FlexGridSizer(2, 2, 10, 10)
+
+		vbox = wx.BoxSizer(1000)
+		hbox = wx.BoxSizer(1000)
+		
+		self.display = wx.TextCtrl(panel, -1, style=wx.TE_RIGHT)
+		self.sliderbox = wx.Slider(panel, -1, 1, 20, 10000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_TOP)
+		self.sliderbox.SetTickFreq(25, 1)
+		self.sliderboxval = self.sliderbox.GetValue()
+		self.button1 = wx.Button(panel, 1, 'Update', (110, 185))
+		self.button2 = wx.Button(panel, 2, 'Box2Slider', (40, 185))
+		self.display.SetValue(str(self.sliderboxval))
+
+		vbox.Add(self.display, 1, wx.ALIGN_CENTRE)
+		vbox.Add(self.sliderbox, 1, wx.ALIGN_CENTRE)
+		hbox.Add(self.button1, 1, wx.RIGHT, 10)
+		hbox.Add(self.button2, 1)
+		vbox.Add(hbox, 0, wx.ALIGN_CENTRE | wx.ALL, 20)
+		panel.SetSizer(vbox)
+
+		#grid_sizer_1.Add(vbox, 0, 0, 0)
+		#self.SetSizer(grid_sizer_1)
+		
+		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
+		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
+
+		self.Show(True)
+		self.Centre()
+
+	def OnUpdate(self, event):
+		self.sliderboxval = self.sliderbox.GetValue()
+		self.display.SetValue(str(self.sliderboxval))
+
+	def OnBox2Slider(self, event):
+		self.sliderboxval = self.display.GetValue()
+		self.sliderbox.SetValue(int(self.sliderboxval))
+		
+
+class OldererAdjustmentTable(wx.Panel):
+	def __init__(self, parent, id):
+		wx.Panel.__init__(self, parent, -1)
+                
+		#self.sliderbox = wx.ComboBox(self, -1, choices=["9600", "19200", "38400", "57600", "115200"], style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.sliderbox2 = wx.Slider(self, -1, 200, 150, 500, wx.DefaultPosition, (250, -1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_LABELS)
+		self.sliderbox3 = wx.Slider(self, -1, 250, 150, 500, wx.DefaultPosition, (250, -1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_LABELS)
+		self.sliderbox4 = wx.Slider(self, -1, 0, 20, 40, wx.DefaultPosition, (250, -1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_TOP)
+		self.sliderbox2.SetTickFreq(25, 1)
+		self.sliderbox3.SetTickFreq(25, 1)
+		self.sliderbox4.SetTickFreq(25, 1)
+		self.sliderboxval4 = self.sliderbox4.GetValue()
+		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
+		self.button1 = wx.Button(self, 1, 'Update')
+		self.button2 = wx.Button(self, 2, 'Box2Slider')
+		self.display.SetValue(str(self.sliderboxval4))
+		grid_sizer_1 = wx.FlexGridSizer(2, 2, 10, 10)
+		grid_sizer_2 = wx.FlexGridSizer(1, 2, 10, 10)
+		#grid_sizer_1.Add(self.sliderbox, 0, 0, 0)
+		grid_sizer_1.Add(self.sliderbox2, 0, 0, 0)
+		grid_sizer_1.Add(self.sliderbox3, 0, 0, 0)
+		grid_sizer_1.Add(self.sliderbox4, 0, 0, 0)
+		grid_sizer_1.Add(self.display, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
+		grid_sizer_1.Add(self.button1, 0, wx.EXPAND)
+		grid_sizer_1.Add(self.button2, 0, wx.EXPAND)
+		#grid_sizer_1.Add(grid_sizer_2, 0, 0, 0)
+		self.SetSizer(grid_sizer_2)
+		self.SetSizer(grid_sizer_1)
+		self.Center()
+		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
+		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
+
+	def OnUpdate(self, event):
+		self.sliderboxval4 = self.sliderbox4.GetValue()
+		self.display.SetValue(str(self.sliderboxval4))
+
+	def OnBox2Slider(self, event):
+		self.sliderboxval4 = self.display.GetValue()
+		self.sliderbox4.SetValue(int(self.sliderboxval4))
 
 
 def reverseenum(string, l):
@@ -383,6 +574,7 @@ class MotorTable(wx.Panel):
 		wx.Panel.__init__(self, parent, -1)
 
 		self.rx_last_read = 0
+
 		self.rxparser = RxParser()
 		
 		self.motor_table = []
@@ -398,7 +590,7 @@ class MotorTable(wx.Panel):
 			for j in range(len(motor_settings)):
 				if j == reverseenum("Motor", motor_settings): # Motor number
 					self.motor_table[i+1].append(wx.TextCtrl(self, -1, str(i)))
-				elif j == reverseenum("RPM", motor_settings): # Motor number
+				elif j == reverseenum("RPS", motor_settings): # Motor number
 					self.motor_table[i+1].append(wx.TextCtrl(self, -1, "---"))
 				elif j == reverseenum("Volts", motor_settings): # Motor number
 					self.motor_table[i+1].append(wx.TextCtrl(self, -1, "---"))
@@ -447,7 +639,7 @@ class MotorTable(wx.Panel):
 					#Go through all the received strings and add whatever is relevant.
 					while self.rx_last_read < len(rx_buffer):
 						
-						self.update_field("$ADRPS", "RPM")
+						self.update_field("$ADRPS", "RPS")
 						self.update_field("$ADMIA", "Amps")
 						self.update_field("$ADMVV", "Volts")
 						self.update_field("$ADPWM", "ESC(uS)")
@@ -468,6 +660,8 @@ class MotorTable(wx.Panel):
 
 				finally:
 					rx_buffer_lock.release()
+
+
 
 if __name__=='__main__':
 	print "Please note this is not intended to be run standalone. Please run ./anzhelka_terminal_gui.py instead."
