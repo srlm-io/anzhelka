@@ -250,12 +250,19 @@ Anzhelka is equipped with a Parallax Propeller multicore processor. The quadroto
 \newpage
 \section{System Features}
 
+This section describes Anzhelka features, and assigns priorities to each. Priorities are assigned in descending order, with a priority of 1 being the most important.
 
 \subsection{Attitude Control}
 \subsubsection{Description and Priority}
+An quadrotor must be able to maintain a stable attitude (orientation) at all times during flight. If the quadrotor loses control of it's attitude then catastrophic failure is certain to happen. Such a failure would likely result in the destruction of the vehicle, and possibly collateral damage. Therefore, attitude control is \textit{the} top priority of Anzhelka.
+
+\textbf{Priority:} 1
+
+\textbf{Business Requirement:} Allow the user to have a precisely orientable platform
+
 \subsubsection{Stimulus/Response Sequences}
 
-\begin{longtable}{p{3cm} | p{10cm}}
+\begin{longtable}{p{3cm} | p{8.5cm}}
 \hline
 \textbf{Stimulus} & \textbf{Response}\\
 \hline
@@ -270,245 +277,295 @@ Anzhelka is equipped with a Parallax Propeller multicore processor. The quadroto
 \\ 
 \hline
 \end{longtable}
-
-
-
 \subsubsection{Functional Requirements}
+Attitude control assumes that the quadrotor has sufficient thrust in each motor to maintain a given attitude. In addition, the quadrotor must have a valid desired attitude to work towards. If there is a disturbance to the attitude the quadrotor must be able to correct it's orientation quickly before it changes it's position enough to risk collision.
 \bigskip
 \subsection{Altitude Control}
 \subsubsection{Description and Priority}
+Altitude control refers to the ability of the quadrotor to maintain a set height above ground level. This can be sensed through a number of different methods, but each must have the same result. Altitude control is important in order to prevent the quadrotor from crashing to the ground or going too high. Altitude control failure can result in damage to the vehicle or nearby objects, hence altitude control is very important.
+
+\textbf{Priority:} 2
+
+\textbf{Business Requirement:} Gives the user the ability to set a desired altitude for flight
+
 \subsubsection{Stimulus/Response Sequences}
 
-\begin{longtable}{p{3cm} | p{10cm}}
+\begin{longtable}{p{3cm} | p{8.5cm}}
 \hline
 \textbf{Stimulus} & \textbf{Response}\\
 \hline
 1. Altitude drops by 5cm &
 \begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
 \item Quadrotor loses 5cm in altitude
-\item Altitude sensor on the Quadrotor triggers an alarm within controll loop
-\item Altittude mathematical control loop gains change to compensate
+\item Altitude sensor on the quadrotor triggers an alarm within control loop
+\item Altitude mathematical control loop gains change to compensate
 \item Quadrotor adjusts motor speed based on control loop result
 \item Quadrotor achieves desired altitude
 \end{enumerate}
 \\ 
 \hline
 \end{longtable}
-
-
-
 \subsubsection{Functional Requirements}
+Altitude hold assumes that the quadrotor can produce enough thrust to maintain the desired altitude. Maximum thrust may not be enough when a)the quadrotor is overloaded and too heavy or b)the quadrotor is flying at a severe angle. If either of these cases are true, then the quadrotor should be expected to lose altitude.
 \bigskip
-\subsection{Highly Manueverable}
+\subsection{Highly Maneuverable}
 \subsubsection{Description and Priority}
+One of the main advantages of an \textit{autonomous} quadrotor is that the computer control should allow for aerial acrobatics. Most human pilots do not have suitable skill to perform complex movements. By allowing for complex manuevers, the quadrotor is able to go through certain obstacles that it may not normally be able to.
+
+This feature is an important reason to select autonomous flight, and hence an important part of the flight experience. It is not, however, necessary for stable flight.
+
+\textbf{Priority:} 3
+
+\textbf{Business Requirement:} Users have the ability to achieve precise aerobatics
+
 \subsubsection{Stimulus/Response Sequences}
 
-\begin{longtable}{p{3cm} | p{10cm}}
+\begin{longtable}{p{3cm} | p{8.5cm}}
 \hline
 \textbf{Stimulus} & \textbf{Response}\\
 \hline
 1. Quadrotor is programmed to do a barrel roll &
 \begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item Quadrotor is triggered to preform a barrel roll
+\item Quadrotor is instructed to perform a barrel roll
 \item Current IMU and Altitude readings are stored
-\item The trajectory math is calculated by the barrel roll function
-\item Motors are changed to the desired speeds calculated by the math
-\item The Quadrotor is then returned back to its starting Attitude and Alitude readings
+\item The trajectory of the roll is calculated by the barrel roll function
+\item Motors are changed to the desired speeds calculated by the control loop
+\item Motor speeds are adjusted throughout the duration of the roll to maintain control
+\item The Quadrotor is then returned back to the starting attitude and altitude.
 \end{enumerate}
 \\ 
 \hline
 \end{longtable}
-
-
-
 \subsubsection{Functional Requirements}
+The quadrotor must be able fly at any specified orientation. The quadrotor is not expected to maintain position while in an acrobatic movement state. The system should be able to perform these movements with either a human pilot or through a programmable interface.
+
+
+
+
+
 \bigskip
 \subsection{User Programmable}
 \subsubsection{Description and Priority}
+The quadrotor must be able to accept commands from the user in some relatively conceptually high level format. This allows for users to make the best use of the autonomous features of the quadrotor vehicle.
+
+\textbf{Priority:} 3
+
+\textbf{Business Requirement:} Makes the quadrotor unique to the users needs.
+
 \subsubsection{Stimulus/Response Sequences}
 
-\begin{longtable}{p{3cm} | p{10cm}}
+\begin{longtable}{p{3cm} | p{8.5cm}}
 \hline
 \textbf{Stimulus} & \textbf{Response}\\
 \hline
-1. User wants to program the Quadrotor with a new trajectory plan &
+1. The user wants to program the quadrotor with a new trajectory plan &
 \begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item User plugs the SD card into their computer
-\item User launches the programming software
+\item The user plugs the SD card into a computer
+\item The user launches the programming software
 \item Trajectories are entered into the software
 \item When the user is ready they can press the "Write to SD Card" Button
+\item The user then plugs the SD card into the quadrotor
 \end{enumerate}
 \\ 
 \hline
 \end{longtable}
-
-
-
 \subsubsection{Functional Requirements}
+The quadrotor should be programmable in an easy to understand scripting language type format, in plain text. The user program should be able to be stored onboard the quadrotor, and edited on most computers. The scripting language developed should be able to support advanced features such as condition testing and branching. In addition, there should be a graphical user interface to allow for automated programming of the quadrotor.
 \bigskip
-\subsection{Modularized} 
-\subsubsection{Description and Priority}
-\subsubsection{Stimulus/Response Sequences}
 
-\begin{longtable}{p{3cm} | p{10cm}}
-\hline
-\textbf{Stimulus} & \textbf{Response}\\
-\hline
-1. The user wants to fix one of the motor booms &
-\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item The user can dissasemble the parts of the frame that were broken
-\item The parts can be reassembled together with new or used parts
-\end{enumerate}
-\\ 
-\hline
-\end{longtable}
-
-
-
-\subsubsection{Functional Requirements}
-\bigskip
-\subsection{Ground Station}
-\subsubsection{Description and Priority}
-\subsubsection{Stimulus/Response Sequences}
-
-\begin{longtable}{p{3cm} | p{10cm}}
-\hline
-\textbf{Stimulus} & \textbf{Response}\\
-\hline
-1. The user wants to get data from the quadrotor in real time &
-\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item The user would turn on the ground station
-\item Next they would locate the switch on the control board labeled wireless
-\item Toggle the switch to the ON position
-\item Connect the ground station to your computer
-\item Launch the ground station software 
-\end{enumerate}
-\\ 
-\hline
-\end{longtable}
-
-
-
-\subsubsection{Functional Requirements}
-\bigskip
-\subsection{Waypoint Control}
-\subsubsection{Description and Priority}
-\subsubsection{Stimulus/Response Sequences}
-
-\begin{longtable}{p{3cm} | p{10cm}}
-\hline
-\textbf{Stimulus} & \textbf{Response}\\
-\hline
-1. The user wants to control the quadrotor to fly in an contiunous patern &
-\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item While the user is using the programming software select the waypoint tab
-\item The user then selects the waypoint patern
-\item Once that is complete the user can select the contuinous run box
-\end{enumerate}
-\\ 
-\hline
-\end{longtable}
-
-
-
-\subsubsection{Functional Requirements}
-\bigskip
-\subsection{Object Tracking}
-\subsubsection{Description and Priority}
-\subsubsection{Stimulus/Response Sequences}
-
-\begin{longtable}{p{3cm} | p{10cm}}
-\hline
-\textbf{Stimulus} & \textbf{Response}\\
-\hline
-1. The user wants to enable the object avoidance software &
-\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item The user needs to locate the Object Avoidance switch on the control board
-\item The user would then need to toggle the switch into the ON position
-\end{enumerate}
-\\ 
-\hline
-\end{longtable}
-
-
-
-\subsubsection{Functional Requirements}
-\bigskip
-\subsection{Intuitive User Control}
-\subsubsection{Description and Priority}
-\subsubsection{Stimulus/Response Sequences}
-
-\begin{longtable}{p{3cm} | p{10cm}}
-\hline
-\textbf{Stimulus} & \textbf{Response}\\
-\hline
-1. The user wants to control the quadrotor manually/ without programming flight data &
-\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item The user needs to locate the manual flight switch on the control board
-\item The user would then need to toggle the switch into the user position
-\item The user would now use the remote control to fly the quadrotor
-\end{enumerate}
-\\ 
-\hline
-\end{longtable}
-
-
-
-\subsubsection{Functional Requirements}
-\bigskip
 \subsection{Comprehensive Datalogging}
 \subsubsection{Description and Priority}
+The quadrotor should document and log all of it's internal parameters and measurements for later review. This is especially important for debugging and assessing system stability. Every number should be stored on a relatively secure and crash-safe memory device. This is important for debugging intermittent errors of the system, and hence is relatively important.
+
+\textbf{Priority:} 3
+
+\textbf{Business Requirement:} Know how the system performed and how to better achieve the desired actions
+
 \subsubsection{Stimulus/Response Sequences}
 
-\begin{longtable}{p{3cm} | p{10cm}}
+\begin{longtable}{p{3cm} | p{8.5cm}}
 \hline
 \textbf{Stimulus} & \textbf{Response}\\
 \hline
 1. The user wishes to log all flight data &
 \begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item The user needs to locate the logging switch on the control board
-\item The user would then need to toggle the switch into the logging position
-\item Recording begins once flight has been initiated
+\item The user locates the logging switch on the control board
+\item The user toggles the switch into the logging position
+\item Recording begins once the quadrotor has been initialized
 \end{enumerate}
 \\ 
 \hline
 \end{longtable}
-
-
-
 \subsubsection{Functional Requirements}
+The data should be stored onboard the quadrotor, preferably in a removable medium such as an SD card. The data should also be stored in a plain text file on the medium in order to allow for a wide range of software to process the data.
 \bigskip
-\subsection{Open Community Support}
+
+\subsection{Modularized} 
 \subsubsection{Description and Priority}
+The quadrotor must be able to be easily assembled and disassembled. This is especially important when the quadrotor is expected to crash frequently. However, as the project matures, development of the quadrotor frame can minimize the modularity of the frame with the expectation of fewer crashes.
+
+\textbf{Priority:} 4
+
+\textbf{Business Requirement:} Interchangeable parts makes a reliable system
+
 \subsubsection{Stimulus/Response Sequences}
 
-\begin{longtable}{p{3cm} | p{10cm}}
+\begin{longtable}{p{3cm} | p{8.5cm}}
 \hline
 \textbf{Stimulus} & \textbf{Response}\\
 \hline
-1. The user has a problem with troubleshooting a problem that they are having. &
+1. The user wants to fix one of the motor booms &
 \begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
-\item The user can browse to our forum website forums.anzhelka.com
-\item They can then select the Troubleshooting directory
-\item They would then need to log in or create a new account
-\item Click on the "Create a new Thread" button
-\item They would then need to come up with a descriptive title for their problem.
-\item Now the would need to explain in great detail what their problems are and what they have tried to do to solve it.
-\item The user should check back regularly to see if anyone has commented on their thread.
+\item The motor mount is removed from the damaged boom
+\item The broken motor boom is then removed from the frame
+\item A new replacement motor boom is mounted on the frame
+\item The motor mount is reattached to the boom
 \end{enumerate}
 \\ 
 \hline
 \end{longtable}
-
-
-
 \subsubsection{Functional Requirements}
+The quadrotor should use threaded fasteners for all joints. The use of glues and other adhesives should be minimized. All fasteners must use the same head and thread sizes to minimize the number of different tools required. All components should be easy to manufacture or inexpensive to purchase, and be easily removable and replaceable when necessary.
+
+\bigskip
+\subsection{Ground Station}
+\subsubsection{Description and Priority}
+A ground station allows the quadrotor operator to view realtime statistics about the operation of the vehicle. Operational data is transmitted wirelessly to a receiver that is connected to a laptop computer for display. The data can include both measured data (such as motor speed or battery level) and calculated data (such as orientation error or next command). While useful and informative, this feature is not required for every flight.
+
+\textbf{Priority:} 4
+
+\textbf{Business Requirement:} Know what the quadrotor is doing while it is doing it
+
+\subsubsection{Stimulus/Response Sequences}
+
+\begin{longtable}{p{3cm} | p{8.5cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to get data from the quadrotor in real time &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The ground station software is initialized on a computer
+\item The user sets the switch labeled "wireless" on the control board to on
+\item The ground station hardware is then plugged into the USB port on the computer
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+\subsubsection{Functional Requirements}
+The ground station should be self contained, and be available in on of two forms: a small USB device, or a tripod mounted and motorized device. The USB version of the ground station should be able to receive a signal from the quadrotor when it is operating in close proximity, and transmit packets to the quadrotor. The tripod mounted ground station must be able to track the quadrotor with a directional antenna, and also be powered from a USB port.
+
+\bigskip
+\subsection{Waypoint Control}
+\subsubsection{Description and Priority}
+The quadrotor should be able to follow a set waypoint path in 3D space. This allows for precise control of quadrotor position, and can be used for tasks such as surveillance or transportation of payloads. The waypoints should be able to be defined both statically, before flight begins, and dynamically, after flight begins.
+
+\textbf{Priority:} 4
+
+\textbf{Business Requirement:} Allows the user to be able to monitor an area continuously
+
+\subsubsection{Stimulus/Response Sequences}
+
+\begin{longtable}{p{3cm} | p{8.5cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to control the quadrotor to fly in an continuous pattern &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item While using the configuration software the user selects the waypoint tab
+\item The user then selects the waypoint pattern
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+\subsubsection{Functional Requirements}
+The quadrotor should be able to track it's current position and travel to a specified waypoint. The quadrotor should consider itself at the waypoint once it has reached an distance error radius from the waypoints. The waypoint specification must allow for both a two dimensional specification and a full three dimensional specification. In the case of two dimensions, the quadrotor should maintain it's current position in the unspecified dimension.
+% Wouldn't it be cool to have a specification of 1-3 dimensions?
+
+\bigskip
+\subsection{Object Tracking}
+\subsubsection{Description and Priority}
+The quadrotor should be able to track objects in it's immediate environment. This is useful for both avoiding obstacles and tracking the movement of a target. This is especially important when flying in a restricted area such as a forest or urban setting. Should the quadrotor fail to accurately track and avoid objects it will likely hit something, leading to a crash. While this is a serious issue, it is reasonable to expect most flights to take place in an open area, in which case most users would not need object avoidance.
+
+\textbf{Priority:} 5
+
+\textbf{Business Requirement:} The ability to follow an object with an unknown trajectory
+
+\subsubsection{Stimulus/Response Sequences}
+
+\begin{longtable}{p{3cm} | p{8.5cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to enable the object avoidance software &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user locates the Object Avoidance switch on the control board
+\item The user toggles the switch into the ON position
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+\subsubsection{Functional Requirements}
+The object tracking feature must be able to create at least a two dimensional map of the surrounding area, out to within three seconds of travel at the current speed. This map must be updated at least two times per second.
 
 
+\bigskip
+\subsection{Intuitive User Control}
+The quadrotor must have a manual flight capability. Ideally, this would be done through an intuitive user interface that does not require much training or experience to operate. Practically this is a low priority requirement since the quadrotor must be operable manually, but this control need not be \textit{intuitive} for early adopters.
 
-\subsection{System Feature 2 (and so on)}
+\textbf{Priority:} 6
 
+\textbf{Business Requirement:} Gives the user the ability to fly the quadrotor with no fly experience
+ 
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
 
+\begin{longtable}{p{3cm} | p{8.5cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user wants to control the quadrotor manually, without programming flight data &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user locates the manual flight switch on the control board
+\item The user toggles the switch into the manual position
+\item The remote flight control board is then able to control the orientation and altitude of the quadrotor
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+\subsubsection{Functional Requirements}
+The user must be able to have complete control of the orientation of the quadrotor body, and the z axis thrust produced by the quadrotor. The user control must be wireless and not require any connection to external electronics. The user controller should allow for rapid spinning of the quadrotor body.
+
+\bigskip
+
+\subsection{Open Community Support}
+A good open source product must have a central location to store user generated technical support. Forums are one of the best methods available, and reduce the support burden of Anzhelka developers. However, forum based support is only useful once a community of users has been established.
+
+\textbf{Priority:} 7
+
+\textbf{Business Requirement:} An open community means open and free support
+\subsubsection{Description and Priority}
+\subsubsection{Stimulus/Response Sequences}
+
+\begin{longtable}{p{3cm} | p{8.5cm}}
+\hline
+\textbf{Stimulus} & \textbf{Response}\\
+\hline
+1. The user has a problem with troubleshooting a problem with the quadrotor. &
+\begin{enumerate}[(a)]\itemsep1pt %for small alpha-characters within brackets.
+\item The user browses to our forums website at forums.anzhelka.com
+\item The user then selects the appropriate forum, based on the problem
+\item The user then log in or create a new account
+\item Click on the "Create a new Thread" button
+\item In title box the user creates a descriptive title for the problem
+\item In the body text box the user enters what the problem is and any troubleshooting that has already been done.
+\item The user then posts the thread
+\item The user waits for a helpful reply
+\end{enumerate}
+\\ 
+\hline
+\end{longtable}
+\subsubsection{Functional Requirements}
+The forums must be publicly viewable without an account, since most user questions are likely to repeat. The forums must be hosted so that they are accessible from anywhere in the world. In addition, the forums must be moderated, either by users or staff, to ensure a friendly environment free of profanity and politics.
 
 
 \newpage
