@@ -19,6 +19,7 @@ TODO:
 -Implement the PID function
 -The interpret routine can be optimized down a little bit to reduce a few longs (fnumA_addr, I'm looking at you!)
 -Make sure to test integration. Specifically, test to make sure that the cmd tables are correct...
+-FLimitMax, FLimitMin can probably be combined (in PASM)...
 }}
 
 {{
@@ -148,6 +149,155 @@ PUB AddInstruction(sequence, op, ai_a_addr, ai_b_addr, ai_result_addr) | sequenc
 	
 PUB FInterpret(a)
   result := cmdInterpret
+  f32_Cmd := @result
+  repeat
+  while f32_Cmd
+
+
+CON
+'	SampleTime = 1000
+	
+	'Enabled
+	MANUAL = 0
+	AUTOMATIC = 1
+	
+	'Direction
+	DIRECT = 0
+	REVERSE = 1
+VAR
+	long SampleTime
+'A PID Object Variables (12 longs total):
+	long Input_addr, Output_addr, Setpoint_addr
+	long ITerm, lastInput
+	long kp, ki, kd
+	long outMin, outMax
+	long inAuto
+	long controllerDirection
+	
+'Local Copies of values
+	long Input, Output, Setpoint
+	
+	long address 'Where to store all the variables after the PID loop executes	
+
+PUB InitPID
+	SampleTime := 1000
+
+PUB CopyToLocal(new_address)
+	'Copies into the fp (local) scope
+	address := new_address
+	longmove(@Input_addr, address, 12)
+	
+	Input := long[Input_addr]
+	Output := long[Output_addr]
+	Setpoint := long[Setpoint_addr]
+
+PUB CopyToAddress
+	longmove(address, @Input_addr, 12)
+	
+	long[Input_addr] := Input
+	long[Output_addr] := Output
+	long[Setpoint_addr] := Setpoint
+	
+PUB Compute | error, dInput
+
+
+'	if inAuto == MANUAL
+'		return
+	'TODO test for time change, and whether it's time to compute the PID loop
+	
+	
+	'Compute all the working error variables
+	error := FSub(Setpoint, Input)
+	ITerm := FAdd(ITerm, FMul(ki, error))
+'	FLimitMax(ITerm, outMax)
+'	FLimitMin(ITerm, outMin)
+	dInput := FSub(Input, lastInput)
+	
+	'Compute PID Output
+	Output := FMul(kp, error)
+	Output := FAdd(Output, Iterm)
+	Output := FSub(Output, FMul(kd, dInput))
+'	FLimitMax(Output, outMax)
+'	FLimitMin(Output, outMin)
+	
+	'Remember some variables for next time
+	lastInput := Input
+'	lastTime := now
+	
+PUB SetTunings(new_kp, new_ki, new_kd) | SampleTimeInSec
+	'TODO: Bounds checkin on new_*
+	
+	SampleTimeInSec := FDiv(FFloat(SampleTime), float(1000))
+	kp := new_kp
+	ki := FMul(new_ki, SampleTimeInSec)
+	kd := FDiv(new_kd, SampleTimeInSec)
+	
+	if controllerDirection == REVERSE
+		kp := FNeg(kp)
+		ki := FNeg(ki)
+		kd := FNeg(kd)
+	
+PUB SetSampleTime(NewSampleTime) | ratio
+	if NewSampleTime > 0
+		ratio := FDiv(FFloat(NewSampleTime), FFloat(SampleTime))
+		ki := FMul(ki, ratio)
+		kd := FDiv(kd, ratio)
+		
+		SampleTime := NewSampleTime
+
+PUB SetOutputLimits(minimum, maximum)
+	if FCmp(minimum, maximum) == 1
+		return 'Error, minimum cannot be more than maximum
+		
+	outMin := minimum
+	outMax := maximum
+	
+	FLimitMax(Output, outMax)
+	FLimitMin(Output, outMin)
+	
+	FLimitMax(ITerm, outMax)
+	FLimitMin(ITerm, outMin)
+	
+PUB SetMode(newMode) | newAuto
+	'TODO Finish this function...
+	repeat 1
+	
+PUB Initialize
+	lastInput := Input
+	ITerm := Output
+	FLimitMax(ITerm, outMax)
+	FLimitMin(ITerm, outMin)
+	
+PUB SetControllerDirection(new_direction)
+	controllerDirection := new_direction
+
+	
+
+
+
+PUB FLimitMax(a, b)
+{{
+  Returns the minimum of the two values
+  Parameters:
+
+    a        32-bit floating point value
+    b        32-bit floating point value
+  Returns:   32-bit floating point value
+}}
+  result  := cmdFLimitMax
+  f32_Cmd := @result
+  repeat
+  while f32_Cmd
+
+PUB FLimitMin(a, b)
+{{
+  Returns the maximum of the two values
+  Parameters:
+    a        32-bit floating point value
+    b        32-bit floating point value
+  Returns:   32-bit floating point value
+}}
+  result  := cmdFLimitMin
   f32_Cmd := @result
   repeat
   while f32_Cmd
@@ -1496,6 +1646,7 @@ _FAbs                  and     fnumA, Abs_Mask
 _FAbs_ret              ret
 Abs_Mask               long $7FFF_FFFF
 
+'Returns the greater of the two
 _FLimitMin				mov		fnumA_copy, fnumA
 						mov		fnumB_copy, fnumB
 						call	#_FCmp
@@ -1504,11 +1655,17 @@ _FLimitMin				mov		fnumA_copy, fnumA
 				if_nz	mov		fnumA, fnumB_copy
 _FLimitMin_ret			ret
 
+'Returns the lesser of the two
+_FLimitMax              mov		fnumA_copy, fnumA
+						mov		fnumB_copy, fnumB
+						call	#_FCmp
+						cmp		fnumA, #1 wz
+				if_nz	mov		fnumA, fnumA_copy
+				if_z	mov		fnumA, fnumB_copy
+_FLimitMax_ret          ret
+
 fnumA_copy  long	0
 fnumB_copy  long	0
-
-_FLimitMax              nop
-_FLimitMax_ret          ret
 
 
 '------------------------------------------------------------------------------

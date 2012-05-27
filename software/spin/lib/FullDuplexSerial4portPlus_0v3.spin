@@ -12,8 +12,6 @@
   - My points of code modification are mostly tagged "TTA".  There are several large rearrangements of data in addition to point changes.
 
   Links:
-  Tracy Allen's Thread where this object is posted:
-  --- http://forums.parallax.com/showthread.php?137349-yet-another-variant-fullDuplexSerial4portplus
   Tim Moore's original pcFullDuplexSerial4fc and updates to allow flow control:
   --- http://forums.parallaxinc.com/forums/default.aspx?f=25&p=1&m=273291#m276667
   --- http://obex.parallax.com/objects/340/      7/24/08 version
@@ -152,15 +150,15 @@ CON
   BAUD57600                     = 57600
   BAUD115200                    = 115200
 
-  TX_SIZE0                      = $FF  ' enter in the needed size in bytes for each rx and tx buffer
+  TX_SIZE0                      = 16  ' enter in the needed size in bytes for each rx and tx buffer
   TX_SIZE1                      = 1   ' these values are arbitrary, just to show that they can be different
-  TX_SIZE2                      = 1 ' not necessarily binary or less than any particular limit.
-  TX_SIZE3                      = 1   '
+  TX_SIZE2                      = 16  ' not necessarily binary or less than any particular limit.
+  TX_SIZE3                      = 64   '
 
-  RX_SIZE0                      = 1
+  RX_SIZE0                      = 8
   RX_SIZE1                      = 1
-  RX_SIZE2                      = 1
-  RX_SIZE3                      = 1
+  RX_SIZE2                      = 600
+  RX_SIZE3                      = 64
 
   RXTX_BUFSIZE                  = (TX_SIZE0 + TX_SIZE1 + TX_SIZE2 + TX_SIZE3 + RX_SIZE0 + RX_SIZE1 + RX_SIZE2 + RX_SIZE3)
                                  ' total buffer footprint in bytes
@@ -169,8 +167,7 @@ CON
                                  ' to accomodate all of the buffers.
                                  ' if the sum totals to 308, then the buffers exactly fit within the object footprint.
 
-VAR
-  long timer_count, timer_start, timer_stop
+
 PUB Init
 ''Always call init before adding ports
   Stop
@@ -308,67 +305,16 @@ PUB rx(port) : rxbyte
 '' returns $00..$FF
   repeat while (rxbyte := rxcheck(port)) < 0
 
-'PUB tx(port,txbyte)
-''' Send byte (may wait for room in buffer)
-'  if port > 3
-'    abort
-'  repeat until (tx_tail[port] <> (tx_head[port] + 1) // txsize[port])
-'  byte[txbuff_ptr[port]+tx_head[port]] := txbyte
-'  tx_head[port] := (tx_head[port] + 1) // txsize[port]
-
-'  if rxtx_mode[port] & NOECHO
-'    rx(port)
-
-
-
-
-
-
-
-
-
 PUB tx(port,txbyte)
 '' Send byte (may wait for room in buffer)
-'  if port > 3
-'    abort
-
-'  timer_start := cnt  
-  
-'  if port > 3
-'    abort
-
+  if port > 3
+    abort
   repeat until (tx_tail[port] <> (tx_head[port] + 1) // txsize[port])
   byte[txbuff_ptr[port]+tx_head[port]] := txbyte
-'  tx_head[port] := (tx_head[port] + 1) // txsize[port]
-  tx_head[port]++
-  tx_head[port] //= txsize[port]
+  tx_head[port] := (tx_head[port] + 1) // txsize[port]
 
-'  if rxtx_mode[port] & NOECHO
-'    rx(port)
-  
-  
-  
-'  timer_stop := cnt
-'  if timer_stop > timer_start
-'    timer_count += timer_stop - timer_start
-
-
-
-'  if rxtx_mode[port] & NOECHO
-'    rx(port)
-
-
-
-
-
-
-
-
-
-
-
-
-
+  if rxtx_mode[port] & NOECHO
+    rx(port)
 
 PUB txflush(port)
   repeat until (long[@tx_tail][port] == long[@tx_head][port])
@@ -383,111 +329,45 @@ PUB strln(port,strAddr)
   str(port,strAddr)
   tx(port,CR)  
 
-'PUB dec(port,value) | i
-''' Print a decimal number
-'  decl(port,value,10,0)
+PUB dec(port,value) | i
+'' Print a decimal number
+  decl(port,value,10,0)
 
-'PUB decf(port,value, width) | i
-''' Prints signed decimal value in space-padded, fixed-width field
-'  decl(port,value,width,1)
+PUB decf(port,value, width) | i
+'' Prints signed decimal value in space-padded, fixed-width field
+  decl(port,value,width,1)
 
-'PUB decx(port,value, digits) | i
-''' Prints zero-padded, signed-decimal string
-''' -- if value is negative, field width is digits+1
-'  decl(port,value,digits,2)
+PUB decx(port,value, digits) | i
+'' Prints zero-padded, signed-decimal string
+'' -- if value is negative, field width is digits+1
+  decl(port,value,digits,2)
 
-'PUB decl(port,value,digits,flag) | i, x, timer_start, timer_stop
-''' DWD Fixed with FDX 1.2 code
+PUB decl(port,value,digits,flag) | i, x
+'' DWD Fixed with FDX 1.2 code
 
-'  timer_start := cnt
-
-'  digits := 1 #> digits <# 10
-'  
-'  x := value == NEGX                                                            'Check for max negative
-'  if value < 0
-'    value := ||(value+x)                                                        'If negative, make positive; adjust for max negative
-'    tx(port,"-")                                                                     'and output sign
-
-'  i := 1_000_000_000
-'  if flag & 3
-'    if digits < 10                                      ' less than 10 digits?
-'      repeat (10 - digits)                              '   yes, adjust divisor
-'        i /= 10
-
-'  repeat digits
-'    if value => i
-'      tx(port,value / i + "0" + x*(i == 1))
-'      value //= i
-'      result~~
-'    elseif (i == 1) OR result OR (flag & 2)
-'      tx(port,"0")
-'    elseif flag & 1
-'      tx(port," ")
-'    i /= 10
-
-PUB dec_full(port, value) | i
-
-'' Prints a decimal number
-'  timer_start := cnt
+  digits := 1 #> digits <# 10
   
-  
-'  if value < 0
-'    -value
-'    tx(port, "-")
+  x := value == NEGX                                                            'Check for max negative
+  if value < 0
+    value := ||(value+x)                                                        'If negative, make positive; adjust for max negative
+    tx(port,"-")                                                                     'and output sign
 
-'  i := 1_000_000_000
-  i := 1_000_000
+  i := 1_000_000_000
+  if flag & 3
+    if digits < 10                                      ' less than 10 digits?
+      repeat (10 - digits)                              '   yes, adjust divisor
+        i /= 10
 
-'  repeat 10
-  repeat 7
-'  repeat 4
+  repeat digits
     if value => i
-      tx(port, value / i + "0")
+      tx(port,value / i + "0" + x*(i == 1))
       value //= i
       result~~
-    elseif result or i == 1
-      tx(port, "0")
+    elseif (i == 1) OR result OR (flag & 2)
+      tx(port,"0")
+    elseif flag & 1
+      tx(port," ")
     i /= 10
-
-
-'  timer_stop := cnt
-'  if timer_stop > timer_start
-'    timer_count += timer_stop - timer_start
-
-
-PUB dec(port, value) | i
-
-'' Prints a decimal number
-'  timer_start := cnt
-  
-  
-'  if value < 0
-'    -value
-'    tx(port, "-")
-
-'  i := 1_000_000_000
-'  i := 1_000_000
-	i := 1_000
-'  repeat 10
-'  repeat 7
-  repeat 4
-    if value => i
-      tx(port, value / i + "0")
-      value //= i
-      result~~
-    elseif result or i == 1
-      tx(port, "0")
-    i /= 10
-
-
-'  timer_stop := cnt
-'  if timer_stop > timer_start
-'    timer_count += timer_stop - timer_start
-
-PUB get_timer_count
-  return timer_count
-PUB clear_timer_count
-  timer_count := 0
 
 PUB hex(port,value, digits)
 '' Print a hexadecimal number

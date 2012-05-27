@@ -14,11 +14,11 @@ Notes:
 
 TODO:
 
-- BUG: In the time calculate function, when I add the 
+- BUG: see http://code.google.com/p/anzhelka/issues/detail?id=4
 
 }}
 
-#define BLOCK_MOTOR
+#define BLOCK_PID
 
 
 CON
@@ -40,6 +40,9 @@ CON
 	ACCEPTABLE_ERROR_MARGIN = 0.00001
 #elseifdef BLOCK_MOTOR
 	RESULT_LENGTH = 4
+	ACCEPTABLE_ERROR_MARGIN = 0.00001
+#elseifdef BLOCK_PID
+	RESULT_LENGTH = 1
 	ACCEPTABLE_ERROR_MARGIN = 0.00001
 #endif
 	
@@ -85,15 +88,27 @@ VAR
 	'Output Variable
 	long	result_spin[4]
 	long	result_comp[4]
+	
+#elseifdef BLOCK_PID
+	'A PID Object Variables (12 longs total):
+	long Input_addr, Output_addr, Setpoint_addr
+	long ITerm, lastInput
+	long kp, ki, kd
+	long outMin, outMax
+	long inAuto
+	long controllerDirection
+	
+'Local Copies of values
+	long Input, Setpoint
+	
+	long result_spin
+	long result_comp
 #endif	
 
 OBJ
 	debug      : "FullDuplexSerialPlus.spin"	
-
 	fp         : "Float32.spin"
 	
-'	fp_pid	   : "F32_PID.spin"
-
 #ifdef BLOCK_MOMENT
 '	block      : "block_moment.spin"
 	block      : "block_moment_output.spin"
@@ -104,14 +119,13 @@ OBJ
 '	block      : "block_motor.spin"
 	block      : "block_motor_output.spin"
 	test_cases : "block_motor_test_cases.spin"
+#elseifdef BLOCK_PID
+	block      : "block_PID.spin"
+	test_cases : "block_PID_test_cases.spin"	
 #endif
 
-
-
 PUB Main | correct_addr, debug_temp_0, debug_temp_1
-
 	StartDebug
-	
 	
 #ifdef BLOCK_MOMENT
 	block.Start(@omega_b, @q, @q_d, @K_PH, @K_DH, @K_P_z, @K_D_z, @result_spin)
@@ -119,33 +133,18 @@ PUB Main | correct_addr, debug_temp_0, debug_temp_1
 	block.Start(
 #elseifdef BLOCK_MOTOR
 	block.Start(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @result_spin)
+#elseifdef BLOCK_PID
+	Input_addr := @Input
+	Output_addr := @result_spin
+	Setpoint_addr := @Setpoint
+	block.Start(@Input_addr)
 #endif
-
 
 	repeat test_case from 0 to test_cases.get_num_test_cases -1
 		SetTestCases
 		TimeCalculate
 		CheckResult(@result_comp, @result_spin, RESULT_LENGTH)
 	PrintStats
-	
-'	fp_pid.start
-'	debug.str(string(10, 13, "Number to put through test: "))
-'	FPrint(result_spin[0])
-'	debug.str(string(" ($"))
-'	debug.hex(result_spin[0], 8)
-'	
-'	debug.str(string(")", 10, 13, "Float32: "))
-'	debug_temp_0 := fp.ACos(result_spin[0])
-'	FPrint(debug_temp_0)
-'	debug.str(string(" ($"))
-'	debug.hex(debug_temp_0, 8)
-'	
-'	debug.str(string(")", 10, 13, "F32_PID: "))
-'	debug_temp_0 := fp_pid.ACos(result_spin[0])
-'	FPrint(debug_temp_0)
-'	debug.str(string(" ($"))
-'	debug.hex(debug_temp_0, 8)
-'	debug.tx(")")
 
 PRI StartDebug
 'Sets up and starts debug related things...
@@ -172,6 +171,8 @@ PRI SetTestCases
 	test_cases.set_test_values(
 #elseifdef BLOCK_MOTOR
 	test_cases.set_test_values(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @result_comp)
+#elseifdef BLOCK_PID
+	test_cases.set_test_values(@Input, @Setpoint, @ITerm, @lastInput, @kp, @ki, @kd, @outMin, @outMax, @inAuto, @controllerDirection, @result_comp)
 #endif
 		
 PRI CheckResult(correct_addr, test_addr, length) | correct_val, test_val, i, high_correct_val, low_correct_val, failed, num_parts_failed
@@ -182,6 +183,10 @@ PRI CheckResult(correct_addr, test_addr, length) | correct_val, test_val, i, hig
 	repeat i from 0 to length -1
 		correct_val := long[@result_comp][i]
 		test_val    := long[@result_spin][i]
+
+'		FPrint(Input)
+'		debug.str(string("(Input)", 10, 13))
+
 		
 		high_correct_val := fp.FAdd(correct_val, ACCEPTABLE_ERROR_MARGIN)
 		low_correct_val := fp.FSub(correct_val, ACCEPTABLE_ERROR_MARGIN)
