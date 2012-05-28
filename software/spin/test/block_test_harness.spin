@@ -18,7 +18,7 @@ TODO:
 
 }}
 
-#define BLOCK_PID
+#define BLOCK_MOTOR
 
 
 CON
@@ -43,7 +43,7 @@ CON
 	ACCEPTABLE_ERROR_MARGIN = 0.00001
 #elseifdef BLOCK_PID
 	RESULT_LENGTH = 1
-	ACCEPTABLE_ERROR_MARGIN = 0.00001
+	ACCEPTABLE_ERROR_MARGIN = 0.001
 #endif
 	
 
@@ -107,7 +107,8 @@ VAR
 
 OBJ
 	debug      : "FullDuplexSerialPlus.spin"	
-	fp         : "Float32.spin"
+'	fp         : "Float32.spin"
+	fp         : "F32_CMD.spin"
 	
 #ifdef BLOCK_MOMENT
 '	block      : "block_moment.spin"
@@ -137,7 +138,7 @@ PUB Main | correct_addr, debug_temp_0, debug_temp_1
 	Input_addr := @Input
 	Output_addr := @result_spin
 	Setpoint_addr := @Setpoint
-	block.Start(@Input_addr)
+	block.Start(@Input_addr, @result_spin)
 #endif
 
 	repeat test_case from 0 to test_cases.get_num_test_cases -1
@@ -184,6 +185,8 @@ PRI CheckResult(correct_addr, test_addr, length) | correct_val, test_val, i, hig
 		correct_val := long[@result_comp][i]
 		test_val    := long[@result_spin][i]
 
+'		debug.str(string(10, 13, "i == "))
+'		debug.dec(i)
 '		FPrint(Input)
 '		debug.str(string("(Input)", 10, 13))
 

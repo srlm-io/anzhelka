@@ -23,24 +23,28 @@ OBJ
 
 VAR
 	long data_address
+	long output_address
 	
-PUB Start(data_address_new) : okay
+PUB Start(data_address_new, output_address_new) : okay
 	fp.start
 	data_address := data_address_new
+	output_address := output_address_new
 	fp.InitPID
 	
 PUB SetInput
-	fp.CopyToLocal(data_address)
+'	fp.CopyToLocal(data_address)
 
 PUB SetOutput
-	fp.CopyToAddress
+'	fp.CopyToAddress
+	
+'	long[output_address] := fp.GetOutput
 	
 PUB Calculate
 'One iteration of the calculations
 'Should be called from a repeat loop...
 'Writes object local variables, does not write to address
 	
-	fp.Compute
+	fp.Compute(data_address)
 	
 
 

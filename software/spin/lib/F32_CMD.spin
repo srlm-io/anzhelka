@@ -15,11 +15,9 @@ Notes:
 TODO:
 
 -Test the ASin, ACos functions
--Implement the FLimitMax function (PASM)
--Implement the PID function
 -The interpret routine can be optimized down a little bit to reduce a few longs (fnumA_addr, I'm looking at you!)
 -Make sure to test integration. Specifically, test to make sure that the cmd tables are correct...
--FLimitMax, FLimitMin can probably be combined (in PASM)...
+-The PID routine can probably be optimized so that the hub reading is done via a loop
 }}
 
 {{
@@ -167,109 +165,121 @@ CON
 VAR
 	long SampleTime
 'A PID Object Variables (12 longs total):
-	long Input_addr, Output_addr, Setpoint_addr
-	long ITerm, lastInput
-	long kp, ki, kd
-	long outMin, outMax
-	long inAuto
-	long controllerDirection
-	
-'Local Copies of values
-	long Input, Output, Setpoint
-	
-	long address 'Where to store all the variables after the PID loop executes	
+'	long Input_addr, Output_addr, Setpoint_addr
+'	long ITerm, lastInput
+'	long kp, ki, kd
+'	long outMin, outMax
+'	long inAuto
+'	long controllerDirection
+'	
+''Local Copies of values
+'	long Input, Output, Setpoint
+'	
+'	long address 'Where to store all the variables after the PID loop executes	
 
 PUB InitPID
 	SampleTime := 1000
 
-PUB CopyToLocal(new_address)
-	'Copies into the fp (local) scope
-	address := new_address
-	longmove(@Input_addr, address, 12)
-	
-	Input := long[Input_addr]
-	Output := long[Output_addr]
-	Setpoint := long[Setpoint_addr]
+'PUB CopyToLocal(new_address)
+'	'Copies into the fp (local) scope
+'	address := new_address
+'	longmove(@Input_addr, address, 12)
+'	
+'	Input := long[Input_addr]
+'	Output := long[Output_addr]
+'	Setpoint := long[Setpoint_addr]
 
-PUB CopyToAddress
-	longmove(address, @Input_addr, 12)
+'PUB CopyToAddress
+'	longmove(address, @Input_addr, 12)
+'	
+'	long[Input_addr] := Input
+'	long[Output_addr] := Output
+'	long[Setpoint_addr] := Setpoint
+'PUB GetOutput
+'	return Output	
+PUB Compute(a) | error, dInput
+'A is the address of the PID data structure
+	result  := cmdPID
+	f32_Cmd := @result
+	repeat
+	while f32_Cmd
 	
-	long[Input_addr] := Input
-	long[Output_addr] := Output
-	long[Setpoint_addr] := Setpoint
-	
-PUB Compute | error, dInput
+'	return
+'	
+'	CopyToLocal(a)
 
+'''	if inAuto == MANUAL
+'''		return
+''	'TODO test for time change, and whether it's time to compute the PID loop
+''	
+''	
+'	'Compute all the working error variables
+'	error := FSub(Setpoint, Input)
+'	ITerm := FAdd(ITerm, FMul(ki, error))
+'	ITerm := FLimitMax(ITerm, outMax)
+'	ITerm := FLimitMin(ITerm, outMin)
+'	dInput := FSub(Input, lastInput)
+'	
+'	'Compute PID Output
+'	Output := FMul(kp, error)
+'	Output := FAdd(Output, Iterm)
+'	Output := FSub(Output, FMul(kd, dInput))
+'	Output := FLimitMax(Output, outMax)
+'	Output := FLimitMin(Output, outMin)
+'	
+'	'Remember some variables for next time
+'	lastInput := Input
+''	lastTime := now
 
-'	if inAuto == MANUAL
-'		return
-	'TODO test for time change, and whether it's time to compute the PID loop
+'	CopyToAddress
+'	return Output
 	
-	
-	'Compute all the working error variables
-	error := FSub(Setpoint, Input)
-	ITerm := FAdd(ITerm, FMul(ki, error))
-'	FLimitMax(ITerm, outMax)
-'	FLimitMin(ITerm, outMin)
-	dInput := FSub(Input, lastInput)
-	
-	'Compute PID Output
-	Output := FMul(kp, error)
-	Output := FAdd(Output, Iterm)
-	Output := FSub(Output, FMul(kd, dInput))
+'PUB SetTunings(new_kp, new_ki, new_kd) | SampleTimeInSec
+'	'TODO: Bounds checkin on new_*
+'	
+'	SampleTimeInSec := FDiv(FFloat(SampleTime), float(1000))
+'	kp := new_kp
+'	ki := FMul(new_ki, SampleTimeInSec)
+'	kd := FDiv(new_kd, SampleTimeInSec)
+'	
+'	if controllerDirection == REVERSE
+'		kp := FNeg(kp)
+'		ki := FNeg(ki)
+'		kd := FNeg(kd)
+'	
+'PUB SetSampleTime(NewSampleTime) | ratio
+'	if NewSampleTime > 0
+'		ratio := FDiv(FFloat(NewSampleTime), FFloat(SampleTime))
+'		ki := FMul(ki, ratio)
+'		kd := FDiv(kd, ratio)
+'		
+'		SampleTime := NewSampleTime
+
+'PUB SetOutputLimits(minimum, maximum)
+'	if FCmp(minimum, maximum) == 1
+'		return 'Error, minimum cannot be more than maximum
+'		
+'	outMin := minimum
+'	outMax := maximum
+'	
 '	FLimitMax(Output, outMax)
 '	FLimitMin(Output, outMin)
-	
-	'Remember some variables for next time
-	lastInput := Input
-'	lastTime := now
-	
-PUB SetTunings(new_kp, new_ki, new_kd) | SampleTimeInSec
-	'TODO: Bounds checkin on new_*
-	
-	SampleTimeInSec := FDiv(FFloat(SampleTime), float(1000))
-	kp := new_kp
-	ki := FMul(new_ki, SampleTimeInSec)
-	kd := FDiv(new_kd, SampleTimeInSec)
-	
-	if controllerDirection == REVERSE
-		kp := FNeg(kp)
-		ki := FNeg(ki)
-		kd := FNeg(kd)
-	
-PUB SetSampleTime(NewSampleTime) | ratio
-	if NewSampleTime > 0
-		ratio := FDiv(FFloat(NewSampleTime), FFloat(SampleTime))
-		ki := FMul(ki, ratio)
-		kd := FDiv(kd, ratio)
-		
-		SampleTime := NewSampleTime
-
-PUB SetOutputLimits(minimum, maximum)
-	if FCmp(minimum, maximum) == 1
-		return 'Error, minimum cannot be more than maximum
-		
-	outMin := minimum
-	outMax := maximum
-	
-	FLimitMax(Output, outMax)
-	FLimitMin(Output, outMin)
-	
-	FLimitMax(ITerm, outMax)
-	FLimitMin(ITerm, outMin)
-	
-PUB SetMode(newMode) | newAuto
-	'TODO Finish this function...
-	repeat 1
-	
-PUB Initialize
-	lastInput := Input
-	ITerm := Output
-	FLimitMax(ITerm, outMax)
-	FLimitMin(ITerm, outMin)
-	
-PUB SetControllerDirection(new_direction)
-	controllerDirection := new_direction
+'	
+'	FLimitMax(ITerm, outMax)
+'	FLimitMin(ITerm, outMin)
+'	
+'PUB SetMode(newMode) | newAuto
+'	'TODO Finish this function...
+'	repeat 1
+'	
+'PUB Initialize
+'	lastInput := Input
+'	ITerm := Output
+'	FLimitMax(ITerm, outMax)
+'	FLimitMin(ITerm, outMin)
+'	
+'PUB SetControllerDirection(new_direction)
+'	controllerDirection := new_direction
 
 	
 
@@ -730,31 +740,61 @@ PUB FMin(a, b)
   Parameters:
     a        32-bit floating point value
     b        32-bit floating point value  
+
   Returns:   32-bit floating point value
 }}
-  result  := cmdFCmp
+  result  := cmdFLimitMax
   f32_Cmd := @result
   repeat
   while f32_Cmd
-  if result < 0
-    return a
-  return b
   
 PUB FMax(a, b)
 {{
   Maximum: result = the maximum value a or b.
+
   Parameters:
     a        32-bit floating point value
     b        32-bit floating point value  
   Returns:   32-bit floating point value
 }}
-  result  := cmdFCmp
+  result  := cmdFLimitMin
   f32_Cmd := @result
   repeat
   while f32_Cmd
-  if result < 0
-    return b
-  return a
+
+
+
+'PUB FMin(a, b)
+'{{
+'  Minimum: result = the minimum value a or b.
+'  Parameters:
+'    a        32-bit floating point value
+'    b        32-bit floating point value  
+'  Returns:   32-bit floating point value
+'}}
+'  result  := cmdFCmp
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
+'  if result < 0
+'    return a
+'  return b
+'  
+'PUB FMax(a, b)
+'{{
+'  Maximum: result = the maximum value a or b.
+'  Parameters:
+'    a        32-bit floating point value
+'    b        32-bit floating point value  
+'  Returns:   32-bit floating point value
+'}}
+'  result  := cmdFCmp
+'  f32_Cmd := @result
+'  repeat
+'  while f32_Cmd
+'  if result < 0
+'    return b
+'  return a
 
 'PUB FMod(a, b)
 '{{
@@ -1631,42 +1671,166 @@ _ASinCos_ret            ret
 '_Ceil_ret
 '_Floor_ret              ret
 
-_PID                    nop
+_PID                    'Read the PID values from hub memory, starting with the Address in FNumA
+						rdlong	t1, fnumA
+						rdlong	fInput, t1
+						
+						add		fnumA, #4
+						rdlong	fOutput_addr, fnumA
+						
+						add		fnumA, #4
+						rdlong	t1, fnumA
+						rdlong	fSetpoint, t1
+						
+						add		fnumA, #4
+						mov		fITerm_addr, fnumA
+						rdlong	fITerm, fnumA
+						
+						add		fnumA, #4
+						mov		flastInput_addr, fnumA
+						rdlong  flastInput, fnumA						
+						
+						add		fnumA, #4
+						rdlong  fkp, fnumA
+						
+						add		fnumA, #4
+						rdlong  fki, fnumA
+						
+						add		fnumA, #4
+						rdlong  fkd, fnumA
+						
+						add		fnumA, #4
+						rdlong  foutMin, fnumA
+						
+						add		fnumA, #4
+						rdlong  foutMax, fnumA
+						
+						add		fnumA, #4
+						rdlong  finAuto, fnumA
+						
+						add		fnumA, #4
+						rdlong  fcontrollerDirection, fnumA
+
+
+
+						'double error = Setpoint - Input
+						mov		fnumA, fSetpoint
+						mov		fnumB, fInput
+						call	#_FSub
+						
+						mov		ferror, fnumA
+						
+						'ITerm += ki * error
+						mov		fnumB, fki
+						call	#_FMul
+						mov		fnumB, fITerm
+						call	#_FAdd
+						'fnumA now has ITerm
+						
+						'if(ITerm > outMax) ITerm= outMax;
+						mov		fnumB, foutMax
+						call	#_FLimitMax
+						'else if(ITerm < outMin) ITerm= outMin;
+						mov		fnumB, foutMin
+						call	#_FLimitMin
+						
+						mov		fITerm, fnumA
+						
+						wrlong	fITerm, fITerm_addr 'Store value for next time
+						
+						
+						
+						'double dInput = (Input - lastInput);
+						mov		fnumA, fInput
+						mov		fnumB, flastInput
+						call	#_FSub		
+
+						'/*Compute PID Output*/
+						'Output = kp * error + ITerm- kd * dInput;
+						
+
+						'kd * dInput
+						mov		fnumB, fkd
+						call	#_FMul
+
+						'ITerm - (fkd*fdInput == fnumA)						
+						mov		fnumB, fnumA
+						mov		fnumA, fIterm
+						call	#_FSub
+						
+						mov		fOutput, fnumA
+						
+						'kp * error
+						mov		fnumA, fkp
+						mov		fnumB, ferror
+						call	#_FMul
+						
+						'(kp * error == fnumA) + (ITerm - (kf*dInput) == fOutput)
+						mov		fnumB, fOutput
+						call	#_FAdd
+						
+						'if(Output > outMax) Output = outMax;
+						mov		fnumB, foutMax
+						call	#_FLimitMax
+						
+						'else if(Output < outMin) Output = outMin;
+						mov		fnumB, foutMin
+						call	#_FLimitMin
+
+						'/*Remember some variables for next time*/
+						'lastInput = Input;
+						wrlong	fInput, flastInput_addr
+						'lastTime = now;
+						
+						wrlong	fnumA, fOutput_addr
+
+
 _PID_ret                ret
 
+fInput 			long 0
+fOutput_addr 	long 0
+fSetpoint 		long 0
+fITerm			long 0
+flastInput		long 0
+fkp				long 0
+fki				long 0
+fkd				long 0
+foutMin			long 0
+foutMax			long 0
+finAuto			long 0
+fcontrollerDirection long 0
 
+fITerm_addr		long 0
+flastInput_addr	long 0
 
+ferror			long 0
+fOutput			long 0
 
-_FNeg                  xor     fnumA, Neg_Mask
+_FNeg                  xor     fnumA, Bit31
 _FNeg_ret              ret
-Neg_Mask               long $8000_0000
 
 
-_FAbs                  and     fnumA, Abs_Mask
+_FAbs                  and     fnumA, NaN
 _FAbs_ret              ret
-Abs_Mask               long $7FFF_FFFF
 
 'Returns the greater of the two
-_FLimitMin				mov		fnumA_copy, fnumA
-						mov		fnumB_copy, fnumB
+_FLimitMin				mov		t2, fnumA
+						mov		t3, fnumB
 						call	#_FCmp
 						cmp		fnumA, #1 wz
-				if_z	mov		fnumA, fnumA_copy
-				if_nz	mov		fnumA, fnumB_copy
+				if_z	mov		fnumA, t2
+				if_nz	mov		fnumA, t3
 _FLimitMin_ret			ret
 
 'Returns the lesser of the two
-_FLimitMax              mov		fnumA_copy, fnumA
-						mov		fnumB_copy, fnumB
+_FLimitMax              mov		t2, fnumA
+						mov		t3, fnumB
 						call	#_FCmp
 						cmp		fnumA, #1 wz
-				if_nz	mov		fnumA, fnumA_copy
-				if_z	mov		fnumA, fnumB_copy
+						'If z == 1, then fnumA > fnumB
+				if_nz	mov		fnumA, t2
+				if_z	mov		fnumA, t3
 _FLimitMax_ret          ret
-
-fnumA_copy  long	0
-fnumB_copy  long	0
-
 
 '------------------------------------------------------------------------------
 ' User Defined Command Interpreter
@@ -1674,31 +1838,23 @@ fnumB_copy  long	0
 
 '------------------------------------------------------------------------------
 
-_Interpret				
-						mov		interpret_pc, fnumA 'make a copy
+_Interpret				mov		interpret_pc, fnumA 'make a copy
 
-						
-:loop
-						rdlong	:function_call, interpret_pc wz 'Get the instruction operation
+:loop					rdlong	:function_call, interpret_pc wz 'Get the instruction operation
 						add		interpret_pc, #4
 			if_z		jmp		#:done
 			
-						rdlong	fnumA_addr, interpret_pc 'Get the fnumA address
+						rdlong	t1, interpret_pc 'Get the fnumA address
 						add		interpret_pc, #4
-						movs	t1, #:GetFNumA
 
-						rdlong	fnumB_addr, interpret_pc 'Get the fnumB address
+						rdlong	t2, interpret_pc 'Get the fnumB address
 						add		interpret_pc, #4
-						movs	t1, #:GetFNumB
 						
 						rdlong	result_addr, interpret_pc 'Get the result address
 						add		interpret_pc, #4
 						
-:GetFNumA				rdlong	fnumA, fnumA_addr 	'Get actual value
-:GetFNumB				rdlong	fnumB, fnumB_addr  'Get actual value
-						
-'						mov		dira, LED_MASK
-'						mov		outa, LED_MASK
+:GetFNumA				rdlong	fnumA, t1 	'Get actual value
+:GetFNumB				rdlong	fnumB, t2  'Get actual value
 												
 :function_call			nop						'will be replaced with a call
 
@@ -1711,8 +1867,7 @@ _Interpret_ret			ret
 
 interpret_pc			long	0
 result_addr				long	0
-fnumA_addr				long	0
-fnumB_addr				long	0
+
 
 
 '-------------------- constant values -----------------------------------------
@@ -1727,8 +1882,8 @@ Bit16                   long    $0001_0000       'added to fix LOG
 Bit29                   long    $2000_0000
 Bit30                   long    $4000_0000
 Bit31                   long    $8000_0000
-LogTable                long    $C000
-ALogTable               long    $D000
+'LogTable                long    $C000
+'ALogTable               long    $D000
 SineTable               long    $E000
 
 '-------------------- initialized variables -----------------------------------
