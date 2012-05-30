@@ -61,10 +61,10 @@ VAR
 	long q_tilde_1
 	long q_tilde_2
 	long q_tilde_3
+	long q_tilde_b_0
 	long q_tilde_b_1
 	long q_tilde_b_2
 	long q_tilde_b_3
-	long q_tilde_b_4
 	long r_b_1
 	long r_b_2
 	long r_b_3
@@ -454,26 +454,26 @@ PUB Init_Instructions
 	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_5, @r_b_3)
 
 '------------
-'' q_tilde_b_1 = (alpha / 2) sin 0
+'' q_tilde_b_0 = (alpha / 2) sin 0
 	'azm_temp_0 = alpha / const_2
 	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPDiv, @alpha, @const_2, @azm_temp_0)
-	'q_tilde_b_1 = azm_temp_0 sin const_0
-	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPSin, @azm_temp_0, @const_0, @q_tilde_b_1)
+	'q_tilde_b_0 = azm_temp_0 sin const_0
+	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPSin, @azm_temp_0, @const_0, @q_tilde_b_0)
 
 '------------
-'' q_tilde_b_2 = t_1 * r_b_1
-	'q_tilde_b_2 = t_1 * r_b_1
-	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPMul, @t_1, @r_b_1, @q_tilde_b_2)
+'' q_tilde_b_1 = t_1 * r_b_1
+	'q_tilde_b_1 = t_1 * r_b_1
+	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPMul, @t_1, @r_b_1, @q_tilde_b_1)
 
 '------------
-'' q_tilde_b_3 = t_1 * r_b_2
-	'q_tilde_b_3 = t_1 * r_b_2
-	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPMul, @t_1, @r_b_2, @q_tilde_b_3)
+'' q_tilde_b_2 = t_1 * r_b_2
+	'q_tilde_b_2 = t_1 * r_b_2
+	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPMul, @t_1, @r_b_2, @q_tilde_b_2)
 
 '------------
-'' q_tilde_b_4 = t_1 * r_b_3
-	'q_tilde_b_4 = t_1 * r_b_3
-	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPMul, @t_1, @r_b_3, @q_tilde_b_4)
+'' q_tilde_b_3 = t_1 * r_b_3
+	'q_tilde_b_3 = t_1 * r_b_3
+	fp.AddInstruction(MOMENT_BLOCK_INDEX, fp#FPMul, @t_1, @r_b_3, @q_tilde_b_3)
 
 '------------
 '' alpha_H =  (1- (2 * ((q_1 * q_1) + (q_2 * q_2)))) arc_c 0
@@ -574,10 +574,10 @@ PUB Init_Instructions
 '	long q_tilde_1
 '	long q_tilde_2
 '	long q_tilde_3
+'	long q_tilde_b_0
 '	long q_tilde_b_1
 '	long q_tilde_b_2
 '	long q_tilde_b_3
-'	long q_tilde_b_4
 '	long r_b_1
 '	long r_b_2
 '	long r_b_3

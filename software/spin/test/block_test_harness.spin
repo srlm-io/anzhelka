@@ -91,12 +91,12 @@ VAR
 	
 #elseifdef BLOCK_PID
 	'A PID Object Variables (12 longs total):
-	long Input_addr, Output_addr, Setpoint_addr
-	long ITerm, lastInput
-	long kp, ki, kd
-	long outMin, outMax
-	long inAuto
-	long controllerDirection
+'	long Input_addr, Output_addr, Setpoint_addr
+'	long ITerm, lastInput
+'	long kp, ki, kd
+'	long outMin, outMax
+'	long inAuto
+'	long controllerDirection
 	
 'Local Copies of values
 	long Input, Setpoint
@@ -123,6 +123,7 @@ OBJ
 #elseifdef BLOCK_PID
 	block      : "block_PID.spin"
 	test_cases : "block_PID_test_cases.spin"	
+	PID_data : "PID_data.spin"
 #endif
 
 PUB Main | correct_addr, debug_temp_0, debug_temp_1
@@ -135,10 +136,15 @@ PUB Main | correct_addr, debug_temp_0, debug_temp_1
 #elseifdef BLOCK_MOTOR
 	block.Start(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @result_spin)
 #elseifdef BLOCK_PID
-	Input_addr := @Input
-	Output_addr := @result_spin
-	Setpoint_addr := @Setpoint
-	block.Start(@Input_addr, @result_spin)
+'	Input_addr := @Input
+'	Output_addr := @result_spin
+'	Setpoint_addr := @Setpoint
+	PID_data.setInput_addr(@Input)
+	PID_data.setOutput_addr(@result_spin)
+	PID_data.setSetpoint_addr(@Setpoint)
+
+'	block.Start(@Input_addr, @result_spin)
+	block.Start(PID_data.getBase)
 #endif
 
 	repeat test_case from 0 to test_cases.get_num_test_cases -1
@@ -173,7 +179,8 @@ PRI SetTestCases
 #elseifdef BLOCK_MOTOR
 	test_cases.set_test_values(@force_z, @moment, @n, @diameter, @offset, @density, @k_t, @k_q, @k_p_i, @k_i_i, @result_comp)
 #elseifdef BLOCK_PID
-	test_cases.set_test_values(@Input, @Setpoint, @ITerm, @lastInput, @kp, @ki, @kd, @outMin, @outMax, @inAuto, @controllerDirection, @result_comp)
+	test_cases.set_test_values(@Input, @Setpoint, PID_data.getBase + (4 * PID_data#ITERM), PID_data.getBase + (4 * PID_data#LASTINPUT), PID_data.getBase + (4 * PID_data#KP), PID_data.getBase + (4 * PID_data#KI), PID_data.getBase + (4 * PID_data#KD), PID_data.getBase + (4 * PID_data#OUTMIN), PID_data.getBase + (4 * PID_data#OUTMAX), PID_data.getBase + (4 * PID_data#INAUTO), PID_data.getBase + (4 * PID_data#CONTROLLERDIRECTION), @result_comp)
+'	test_cases.set_test_values(@Input, @Setpoint, @ITerm, @lastInput, @kp, @ki, @kd, @outMin, @outMax, @inAuto, @controllerDirection, @result_comp)
 #endif
 		
 PRI CheckResult(correct_addr, test_addr, length) | correct_val, test_val, i, high_correct_val, low_correct_val, failed, num_parts_failed

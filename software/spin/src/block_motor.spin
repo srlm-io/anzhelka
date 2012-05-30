@@ -63,9 +63,9 @@ VAR
 	long	n_d_1, n_d_2, n_d_3, n_d_4
 
 
-	long	t_5 'Do I really need this?
+	long	t_5
 
-
+	long	const_2_pi 'Calculated constants
 
 
 
@@ -106,17 +106,6 @@ Output Variables:
 
 	fp.start
 	Init_Instructions
-	
-	
-VAR
-	long	temp1, temp2, temp3
-'	long	const_4, const_2, const_pi, const_0
-	
-	long	const_2_pi 'Calculated constants
-	
-	long cmp_F_1, cmp_F_2, cmp_F_3, cmp_F_4
-	
-
 
 
 
@@ -150,7 +139,6 @@ n_d_2 = omega_d_2 / const_2_pi
 n_d_3 = omega_d_3 / const_2_pi
 n_d_4 = omega_d_4 / const_2_pi
 
-'n_d_1 = 2 * 3
 
 }}
 

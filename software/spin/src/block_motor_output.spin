@@ -63,9 +63,9 @@ VAR
 	long	n_d_1, n_d_2, n_d_3, n_d_4
 
 
-	long	t_5 'Do I really need this?
+	long	t_5
 
-
+	long	const_2_pi 'Calculated constants
 
 
 
@@ -106,17 +106,6 @@ Output Variables:
 
 	fp.start
 	Init_Instructions
-	
-	
-VAR
-	long	temp1, temp2, temp3
-'	long	const_4, const_2, const_pi, const_0
-	
-	long	const_2_pi 'Calculated constants
-	
-	long cmp_F_1, cmp_F_2, cmp_F_3, cmp_F_4
-	
-
 
 
 
@@ -210,177 +199,192 @@ PUB Init_Instructions
 	const_pi := pi
 '------------
 '' t_5 = 2 * offset
-	't_5 = const_2 * offset
+	't_5 = @const_2 * @offset
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @const_2, @offset, @t_5)
 
 '------------
 '' const_2_pi = 2 * pi
-	'const_2_pi = const_2 * const_pi
+	'const_2_pi = @const_2 * @const_pi
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @const_2, @const_pi, @const_2_pi)
 
 '------------
 '' c = (K_Q * diameter) / K_T
-	'azm_temp_0 = K_Q * diameter
+	'azm_temp_0 = @K_Q * @diameter
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @K_Q, @diameter, @azm_temp_0)
-	'c = azm_temp_0 / K_T
+	'c = @azm_temp_0 / @K_T
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @azm_temp_0, @K_T, @c)
 
 '------------
 '' t_1 = M_z / (4*c)
-	'azm_temp_0 = const_4 * c
+	'azm_temp_0 = @const_4 * @c
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @const_4, @c, @azm_temp_0)
-	't_1 = M_z / azm_temp_0
+	't_1 = @M_z / @azm_temp_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @M_z, @azm_temp_0, @t_1)
 
 '------------
 '' t_2 = M_y / t_5
-	't_2 = M_y / t_5
+	't_2 = @M_y / @t_5
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @M_y, @t_5, @t_2)
 
 '------------
 '' t_3 = M_x / t_5
-	't_3 = M_x / t_5
+	't_3 = @M_x / @t_5
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @M_x, @t_5, @t_3)
 
 '------------
 '' t_4 = F_z / 4
-	't_4 = F_z / const_4
+	't_4 = @F_z / @const_4
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @F_z, @const_4, @t_4)
 
 '------------
 '' F_1 = (t_4 + (t_1 - t_2)) #> 0
-	'azm_temp_0 = t_1 - t_2
+	'azm_temp_0 = @t_1 - @t_2
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPSub, @t_1, @t_2, @azm_temp_0)
-	'azm_temp_1 = t_4 + azm_temp_0
+	'azm_temp_1 = @t_4 + @azm_temp_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPAdd, @t_4, @azm_temp_0, @azm_temp_1)
-	'F_1 = azm_temp_1 #> const_0
+	'F_1 = @azm_temp_1 #> @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_1)
 
 '------------
 '' F_2 = (t_4 - (t_1 + t_3)) #> 0
-	'azm_temp_0 = t_1 + t_3
+	'azm_temp_0 = @t_1 + @t_3
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPAdd, @t_1, @t_3, @azm_temp_0)
-	'azm_temp_1 = t_4 - azm_temp_0
+	'azm_temp_1 = @t_4 - @azm_temp_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPSub, @t_4, @azm_temp_0, @azm_temp_1)
-	'F_2 = azm_temp_1 #> const_0
+	'F_2 = @azm_temp_1 #> @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_2)
 
 '------------
 '' F_3 = (t_4 + (t_1 + t_2)) #> 0
-	'azm_temp_0 = t_1 + t_2
+	'azm_temp_0 = @t_1 + @t_2
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPAdd, @t_1, @t_2, @azm_temp_0)
-	'azm_temp_1 = t_4 + azm_temp_0
+	'azm_temp_1 = @t_4 + @azm_temp_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPAdd, @t_4, @azm_temp_0, @azm_temp_1)
-	'F_3 = azm_temp_1 #> const_0
+	'F_3 = @azm_temp_1 #> @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_3)
 
 '------------
 '' F_4 = (t_4 + (t_3 - t_1)) #> 0
-	'azm_temp_0 = t_3 - t_1
+	'azm_temp_0 = @t_3 - @t_1
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPSub, @t_3, @t_1, @azm_temp_0)
-	'azm_temp_1 = t_4 + azm_temp_0
+	'azm_temp_1 = @t_4 + @azm_temp_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPAdd, @t_4, @azm_temp_0, @azm_temp_1)
-	'F_4 = azm_temp_1 #> const_0
+	'F_4 = @azm_temp_1 #> @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_4)
 
 '------------
 '' t_1 = const_2_pi / (diameter * diameter)
-	'azm_temp_0 = diameter * diameter
+	'azm_temp_0 = @diameter * @diameter
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @diameter, @diameter, @azm_temp_0)
-	't_1 = const_pi / azm_temp_0
+	't_1 = @const_pi / @azm_temp_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @const_pi, @azm_temp_0, @t_1)
 
 '------------
 '' t_2 = rho * K_T
-	't_2 = rho * K_T
+	't_2 = @rho * @K_T
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @rho, @K_T, @t_2)
 
 '------------
 '' omega_d_1 = t_1 * ((F_1 / t_2) sqrt 0)
-	'azm_temp_0 = F_1 / t_2
+	'azm_temp_0 = @F_1 / @t_2
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @F_1, @t_2, @azm_temp_0)
-	'azm_temp_1 = azm_temp_0 sqrt const_0
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
-	'omega_d_1 = t_1 * azm_temp_1
+	'omega_d_1 = @t_1 * @azm_temp_1
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_1)
 
 '------------
 '' omega_d_2 = t_1 * ((F_2 / t_2) sqrt 0)
-	'azm_temp_0 = F_2 / t_2
+	'azm_temp_0 = @F_2 / @t_2
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @F_2, @t_2, @azm_temp_0)
-	'azm_temp_1 = azm_temp_0 sqrt const_0
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
-	'omega_d_2 = t_1 * azm_temp_1
+	'omega_d_2 = @t_1 * @azm_temp_1
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_2)
 
 '------------
 '' omega_d_3 = t_1 * ((F_3 / t_2) sqrt 0)
-	'azm_temp_0 = F_3 / t_2
+	'azm_temp_0 = @F_3 / @t_2
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @F_3, @t_2, @azm_temp_0)
-	'azm_temp_1 = azm_temp_0 sqrt const_0
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
-	'omega_d_3 = t_1 * azm_temp_1
+	'omega_d_3 = @t_1 * @azm_temp_1
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_3)
 
 '------------
 '' omega_d_4 = t_1 * ((F_4 / t_2) sqrt 0)
-	'azm_temp_0 = F_4 / t_2
+	'azm_temp_0 = @F_4 / @t_2
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @F_4, @t_2, @azm_temp_0)
-	'azm_temp_1 = azm_temp_0 sqrt const_0
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
-	'omega_d_4 = t_1 * azm_temp_1
+	'omega_d_4 = @t_1 * @azm_temp_1
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_4)
 
 '------------
 '' n_d_1 = omega_d_1 / const_2_pi
-	'n_d_1 = omega_d_1 / const_pi
+	'n_d_1 = @omega_d_1 / @const_pi
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @omega_d_1, @const_pi, @n_d_1)
 
 '------------
 '' n_d_2 = omega_d_2 / const_2_pi
-	'n_d_2 = omega_d_2 / const_pi
+	'n_d_2 = @omega_d_2 / @const_pi
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @omega_d_2, @const_pi, @n_d_2)
 
 '------------
 '' n_d_3 = omega_d_3 / const_2_pi
-	'n_d_3 = omega_d_3 / const_pi
+	'n_d_3 = @omega_d_3 / @const_pi
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @omega_d_3, @const_pi, @n_d_3)
 
 '------------
 '' n_d_4 = omega_d_4 / const_2_pi
-	'n_d_4 = omega_d_4 / const_pi
+	'n_d_4 = @omega_d_4 / @const_pi
 	fp.AddInstruction(MOTOR_BLOCK_INDEX, fp#FPDiv, @omega_d_4, @const_pi, @n_d_4)
-'n_d_1 = 2 * 3
 'All variables that are used or created:
+'	long @F_1
+'	long @F_2
+'	long @F_3
+'	long @F_4
+'	long @F_z
+'	long @K_Q
+'	long @K_T
+'	long @M_x
+'	long @M_y
+'	long @M_z
+'	long @azm_temp_0
+'	long @azm_temp_1
+'	long @c
+'	long @const_0
+'	long @const_2
+'	long @const_4
+'	long @const_pi
+'	long @diameter
+'	long @offset
+'	long @omega_d_1
+'	long @omega_d_2
+'	long @omega_d_3
+'	long @omega_d_4
+'	long @rho
+'	long @t_1
+'	long @t_2
+'	long @t_3
+'	long @t_4
+'	long @t_5
 '	long F_1
 '	long F_2
 '	long F_3
 '	long F_4
-'	long F_z
-'	long K_Q
-'	long K_T
-'	long M_x
-'	long M_y
-'	long M_z
 '	long azm_temp_0
 '	long azm_temp_1
 '	long c
-'	long const_0
-'	long const_2
 '	long const_2_pi
-'	long const_4
-'	long const_pi
-'	long diameter
 '	long n_d_1
 '	long n_d_2
 '	long n_d_3
 '	long n_d_4
-'	long offset
 '	long omega_d_1
 '	long omega_d_2
 '	long omega_d_3
 '	long omega_d_4
-'	long rho
 '	long t_1
 '	long t_2
 '	long t_3

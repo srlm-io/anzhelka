@@ -7,69 +7,52 @@ For the latest code and support, please visit:
 http://code.anzhelka.com
 --------------------------------------------------------------------------------
 
-Title:
-Author:
-Date:
-Notes:
-
-
-
+Title: PID_data.spin
+Author: Cody Lewis
+Date: 28 May 2012
+Notes: This file is a data structure for the PID operations found in F32_CMD.spin.
 }}
-CON
-	_clkmode = xtal1 + pll16x
-	_xinfreq = 5_000_000
+
 
 CON
-'IO Pins
-	DEBUG_TX_PIN  = 30
-	DEBUG_RX_PIN  = 31
-	
-	CLOCK_PIN = 23 'Unconnected to anything else
-'Settings
-	SERIAL_BAUD = 115200
-	
-	'System Clock settings
-	FREQ_VALUE = $0001_0000
-	FREQ_COUNTS = 65536 '2^n, where n is the number of freq1's needed before overflow
-	
+	INPUT_ADDR          = 0
+	OUTPUT_ADDR         = 1
+	SETPOINT_ADDR       = 2
+	ITERM               = 3
+	LASTINPUT           = 4
+	KP                  = 5
+	KI                  = 6
+	KD                  = 7
+	OUTMIN              = 8
+	OUTMAX              = 9
+	INAUTO              = 10
+	CONTROLLERDIRECTION = 11
 
 VAR
- 
-
-OBJ
-'	debug 	:	"FullDuplexSerial4portPlus_0v3.spin"
-	serial 	:	"FastFullDuplexSerialPlusBuffer.spin"
-
-PUB Main
-	InitUart
-	InitClock
-	repeat
-		PrintStr(string("Waiting..."))
-		waitcnt(clkfreq + cnt)
-
+'A PID Object Variables (12 longs total):
+'The 'v' prefix denotes variable (as opposed to constant)
+	long vInput_addr, vOutput_addr, vSetpoint_addr
+	long vITerm, vlastInput
+	long vkp, vki, vkd
+	long voutMin, voutMax
+	long vinAuto
+	long vcontrollerDirection
 	
-PUB InitUart
-	serial.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, SERIAL_BAUD)	
-	waitcnt(clkfreq + cnt)
-	PrintSTR(string("Starting..."))
-
+PUB getBase
+	return @vInput_addr
 	
-PUB PrintSTR(addr)
-	serial.str(string("$ADSTR "))
-	serial.dec(phsb)
-	serial.tx(",")
-	serial.tx("'")
-	serial.str(addr)
-	serial.str(string("'", 10, 13))
+PUB setInput_addr(address)
+	vInput_addr := address
+PUB setOutput_addr(address)
+	vOutput_addr := address
+PUB setSetpoint_addr(address)
+	vSetpoint_addr := address
+PUB setOutmin(value)
+	vOutmin := value
+PUB setOutmax(value)
+	vOutmax := value
 	
-PUB InitClock
-' sets pin as output
-	DIRA[CLOCK_PIN]~~
-	CTRa := %00100<<26 + CLOCK_PIN           ' set oscillation mode on pin
-	FRQa := FREQ_VALUE                    ' set FRequency of first counter                   
 
-	CTRB := %01010<<26 + CLOCK_PIN           ' at every zero crossing add 1 to phsb
-	FRQB := 1
 {{
 --------------------------------------------------------------------------------  
 Copyright (c) 2012 Cody Lewis and Luke De Ruyter

@@ -23,12 +23,12 @@ OBJ
 
 VAR
 	long data_address
-	long output_address
+'	long output_address
 	
-PUB Start(data_address_new, output_address_new) : okay
+PUB Start(data_address_new)', output_address_new) : okay
 	fp.start
 	data_address := data_address_new
-	output_address := output_address_new
+'	output_address := output_address_new
 	fp.InitPID
 	
 PUB SetInput

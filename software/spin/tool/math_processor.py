@@ -17,8 +17,8 @@
 #		--- Bug: When a 0 is on the LHS, the compiler outputs @0
 #
 #
-#
-#
+# --- Note: for unary operators, the second operator should be zero.
+# --- ---- This is especially important for TruncRound, where the second operand (fnumB) controls the return type. We want it to be zero (integer, truncate)
 #
 
 
@@ -29,7 +29,7 @@ import re
 con = [] #Used for staring indexes
 
 #TODO: BUG: For the keywords list, arcXXX has to before XXX, otherwise it gets substituted wrong...
-keywords = {"*":"Mul", "/":"Div", "+":"Add", "-":"Sub", "sqrt":"Sqr", "#>":"LimitMin", "arc_t2":"ATan2", "arc_c":"ACos", "arc_s":"ASin", "sin":"Sin", "cos":"Cos", "tan":"Tan"}
+keywords = {"*":"Mul", "/":"Div", "+":"Add", "-":"Sub", "sqrt":"Sqr", "#>":"LimitMin", "arc_t2":"ATan2", "arc_c":"ACos", "arc_s":"ASin", "sin":"Sin", "cos":"Cos", "tan":"Tan", "~":"PID", "||":"TruncRound"}
 variables = {}
 constants = {}
 sequence = []
@@ -135,6 +135,13 @@ def parenthetic_contents(lhs, string):
 			
 			line_components = {}
 			line_components["section_name"] = section_name[-1]
+			
+			#These two if statements allow for putting in function calls instead of variable addresses. Note that the function calls should return addresses
+			if var1.find(".") == -1: #Not found
+				var1 = "@" + var1
+			if var2.find(".") == -1: #Not found
+				var2 = "@" + var2
+			
 			line_components["var1"] = var1
 			line_components["var2"] = var2
 #			line_components["result"] = "azm_temp_" + str(azm_temp_count)
@@ -155,8 +162,9 @@ def parenthetic_contents(lhs, string):
 				line_components["result"] = lhs
 				sequence.append("\t'" + lhs + " = " + var1 + " " + operation + " " + var2)			
 				all_vars[lhs] = lhs
-				
-			sequence.append("\n\tfp.AddInstruction({section_name}_INDEX, fp#FP{operation}, @{var1}, @{var2}, @{result})\n".format(**line_components))
+			
+			
+			sequence.append("\n\tfp.AddInstruction({section_name}_INDEX, fp#FP{operation}, {var1}, {var2}, @{result})\n".format(**line_components))
 			global line_count
 			line_count += 1
 			

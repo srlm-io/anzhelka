@@ -61,10 +61,10 @@ VAR
 	long q_tilde_1
 	long q_tilde_2
 	long q_tilde_3
+	long q_tilde_b_0
 	long q_tilde_b_1
 	long q_tilde_b_2
 	long q_tilde_b_3
-	long q_tilde_b_4
 	long r_b_1
 	long r_b_2
 	long r_b_3
@@ -189,10 +189,10 @@ r_b_1 = ((q_temp_0*q_1) + (q_temp_1*q_0)) + ((q_temp_2*q_3) - (q_temp_3*q_2))
 r_b_2 = ((q_temp_0*q_2) - (q_temp_1*q_3)) + ((q_temp_2*q_0) + (q_temp_3*q_1))
 r_b_3 = ((q_temp_0*q_3) + (q_temp_1*q_2)) - ((q_temp_2*q_1) + (q_temp_3*q_0))
 
-q_tilde_b_1 = (alpha / 2) sin 0
-q_tilde_b_2 = t_1 * r_b_1
-q_tilde_b_3 = t_1 * r_b_2
-q_tilde_b_4 = t_1 * r_b_3
+q_tilde_b_0 = (alpha / 2) sin 0
+q_tilde_b_1 = t_1 * r_b_1
+q_tilde_b_2 = t_1 * r_b_2
+q_tilde_b_3 = t_1 * r_b_3
 
 alpha_H =  (1- (2 * ((q_1 * q_1) + (q_2 * q_2)))) arc_c 0
 phi = 2 * (q_3 arc_t2 q_0)

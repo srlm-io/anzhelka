@@ -7,10 +7,16 @@ For the latest code and support, please visit:
 http://code.anzhelka.com
 --------------------------------------------------------------------------------
 
-Title:
-Author:
-Date:
-Notes:
+Title: F32_CMD.spin
+Author: Cody Lewis
+Date: 28 May 2012
+Notes: This version of F32 removes some functionality (exp, log, UintTrunc, pow, Floor, Ceil, mod), but adds
+- Command interperter functionality (aka, User-defined function mechanism)
+- PASM based FLimitMin, FLimitMax, Abs, Neg
+- PASM based PID loop control
+
+
+
 
 TODO:
 
@@ -39,7 +45,7 @@ TODO:
         * prop resources:       1 cog, 688 longs        (BST can remove unused Spin code, and the odds are
                                                         good that you won't need all the functionality [8^)
 
-        * faster:               _Pack, Add, Sub, Sqr, Sin, Cos, Tan, Float, Exp*, Log*, Pow, Mul, Div
+        * faster:               _Pack, Add, Sub, Sqr, Sin, Cos, Tan, Float, Exp*, Log*, Pow, Mul, Div, Cmp
 
         * added funcs:          Exp2, Log2 (Spin calling code only, no cog bloat),
                                 FMod, ATan, ATan2, ACos, ASin, Floor, Ceil (from Float32A),
@@ -282,7 +288,6 @@ PUB Compute(a) | error, dInput
 '	controllerDirection := new_direction
 
 	
-
 
 
 PUB FLimitMax(a, b)

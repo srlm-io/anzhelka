@@ -21,7 +21,8 @@
 
 
 
-baud="230400"
+baud="115200"
+#baud="230400"
 
 if [ $# -eq 0 ] ; then
 	echo "Usage: $0 [Top Level Spin File Path][--list [block number | objectname]]"
@@ -75,7 +76,8 @@ else
 		
 		port=$(ls /dev/*USB*)
 		#echo $port
-		picocom -b $baud $port
+#		picocom --send-cmd "cat" -b $baud $port
+		picocom --send-cmd "ascii-xfr -s -c 0" -b $baud $port
 	fi
 fi
 
