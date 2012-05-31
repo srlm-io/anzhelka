@@ -18,7 +18,7 @@ TODO:
 
 }}
 
-#define BLOCK_MOTOR
+#define BLOCK_PID
 
 
 CON
@@ -106,7 +106,7 @@ VAR
 #endif	
 
 OBJ
-	debug      : "FullDuplexSerialPlus.spin"	
+	debug      : "FastFullDuplexSerialPlusBuffer.spin"	
 '	fp         : "Float32.spin"
 	fp         : "F32_CMD.spin"
 	
@@ -126,7 +126,7 @@ OBJ
 	PID_data : "PID_data.spin"
 #endif
 
-PUB Main | correct_addr, debug_temp_0, debug_temp_1
+PUB Main | correct_addr, debug_temp_0, debug_temp_1, i
 	StartDebug
 	
 #ifdef BLOCK_MOMENT
@@ -139,10 +139,12 @@ PUB Main | correct_addr, debug_temp_0, debug_temp_1
 '	Input_addr := @Input
 '	Output_addr := @result_spin
 '	Setpoint_addr := @Setpoint
+
 	PID_data.setInput_addr(@Input)
 	PID_data.setOutput_addr(@result_spin)
 	PID_data.setSetpoint_addr(@Setpoint)
-
+	
+	PID_data.init
 '	block.Start(@Input_addr, @result_spin)
 	block.Start(PID_data.getBase)
 #endif
@@ -150,8 +152,29 @@ PUB Main | correct_addr, debug_temp_0, debug_temp_1
 	repeat test_case from 0 to test_cases.get_num_test_cases -1
 		SetTestCases
 		TimeCalculate
+#ifdef BLOCK_PID
+		FPrint(Input)
+		debug.tx(",")
+		debug.tx(" ")
+		FPrint(Setpoint)
+		
+		repeat i from 0 to 8
+			debug.tx(",")
+			debug.tx(" ")
+			FPrint(long[PID_data.getBase][3+i])
+		
+		debug.tx(",")
+		debug.tx(" ")
+		FPrint(result_spin)
+		
+		
+		debug.tx(10)
+		debug.tx(13)
+#endif
 		CheckResult(@result_comp, @result_spin, RESULT_LENGTH)
 	PrintStats
+	
+	FPrint(fp.FDiv(float(100), float(99)))
 
 PRI StartDebug
 'Sets up and starts debug related things...
@@ -164,7 +187,7 @@ PRI StartDebug
 	failed_tests := 0
 
 	fp.start
-	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 230400)
+	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 115200)
 	waitcnt(clkfreq + cnt)
 	debug.str(string("Starting", 10, 13))
 

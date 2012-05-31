@@ -116,7 +116,7 @@ DAT
 ''* Assembly language MCP3208 driver *
 ''************************************
 
-                        org
+                        org 0
 '************************************
 adc_read                rdlong  t1,par          wz      ' wait for command
         if_z            jmp     #adc_read

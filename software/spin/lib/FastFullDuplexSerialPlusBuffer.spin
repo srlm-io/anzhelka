@@ -99,6 +99,14 @@ PUB rx : rxbyte
 
   repeat while (rxbyte := rxcheck) < 0
 
+PUB rxpeek : rxbyte
+'' Receives byte without removing from buffer (may wait for byte
+'' return $00..$FF
+  repeat while rx_tail == rx_head
+     
+  rxbyte := rx_buffer[rx_tail]
+
+
 
 PUB tx(txbyte)
 
@@ -120,9 +128,9 @@ PUB str(stringptr)
     tx(byte[stringptr++])
 
 PUB getstr(stringptr, terminator) | index
-    '' Gets "terminator" terminated or newline terminated string and stores it, starting at the stringptr memory address
+    '' Gets "terminator" terminated or newline (Ascii 13) terminated string and stores it, starting at the stringptr memory address
     index~
-    repeat until ((byte[stringptr][index++] := rx) == terminator)' OR rx == 13)
+    repeat until ((byte[stringptr][index++] := rx) == terminator or byte[stringptr][index-1] == 13)
     byte[stringptr][--index]~   
 
 PUB dec(value) | i, x
@@ -250,7 +258,7 @@ DAT
 '* Assembly language serial driver *
 '***********************************
 
-                        org
+                        org 0
 '
 '
 ' Entry

@@ -34,13 +34,35 @@ filename=$(basename $1)
 extension=${filename##*.}
 filename=${filename%.*}
 
+tabs 5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93,97,101,105,109,113,117,121,125,129,133,137,141,145,149,153,157,161,165,169,173
+
+port=$(ls /dev/*USB* 2> /dev/null)
+if [ "$port" != "" ] ; then
+	#Download with USB port...
+	#Changes: uses the -f (fast download) option
+	./tool/bstc.linux -f -p0 -d $port -Ox -l -w1 -L src -L test -L lib -L lib/bma $1 > bstoutput.txt
+else
+	port=$(ls /dev/ttyACM* 2> /dev/null)
+	if [ "$port" = "" ] ; then
+		echo
+		echo "Could not find Propeller on /dev/*USB* or /dev/ttyACM*"
+		echo
+		exit 1
+	else
+		#Download with Wixel port
+		#Downloads to EEPROM and runs
+		#If it doesn't download to EEPROM then the wixel will reset the Propeller
+		./tool/bstc.linux -p2 -d $port -Ox -l -w1 -L src -L test -L lib -L lib/bma $1 > bstoutput.txt	
+	fi
+fi
+
 echo
 echo
 
 #Set the tab stops, useful for when displaying the listing
-tabs 5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93
 
-./tool/bstc.linux -Ox -f -p0 -l -w1 -L src -L test -L lib -L lib/bma $1 > bstoutput.txt
+
+
 cat bstoutput.txt
 
 grep -q "Error" bstoutput.txt
@@ -74,7 +96,7 @@ else
 		fi
 			
 		
-		port=$(ls /dev/*USB*)
+		
 		#echo $port
 #		picocom --send-cmd "cat" -b $baud $port
 		picocom --send-cmd "ascii-xfr -s -c 0" -b $baud $port

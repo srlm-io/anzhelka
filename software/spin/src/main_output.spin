@@ -12,6 +12,9 @@ Author: Cody Lewis
 Date: 28 May 2012
 Notes: This is the top level file for the Anzhelka quadrotor project.
 
+Notes:
+	--- If a '?' is received for any of the numbers, that means that it couldn't be translated (ie, not float, not int, ?)
+
 TODO
 	--- n_i needs to be converted from RPM input to whatever units it needs to be in for the PID...
 
@@ -80,11 +83,11 @@ PUB Main | t1
 	repeat
 		ParseSerial
 	
-	repeat
-		serial.str(string(10, 13, "Type in a number here:"))
-		t1 := serial.GetDec(",")
-		serial.bin(t1, 8)
-		
+'	repeat
+'		serial.str(string(10, 13, "Type in a number here:"))
+'		t1 := serial.GetDec(",")
+'		serial.bin(t1, 8)
+'		
 	
 	repeat
 		Calculate
@@ -95,8 +98,16 @@ PUB Main | t1
 		ParseSerial
 
 
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+'----------------- $ATXXX Input Functions --------------------------
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+
 PUB ParseSerial | t1, rxdata
-	
+' Master Serial Parsing Function
+
+	'Wait for start character
 	repeat
 		t1 := serial.rxcheck
 		if t1 == -1
@@ -104,73 +115,245 @@ PUB ParseSerial | t1, rxdata
 		if t1 == "$"
 			quit
 	
-	serial.str(string("Found a packet! $"))
+'	serial.str(string("Found a packet! $"))
 	
 	t1 := serial.rx
 	if t1 <> "A"
-		'Not an $ATXXX packet!
+		'Not an $ATXXX packet! Ignore
 		return
 		
+		
+	'Test for Type
 	t1 := serial.rx
-	
-	if t1 == "C"
+	if t1 == "C" 'Command Packet
 		ParseSerialCommand
 		
-	if t1 == "D"
+	if t1 == "D" 'Data Packet
 		ParseSerialData
 
 CON
-	sSDR = ("S" << 16) | ("D" << 8) | "R"		
+	sSDR = ("S" << 16) | ("D" << 8) | "R"
 PUB ParseSerialCommand | t1, t2, t3, command
+''Parses packets of the form "$ACXXX ...", ie command packets
+	
+	'Get three letter packet type
 	command := serial.rx
 	command := (command << 8) | serial.rx
 	command := (command << 8) | serial.rx
-		
+	
+	'Decide what to do based on three letter packet type:
 	case command
 		sSDR:
 			ParseSerialSDR
 		OTHER:
-			serial.str(string(10, 13, "Unknown command..."))
+			PrintStrStart
+			serial.str(string("Warning: Unknown command type: "))
+'			command <<=  8
+			command := (command & $FF) << 16 | (command & $FF00) | (command & $FF_0000) >> 16
+			serial.str(@command)
+			serial.str(string(" ($"))
+			serial.hex(command, 8)
+			serial.tx(")")
+			PrintStrStop
 			
 CON
-	 sPWM = ("P" << 16) | ("W" << 8) | "M"
-	 sMKP = ("M" << 16) | ("K" << 8) | "P"
-	 sMKI = ("M" << 16) | ("K" << 8) | "I"
-	 sMKD = ("M" << 16) | ("K" << 8) | "D"
+	sPWM = ("P" << 16) | ("W" << 8) | "M"
+	sMKP = ("M" << 16) | ("K" << 8) | "P"
+	sMKI = ("M" << 16) | ("K" << 8) | "I"
+	sMKD = ("M" << 16) | ("K" << 8) | "D"
 '	 = ("" << 16) | ("" << 8) | ""
+
+	NAN = $7FFF_FFFF
 	 
 PUB ParseSerialSDR | register, values[10], i
-'Note: this sets a maximum number of values to 10
-	repeat while (register := serial.rx) == " " 'Ignore spaces
+'Note: this sets a maximum number of values (up to ten longs)
+'This packet will inject the received values into the appropriate variables.
+
+	'Discard spaces, and then get first letter
+	repeat
+	while (register := serial.rx) == " " 'Ignore spaces
 	
+	'Get second and third letters
 	register := (register << 8) | serial.rx
 	register := (register << 8) | serial.rx
 	
-'	serial.str(string(10, 13, "Found SDR for register $"))
-'	serial.hex(register, 8)
+	'Ignore the following comma
+	serial.rx
 
 	case register
 		sPWM:
-			ParseSerialList(@values, 4)
+			ParseSerialList(@values, 4, TYPE_INT)
 		sMKP:
-			ParseSerialList(@values, 4)
-			repeat i from 0 to 3
-				serial.str(string(10, 13, "Number found: "))
-				serial.dec(values[i])
-		OTHER:
-			serial.str(string(10, 13, "Uknown register type $"))
-			serial.hex(register, 8)
+'			serial.str(string(10, 13))
+'			PrintStr(string("Parsing MKP"))
+			ParseSerialList(@values, 4, TYPE_FLOAT)
+			WriteList(@values, PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr)
+			PrintArrayAddr(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 
-PUB ParseSerialList(array_addr, length) | i
+		sMKI:
+'			serial.str(string(10, 13))
+'			PrintStr(string("Parsing MKI"))
+			ParseSerialList(@values, 4, TYPE_FLOAT)
+			WriteList(@values, PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr)
+			PrintArrayAddr(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
+			
+		sMKD:
+			ParseSerialList(@values, 4, TYPE_FLOAT)
+			WriteList(@values, PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr)
+			PrintArrayAddr(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
+
+		OTHER:
+			PrintStrStart
+			serial.str(string("Warning: Unknown register type: "))
+			register := (register & $FF) << 16 | (register & $FF00) | (register & $FF_0000) >> 16
+			serial.str(@register) 'TODO: this won't output the ascii letters of the string, need to fix
+			serial.hex(register, 8)
+			serial.tx(")")
+			PrintStrStop
+			
+			
+
+PUB WriteList(input_array_addr, a_addr, b_addr, c_addr, d_addr)
+'Writes the four variables in the input array to the four addresses specified.
+'If a number is NAN, it will not write it.
+	
+	if long[input_array_addr][0] <> NAN
+		long[a_addr] := long[input_array_addr][0]
+	
+	if long[input_array_addr][1] <> NAN
+		long[b_addr] := long[input_array_addr][1]
+	
+	if long[input_array_addr][2] <> NAN
+		long[c_addr] := long[input_array_addr][2]
+		
+	if long[input_array_addr][3] <> NAN
+		long[d_addr] := long[input_array_addr][3]
+
+
+
+PUB ParseSerialList(array_addr, length, type) | i, float_num[11]
 	'Reads a sequence of newline terminated, comma seperated numbers
 	'eg 135,42,173,33\n
+	'Type - either TYPE_INT or TYPE_FLOAT
+	'It will ignore entries with a *. Returns NaN in that case
+	
 	repeat i from 0 to length-1
-		serial.tx("*")
-		long[array_addr][i] := serial.GetDec(",")
 		
+		if serial.rxpeek == "*"
+			long[array_addr][i] := NAN
+			serial.rx 'Get rid of '*'
+			serial.rx 'Get rid of ','
+			next
+			
+		if type == TYPE_INT
+			long[array_addr][i] := serial.GetDec(",")
+		elseif type == TYPE_FLOAT
+			serial.getstr(@float_num, ",")
+			long[array_addr][i] := fp.StringToFloat(@float_num)
+		else
+			PrintStr(string("Warning: Unknown number type in the ParseSerialList..."))
+	
 	
 PUB ParseSerialData
-	serial.str(string(10, 13, "$ADSTR 'Parsing ADXXX type packets not set yet.'"))
+	PrintStr(string("Error: Parsing ADXXX type packets not set yet."))
+
+
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+'----------------- $ATXXX Output Functions -------------------------
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+
+	
+CON
+	TYPE_INT = 0
+	TYPE_FLOAT = 1
+PUB PrintArray(type_string_addr, array_addr, length, type) | i
+'' Parameters:
+''  - type_string_addr: a string that has the three capital letters that 
+''      denote which type of data this packet is, eg PWM or MKP
+''  - array_addr: the values to send. A long array only.
+''  - length: the length of the array.
+
+
+	serial.str(string("$AD"))
+	serial.str(type_string_addr)
+	serial.tx(" ")
+	serial.dec(phsb)
+
+	repeat i from 0 to length - 1
+		serial.tx(",")
+		if type == TYPE_INT
+			serial.dec(long[array_addr][i])
+		elseif type == TYPE_FLOAT
+			FPrint(long[array_addr][i])
+		else
+			serial.tx("?") 'Warning!
+		
+	serial.tx(10)
+	serial.tx(13)
+
+PUB PrintArrayAddr(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i
+'' Parameters:
+''  - type_string_addr: a string that has the three capital letters that 
+''      denote which type of data this packet is, eg PWM or MKP
+''  - [a|b|c|d]_addr - the address of the variable to print
+''  - type - either TYPE_FLOAT or TYPE_INT
+
+
+	serial.str(string("$AD"))
+	serial.str(type_string_addr)
+	serial.tx(" ")
+	serial.dec(phsb)
+
+	repeat i from 0 to 4 - 1
+		serial.tx(",")
+		if type == TYPE_INT
+			serial.dec(long[long[@a_addr][i]])
+		elseif type == TYPE_FLOAT
+			FPrint(long[long[@a_addr][i]])
+		else
+			serial.tx("?") 'Warning!
+		
+	serial.tx(10)
+	serial.tx(13)
+		
+PUB PrintStr(addr)
+	serial.str(string("$ADSTR "))
+	serial.dec(phsb)
+	serial.tx(",")
+	serial.tx("'")
+	serial.str(addr)
+	serial.str(string("'", 10, 13))
+	
+PUB PrintStrStart
+	serial.str(string("$ADSTR "))
+	serial.dec(phsb)
+	serial.tx(",")
+	serial.tx("'")
+	
+PUB PrintStrStop
+	serial.str(string("'", 10, 13))
+
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+'----------------- Support Functions -------------------------------
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+
+PRI FPrint(fnumA) | temp
+	serial.str(fp.FloatToString(fnumA))
+
+PRI ClockSeconds
+	return (fp.FMul(fp.FFloat(phsb), fp.FDiv(float(FREQ_COUNTS), fp.FFloat(clkfreq))))
+
+
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+'----------------- Init Functions ----------------------------------
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+
 PUB InitPID
 '	PID_M_x.setOutput_addr()
 '	PID_M_x.setInput_addr()
@@ -213,21 +396,10 @@ PUB InitPID
 	PID_n_4.setOutmax(fp.FFloat(MOTOR_ZERO + MOTOR_SIZE))
 
 PUB InitUart | extra
-'	extra := debug.init
 	serial.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, SERIAL_BAUD)	
-'	debug.AddPort(0, DEBUG_RX_PIN, DEBUG_TX_PIN, -1, -1, 0, 0, 115200)
-	
-'	debug.Start
-	
 	waitcnt(clkfreq + cnt)
+	PrintStr(string("Starting..."))
 	
-	serial.str(string("$ADSTR 'Starting...'"))
-	DebugNewLine
-	
-PUB DebugNewline
-	serial.tx(10)
-	serial.tx(13)
-
 PUB InitClock
 ' sets pin as output
 	DIRA[CLOCK_PIN]~~
@@ -236,8 +408,13 @@ PUB InitClock
 
 	CTRB := %01010<<26 + CLOCK_PIN           ' at every zero crossing add 1 to phsb
 	FRQB := 1
-PUB ClockSeconds
-	return (fp.FMul(fp.FFloat(phsb), fp.FDiv(float(FREQ_COUNTS), fp.FFloat(clkfreq))))
+
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+'----------------- Control Loop Functionality ----------------------
+'-------------------------------------------------------------------
+'-------------------------------------------------------------------
+
 DAT
 '***************************************************
 '*********** MOMENT BLOCK **************************
@@ -432,16 +609,13 @@ PUB Calculate
 	fp.FInterpret(@CONTROL_LOOP_INSTRUCTIONS)
 	
 
+DAT
 
-PRI FPrint(fnumA) | temp
-'Will print a floating point number up to 3 decimal places (without rounding)
-	temp := float(1000)
-	
-	if fp.FCmp(fnumA, float(0)) == -1 'less than 0...
-		serial.tx("-")
-	serial.dec(fp.FAbs(fp.FTrunc(fnumA)))
-	serial.tx(".")
-	serial.dec(fp.FTrunc(fp.FMul(fp.Frac(fnumA), temp )))
+'tenf is for the StringToFloat function
+tenf    long  1e+00, 1e-01, 1e-02, 1e-03, 1e-04, 1e-05, 1e-06, 1e-07, 1e-08, 1e-09
+        long  1e-10, 1e-11, 1e-12, 1e-13, 1e-14, 1e-15, 1e-16, 1e-17, 1e-18, 1e-19
+        long  1e-20, 1e-21, 1e-22, 1e-23, 1e-24, 1e-25, 1e-26, 1e-27, 1e-28, 1e-29
+        long  1e-30, 1e-31, 1e-32, 1e-33, 1e-34, 1e-35, 1e-36, 1e-37, 1e-38
 	
 {{
 --------------------------------------------------------------------------------  

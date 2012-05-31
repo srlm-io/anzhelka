@@ -40,7 +40,25 @@ VAR
 	
 PUB getBase
 	return @vInput_addr
+PUB getITerm
+	return vITerm
+PUB getLastInput
+	return vlastInput
+
+PUB getKpAddr
+	return @vkp
+PUB getKiAddr
+	return @vki
+PUB getKdAddr
+	return @vkd
 	
+PUB getKp
+	return vkp
+PUB getKi
+	return vki
+PUB getKd
+	return vkd
+
 PUB setInput_addr(address)
 	vInput_addr := address
 PUB setOutput_addr(address)
@@ -48,10 +66,36 @@ PUB setOutput_addr(address)
 PUB setSetpoint_addr(address)
 	vSetpoint_addr := address
 PUB setOutmin(value)
+	'Value is a floating point number
 	vOutmin := value
 PUB setOutmax(value)
+	'Value is a floating point number
 	vOutmax := value
 	
+PUB setKp(value)
+	'Value is a floating point number
+	vkp := value
+PUB setKi(value)
+	'Value is a floating point number
+	vki := value
+PUB setKd(value)
+	'Value is a floating point number
+	vkd := value
+	
+PUB setKpid(new_kp, new_ki, new_kd)
+	vkp := new_kp
+	vki := new_ki
+	vkd := new_kd
+
+PUB init
+	vlastInput := long[vInput_addr]
+	vIterm := long[vOutput_addr]
+	
+	vinAuto := 0
+	vcontrollerDirection := 0
+	
+
+
 
 {{
 --------------------------------------------------------------------------------  

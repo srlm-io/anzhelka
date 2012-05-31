@@ -127,7 +127,7 @@ PUB DutyMode(Pin,Mode)                         '' Pin = 0 to 31
     repeat until command == 0
 
 DAT
-PWM_Asm       org
+PWM_Asm       org 0
 
               mov      temp, par
               mov      cmd_address, temp        'Acquire command variable address
