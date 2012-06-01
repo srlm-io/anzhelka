@@ -37,17 +37,12 @@ CON
 	
 	CLOCK_PIN = 23 'Unconnected to anything else (well, LED in this case, but we'll pretend that didn't happen...)
 	
-	SERIAL_BAUD = 115200
+
 	
 	
 	JITTER_LED = 22
 	SATURATE_LED = 21
 	PAUSE_LED = 20
-
-	'System Clock settings
-	FREQ_VALUE = $0001_0000
-	FREQ_COUNTS = 65536 '2^n, where n is the number of freq1's needed before overflow
-	
 	
 VAR
 	long spinstack0[100]
@@ -62,14 +57,13 @@ VAR
 	long pause
 
 OBJ
-	serial 	:	"FastFullDuplexSerialPlusBuffer.spin"
+'	serial 	:	"FastFullDuplexSerialPlusBuffer.spin"
 '	fp		:	"F32_CMD.spin"
 
 PUB Main | i, random
 
 	random := 1024 'seed value
-	InitUart
-	InitClock
+	InitFunctions
 
 	cognew(rpsloop, @spinstack0)
 	cognew(mthloop, @spinstack1)
@@ -83,8 +77,8 @@ PUB Main | i, random
 		outa[JITTER_LED]~~
 		PrintStr(string("Beginning jitter phase..."))	
 		repeat 500
-			PrintArray(string("RPS"), @motorrps, 4)
-			PrintArray(string("THR"), @motorthrust, 4)
+			PrintArray(string("RPS"), @motorrps, 4, TYPE_INT)
+			PrintArray(string("THR"), @motorthrust, 4, TYPE_INT)
 			waitcnt((clkfreq / ((?random & $FFF) + 1)) + cnt) 'Add some jitter between strings
 		outa[JITTER_LED]~
 
@@ -92,15 +86,15 @@ PUB Main | i, random
 		outa[SATURATE_LED]~~
 		PrintStr(string("Beginning saturate phase..."))
 		repeat 500
-			PrintArray(string("RPS"), @motorrps, 4)
-			PrintArray(string("THR"), @motorthrust, 4)
+			PrintArray(string("RPS"), @motorrps, 4, TYPE_INT)
+			PrintArray(string("THR"), @motorthrust, 4, TYPE_INT)
 		outa[SATURATE_LED]~
 		
 		'Test the pause functionality
 		pause := True
 		waitcnt(clkfreq/100 + cnt)
-		PrintArray(string("RPS"), @motorrps, 4)
-		PrintArray(string("THR"), @motorthrust, 4)
+		PrintArray(string("RPS"), @motorrps, 4, TYPE_INT)
+		PrintArray(string("THR"), @motorthrust, 4, TYPE_INT)
 		outa[PAUSE_LED]~~
 		PrintSTR(string("Beginning pause phase..."))
 		waitcnt(clkfreq * 5 + cnt) 'Wait for 5 seconds
@@ -139,52 +133,6 @@ PUB rpsloop | i, j, k, l
 
 
 
-
-PUB PrintArray(type_string_addr, array_addr, length) | i
-	serial.str(string("$AD"))
-	serial.str(type_string_addr)
-	serial.tx(" ")
-	serial.dec(phsb)
-
-	repeat i from 0 to length - 1
-		serial.tx(",")
-		serial.dec(long[array_addr][i])
-		
-	serial.tx(10)
-	serial.tx(13)
-		
-		
-PUB PrintSTR(addr)
-	serial.str(string("$ADSTR "))
-	serial.dec(phsb)
-	serial.tx(",")
-	serial.tx("'")
-	serial.str(addr)
-	serial.str(string("'", 10, 13))
-
-PUB InitUart | extra
-	serial.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, SERIAL_BAUD)	
-
-	
-	waitcnt(clkfreq + cnt)
-	
-	PrintSTR(string("Starting..."))
-	DebugNewLine
-	
-PUB DebugNewline
-	serial.tx(10)
-	serial.tx(13)
-
-PUB InitClock
-' sets pin as output
-	DIRA[CLOCK_PIN]~~
-	CTRa := %00100<<26 + CLOCK_PIN           ' set oscillation mode on pin
-	FRQa := FREQ_VALUE                    ' set FRequency of first counter                   
-
-	CTRB := %01010<<26 + CLOCK_PIN           ' at every zero crossing add 1 to phsb
-	FRQB := 1
-'PUB ClockSeconds
-'	return (fp.FMul(fp.FFloat(phsb), fp.FDiv(float(FREQ_COUNTS), fp.FFloat(clkfreq))))
 
 
 {{
