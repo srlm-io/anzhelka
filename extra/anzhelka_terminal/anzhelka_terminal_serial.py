@@ -7,8 +7,11 @@ from threading import Thread
 from threading import Lock
 import time
 import serial
+import platform
+import threading
 
 
+ser = None
 rx_buffer_lock = Lock()
 rx_buffer = []
 thread = Thread()
@@ -26,7 +29,10 @@ class RxParser(object):
 			nums = line.split(",")
 			try:
 				for i in range(len(nums)):
-					nums[i] = float(nums[i])
+					if i != 0:
+					#	nums[i-1] = float(nums[i-1])
+					# FIX THIS TO ENABLE TIMING
+						nums[i-1] = float(nums[i])
 			except ValueError:
 				print "RxParser: Could not parse ", code, " String. RX Line: ", original_line
 				return []
@@ -99,26 +105,60 @@ def receiving(ser):
 	print "closing..."
 	ser.close()
 
+def sending(ser, command):
+	global rx_buffer
+	global threadkillall
+	whatwas = 1
+
+	#sersend.open()
+	print ser.isOpen()
+	print ser.portstr
+	
+	ser.write(command)
+	whatwas=2
+	ser.write("hello")
+	whatwas=3
+	time.sleep(.01)
+	print whatwas
+
 
 class DataGen(object):
 	def __init__(self, init=50):
 		try:
-			self.ser = ser = serial.Serial(
-				port='COM11',
-				baudrate=115200,
-				bytesize=serial.EIGHTBITS,
-				parity=serial.PARITY_NONE,
-				stopbits=serial.STOPBITS_ONE,
-				timeout=0.1,
-				xonxoff=0,
-				rtscts=0,
-#				interCharTimeout=None
+			if platform.system() == 'Windows':
+				global ser
+				ser = serial.Serial(
+					port = 'COM11',
+					baudrate=115200,
+#					bytesize=serial.EIGHTBITS,
+#					parity=serial.PARITY_NONE,
+#					stopbits=serial.STOPBITS_ONE,
+#					timeout=0.1,
+#					xonxoff=0,
+#					rtscts=0,
+#					interCharTimeout=None
+			)
+			else:
+				global ser
+				ser = serial.Serial(
+					port = '/dev/ttyUSB0',
+					baudrate=115200,
+#					bytesize=serial.EIGHTBITS,
+#					parity=serial.PARITY_NONE,
+#					stopbits=serial.STOPBITS_ONE,
+#					timeout=0.1,
+#					xonxoff=0,
+#					rtscts=0,
+#					interCharTimeout=None
 			)
 		except serial.serialutil.SerialException:
 			#no serial connection
-			self.ser = None
+			ser = None
 		else:
-			thread = Thread(target=receiving, args=(self.ser,)).start()
+			command = 1
+			thread2 = threading.Thread(target=sending, args=(ser,command,)).start()
+			thread = threading.Thread(target=receiving, args=(ser,)).start()
+			
 		
 #	def next(self):
 #		if not self.ser:
@@ -134,6 +174,8 @@ class DataGen(object):
 #				print 'bogus data',raw_line
 #				time.sleep(.5)
 #		return 0.
+
+
 
 
 def cleanup():
