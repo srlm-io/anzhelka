@@ -1740,12 +1740,12 @@ _PID                    'Read the PID values from hub memory, starting with the 
 						mov		fnumB, foutMax
 						call	#_FLimitMax
 						'else if(ITerm < outMin) ITerm= outMin;
-'						mov		fnumB, foutMin
-'						call	#_FLimitMin
-
-						mov		fnumB, foutMax
-						xor		fnumB, bit31 'Negate
+						mov		fnumB, foutMin
 						call	#_FLimitMin
+
+'						mov		fnumB, foutMax 'TODO: WTF is going on here?
+'						xor		fnumB, bit31 'Negate
+'						call	#_FLimitMin
 						
 						mov		fITerm, fnumA
 						
@@ -1774,14 +1774,14 @@ _PID                    'Read the PID values from hub memory, starting with the 
 						mov		fOutput, fnumA
 						
 						'kp * error
-'						mov		fnumA, fkp
-'						mov		fnumB, ferror
-'						call	#_FMul
+						mov		fnumA, fkp
+						mov		fnumB, ferror
+						call	#_FMul
 '						
 						'Calculate proportional based on setpoint
-						mov		fnumA, fkp
-						mov		fnumB, fSetpoint
-						call	#_FMul
+'						mov		fnumA, fkp
+'						mov		fnumB, fSetpoint
+'						call	#_FMul
 						
 						'(kp * error == fnumA) + (ITerm - (kf*dInput) == fOutput)
 						mov		fnumB, fOutput

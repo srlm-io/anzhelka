@@ -152,25 +152,25 @@ PUB Main | correct_addr, debug_temp_0, debug_temp_1, i
 	repeat test_case from 0 to test_cases.get_num_test_cases -1
 		SetTestCases
 		TimeCalculate
-#ifdef BLOCK_PID
-		FPrint(Input)
-		debug.tx(",")
-		debug.tx(" ")
-		FPrint(Setpoint)
-		
-		repeat i from 0 to 8
-			debug.tx(",")
-			debug.tx(" ")
-			FPrint(long[PID_data.getBase][3+i])
-		
-		debug.tx(",")
-		debug.tx(" ")
-		FPrint(result_spin)
-		
-		
-		debug.tx(10)
-		debug.tx(13)
-#endif
+'#ifdef BLOCK_PID
+'		FPrint(Input)
+'		debug.tx(",")
+'		debug.tx(" ")
+'		FPrint(Setpoint)
+'		
+'		repeat i from 0 to 8
+'			debug.tx(",")
+'			debug.tx(" ")
+'			FPrint(long[PID_data.getBase][3+i])
+'		
+'		debug.tx(",")
+'		debug.tx(" ")
+'		FPrint(result_spin)
+'		
+'		
+'		debug.tx(10)
+'		debug.tx(13)
+'#endif
 		CheckResult(@result_comp, @result_spin, RESULT_LENGTH)
 	PrintStats
 	
@@ -251,16 +251,7 @@ PRI CheckResult(correct_addr, test_addr, length) | correct_val, test_val, i, hig
 		
 		
 PRI FPrint(fnumA) | temp
-'Will print a floating point number up to 3 decimal places (without rounding)
-	temp := float(1000)
-	
-	if fp.FCmp(fnumA, float(0)) == -1 'less than 0...
-		debug.tx("-")
-	debug.dec(fp.FAbs(fp.FTrunc(fnumA)))
-	debug.tx(".")
-	debug.dec(fp.FTrunc(fp.FMul(fp.Frac(fnumA), temp )))
-	
-
+	debug.str(fp.FloatToString(fnumA))
 PRI PrintStats | average_time, i
 	debug.str(string(10, 13, "-------------------------------------------------------"))
 

@@ -26,7 +26,7 @@ Notes: This file contains functions for use in Anzhelka terminal interfacing. To
 Notes:
 	--- If a '?' is received for any of the numbers, that means that it couldn't be translated (ie, not float, not int, ?)
 
-
+    --- Be very careful with types. Most things should probably be floats...
 
 }}
 
@@ -60,14 +60,17 @@ PUB InitFunctions
 '-------------------------------------------------------------------
 '-------------------------------------------------------------------
 
-PUB ParseSerial | t1, rxdata
+PUB ParseSerial
+	repeat until ParseString == -1
+
+PUB ParseString | t1, rxdata
 ' Master Serial Parsing Function
 
 	'Wait for start character
 	repeat
 		t1 := serial.rxcheck
 		if t1 == -1
-			return
+			return -1
 		if t1 == "$"
 			quit
 	
@@ -86,9 +89,15 @@ PUB ParseSerial | t1, rxdata
 		
 	if t1 == "D" 'Data Packet
 		ParseSerialData
+	
+	return 0
 
 CON
+	XDR_READ = 0
+	XDR_WRITE = 1
+
 	sSDR = ("S" << 16) | ("D" << 8) | "R"
+	sRDR = ("R" << 16) | ("D" << 8) | "R"
 PUB ParseSerialCommand | t1, t2, t3, command
 ''Parses packets of the form "$ACXXX ...", ie command packets
 	
@@ -100,7 +109,9 @@ PUB ParseSerialCommand | t1, t2, t3, command
 	'Decide what to do based on three letter packet type:
 	case command
 		sSDR:
-			ParseSerialSDR
+			ParseSerialXDR(XDR_WRITE)
+		sRDR:
+			ParseSerialXDR(XDR_READ)
 		OTHER:
 			PrintStrStart
 			serial.str(string("Warning: Unknown command type: "))
@@ -117,13 +128,17 @@ CON
 	sMKP = ("M" << 16) | ("K" << 8) | "P"
 	sMKI = ("M" << 16) | ("K" << 8) | "I"
 	sMKD = ("M" << 16) | ("K" << 8) | "D"
+	sNID = ("N" << 16) | ("I" << 8) | "D"
+	sNIM = ("N" << 16) | ("I" << 8) | "M"
+'	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
 
 	NAN = $7FFF_FFFF
 	 
-PUB ParseSerialSDR | register, values[10], i
+PUB ParseSerialXDR(TYPE) | register, values[10], i
 'Note: this sets a maximum number of values (up to ten longs)
 'This packet will inject the received values into the appropriate variables.
+'TYPE is either XDR_READ or XDR_WRITE
 
 	'Discard spaces, and then get first letter
 	repeat
@@ -133,30 +148,48 @@ PUB ParseSerialSDR | register, values[10], i
 	register := (register << 8) | serial.rx
 	register := (register << 8) | serial.rx
 	
-	'Ignore the following comma
+	'Ignore the following comma or newline
 	serial.rx
 
 	case register
-		sPWM:
-			ParseSerialList(@values, 4, TYPE_INT)
 		sMKP:
-'			serial.str(string(10, 13))
-'			PrintStr(string("Parsing MKP"))
-			ParseSerialList(@values, 4, TYPE_FLOAT)
-			WriteList(@values, PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr)
-			PrintArrayAddr(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
-
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList(@values, PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr)
+			elseif TYPE == XDR_READ
+				PrintArrayAddr(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 		sMKI:
-'			serial.str(string(10, 13))
-'			PrintStr(string("Parsing MKI"))
-			ParseSerialList(@values, 4, TYPE_FLOAT)
-			WriteList(@values, PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr)
-			PrintArrayAddr(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList(@values, PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr)
+			elseif TYPE == XDR_READ
+				PrintArrayAddr(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
 			
 		sMKD:
-			ParseSerialList(@values, 4, TYPE_FLOAT)
-			WriteList(@values, PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr)
-			PrintArrayAddr(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList(@values, PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr)
+			elseif TYPE == XDR_READ
+				PrintArrayAddr(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
+		sPWM:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList(@values, @u_1, @u_2, @u_3, @u_4)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
+		sNID:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList(@values, @n_d_1, @n_d_2, @n_d_3, @n_d_4)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
+				
+		sNIM:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList(@values, @n_1, @n_2, @n_3, @n_4)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 
 		OTHER:
 			PrintStrStart
@@ -185,7 +218,14 @@ PUB WriteList(input_array_addr, a_addr, b_addr, c_addr, d_addr)
 	if long[input_array_addr][3] <> NAN
 		long[d_addr] := long[input_array_addr][3]
 
-
+PUB WriteListArray(input_array_addr, output_array_addr, length) | i
+'Writes the four variables in the input array to the four addresses specified.
+'If a number is NAN, it will not write it.
+	
+	repeat i from 0 to length - 1
+		if long[input_array_addr][0] <> NAN
+			long[output_array_addr][i] := long[input_array_addr][i]
+	
 
 PUB ParseSerialList(array_addr, length, type) | i, float_num[11]
 	'Reads a sequence of newline terminated, comma seperated numbers
@@ -206,6 +246,9 @@ PUB ParseSerialList(array_addr, length, type) | i, float_num[11]
 		elseif type == TYPE_FLOAT
 			serial.getstr(@float_num, ",")
 			long[array_addr][i] := fp.StringToFloat(@float_num)
+		elseif type == TYPE_INT_CAST
+			serial.getstr(@float_num, ",")
+			long[array_addr][i] := fp.FloatRound(fp.StringToFloat(@float_num))
 		else
 			PrintStr(string("Warning: Unknown number type in the ParseSerialList..."))
 	
@@ -224,6 +267,7 @@ PUB ParseSerialData
 CON
 	TYPE_INT = 0
 	TYPE_FLOAT = 1
+	TYPE_INT_CAST = 2 'Read as a float, but cast to int
 PUB PrintArray(type_string_addr, array_addr, length, type) | i
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 

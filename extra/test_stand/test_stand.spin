@@ -30,8 +30,8 @@ CON
 	ADC_S_PIN = 10
 	ADC_C_PIN = 12
 	
-	KEYPAD_LOW_PIN  = 0
-	KEYPAD_HIGH_PIN = 7
+'	KEYPAD_LOW_PIN  = 0
+'	KEYPAD_HIGH_PIN = 7
 	
 	ESC_PIN = 15 'turns on at ~1600 us
 	
@@ -40,15 +40,7 @@ CON
 'Settings
 	NUM_MOT = 4
 	
-	SERIAL_BAUD = 115200
-	
-	'Port names for Full Duplex Serial 4 port Plus
-'	PDEBUG = 0 'Debug port
-	
-	FREQ_VALUE = $0001_0000
-	FREQ_COUNTS = 65536 '2^n, where n is the number of freq1's needed before overflow
-	
-	
+
 	'Motor PID loop types of errors:
 	CURRENT = 0
 	ACCUMULATOR = 1
@@ -74,69 +66,39 @@ VAR
 
 OBJ
 '	debug : "FullDuplexSerialPlus.spin"
-	serial	:   "FastFullDuplexSerialPlusBuffer.spin"
+
 	adc 	:	"MCP3208_fast.spin"
 	pwm 	:	"PWM_32_v4.spin"
 	rpm 	:	"Eagle_Tree_Brushless_RPM.spin"
-	keypad 	:	"Matrix_Membrane_Keypad.spin"
+'	keypad 	:	"Matrix_Membrane_Keypad.spin"
 	
-	fp		:	"F32_CMD.spin"
-	pid_data:	"PID_data.spin"
 
 PUB Main | i, pwmoutput
 
 
-	InitClock
-	InitUart
-	fp.start
+	InitFunctions
+
+	
 	
 	motordesiredrps[0] := float(0)
-	motorrps[0] := fp.FFloat(rpm.getrps(0))
-	pid_data.setInput_addr(@motorrps) 'Warning: it's @motorrpm[0]
-	pid_data.setOutput_addr(@pid_output)
-	pid_data.setSetpoint_addr(@motordesiredrps) 'Warning: it's @motordesiredrps[0]
-	pid_data.setOutmin(float(10))
-	pid_data.setOutmax(float(1000))
-	pid_data.setKpid(float(5), float(0), float(0))
-	pid_data.init
+	motorrps[0] := float(0)'fp.FFloat(rpm.getrps(0))
+	PID_n_1.setInput_addr(@n_1) 'Warning: it's @motorrpm[0]
+	PID_n_1.setOutput_addr(@pid_output)
+	PID_n_1.setSetpoint_addr(@n_d_1) 'Warning: it's @motordesiredrps[0]
+	PID_n_1.setOutmin(fp.FSub(float(0), float(300)))
+	PID_n_1.setOutmax(float(300))
+	PID_n_1.setKpid(fp.FDiv(float(1), float(10)), float(0), float(0))
+	PID_n_1.init
 	
 	adc.start(ADC_D_PIN, ADC_C_PIN, ADC_S_PIN, 0)
 	pwm.start
 	rpm.setpins(%0001_0000_0000) 'RPM_PIN
 	rpm.start
-	keypad.init(KEYPAD_LOW_PIN, KEYPAD_HIGH_PIN)
-	
-	
-	
-		
-	waitcnt(clkfreq + cnt)
 	
 	pwm.servo(ESC_PIN, 1000)
 
-
-'	i := fp.FFloat(-910)
-'	serial.str(fp.FloatToString(i))
-'	serial.tx(" ")
-'	serial.tx("$")
-'	serial.hex(i, 8)
-'	serial.str(string(10,13))
-'	
-'	i := float(0)
-'	serial.str(fp.FloatToString(i))
-'	serial.tx(" ")
-'	serial.tx("$")
-'	serial.hex(i, 8)
-'	serial.str(string(10,13))
-
-'	i := float(345)
-'	serial.str(fp.FloatToString(i))
-'	serial.tx(" ")
-'	serial.tx("$")
-'	serial.hex(i, 8)
-'	serial.str(string(10,13))
-
-
-	repeat i from 3 to 0
+	repeat i from 0 to 0
+		waitcnt(clkfreq + cnt)
 		serial.str(string("$ADSTR "))
 		serial.dec(phsb)
 		serial.str(string(",'t minus "))
@@ -144,111 +106,46 @@ PUB Main | i, pwmoutput
 		serial.tx("'")
 		serial.tx(10)
 		serial.tx(13)
-		waitcnt(clkfreq + cnt)
-	
-	
-'	repeat
-'		repeat i from 0 to 1000
-'			pwm.servo(ESC_PIN, 1000 + i)
-'			waitcnt(clkfreq/100 + cnt)
-'			serial.dec(1000 + i)
-'			serial.tx(",")
-'			serial.dec(rpm.getrps(0))
-'			serial.tx(10)
-'			serial.tx(13)
-'		repeat i from 1000 to 0
-'			pwm.servo(ESC_PIN, 1000 + i)
-'			waitcnt(clkfreq/100 + cnt)
-'			serial.dec(1000 + i)
-'			serial.tx(",")
-'			serial.dec(rpm.getrps(0))
-'			serial.tx(10)
-'			serial.tx(13)
-	
+		
+
 	
 	pwm.servo(ESC_PIN, 1200)
 	waitcnt(clkfreq * 1 + cnt)
 		
 	
 	i := 90
+	u_1 := float(1200)
+	n_d_1 := fp.FFloat(i)
 	repeat
-		serial.str(string(10, 13, "->ITerm: "))
-		FPrint(pid_data.getITerm)
-		serial.str(string(" $"))
-		serial.hex(pid_data.getITerm, 8)
-		serial.str(string(10, 13, "->LastInput: "))
-		FPrint(pid_data.getLastInput)
-		serial.str(string(10, 13))
-		loop(i)
-	
-	'Note: i is in rps!!!
-	repeat
-		repeat i from 20 to 45 step 1
+		serial.str(string(10, 13, "pid_output: "))
+		FPrint(pid_output)
+		repeat 100
+	'		serial.str(string(10, 13, "->ITerm: "))
+	'		FPrint(PID_n_1.getITerm)
+	'		serial.str(string(" $"))
+	'		serial.hex(PID_n_1.getITerm, 8)
+	'		serial.str(string(10, 13, "->LastInput: "))
+	'		FPrint(PID_n_1.getLastInput)
+	'		serial.str(string(10, 13))
 			loop(i)
-			
-'---------------------
+			ParseSerial
+			waitcnt(clkfreq/50 + cnt)
 
-'	repeat
-'		repeat i from 0 to 1000 step 1
-'			loop(i)
-'			
-'		repeat 500'Delay at top
-'			loop(1000)
-'			
-'		repeat i from 1000 to 0 step 1
-'			loop(i)
-'		
-'		repeat 5	
-'			repeat i from 0 to 1000 step 10
-'				loop(i)
-'			
-'			repeat 20'Delay at top
-'				loop(1000)
-'			
-'			repeat i from 1000 to 0 step 10
-'				loop(i)
-'				
-'		repeat 5	
-'			repeat i from 0 to 1000 step 30
-'				loop(i)
-'			
-'			repeat 20'Delay at top
-'				loop(1000)
-'			
-'			repeat i from 1000 to 0 step 30
-'				loop(i)
-'			
-'			repeat 10
-'				loop(0)
-'		
-		
-		
 
 PUB loop(i)
-	motordesiredrps[0] := fp.FFloat(i)
 	
-	repeat 1 'Number of seconds
-		repeat 1
-'			readForce
+	
 
+	n_1 := fp.FFloat( 0 #> rpm.getrps(0) <# 250) 'Min < rps < Max
+'	pid_output := fp.FMul(PID_n_1.getKp, fp.FSub(n_d_1, n_1))
 
-			motorrps[0] := fp.FFloat( 0 #> rpm.getrps(0) <# 250) 'Min < rps < Max
-			fp.FPID(PID_data.getBase)
-			'pid_output is 0 to 1000
-'			scale it in range of 0 to 1600
-			pid_output := float(1000)
+	fp.FPID(PID_n_1.getBase)
+	u_1 := fp.FAdd(u_1, pid_output)
+	u_1 := fp.FLimitMin(u_1, float(1000))
+	u_1 := fp.FLimitMax(u_1, float(1600))
 
-			pid_output := fp.FMul(pid_output, fp.FDiv(float(600), float(1000)))
-			motorpwm[0] := fp.FTrunc(pid_output) + 1000
-			PrintArray(string("PWM"), @motorpwm, 4, TYPE_INT)
-'			waitcnt(clkfreq/20 + cnt)
-			PrintArray(string("RPS"), @motorrps, 4, TYPE_FLOAT)
-'			waitcnt(clkfreq/20 + cnt)
-			pwm.servo(ESC_PIN, motorpwm[0])
-			
-'			waitcnt(clkfreq/5 + cnt)
-'			PrintArray(string("$ADMTH"), @motorthrust, 4, TYPE_INT)
-'			PrintArray(string("$ADMTQ"), @motortorque, 4, TYPE_INT)
+	pwm.servo(ESC_PIN, fp.FTrunc(u_1))
+
 
 PUB readForce | thrust, torque
 	torque := ADC.average(ADC_TORQUE, 4)
@@ -257,157 +154,7 @@ PUB readForce | thrust, torque
 	motorthrust[0] := thrust
 	motortorque[0] := torque
 
-	
 
-
-
-	
-'-------------------------------------------------------------------
-'-------------------------------------------------------------------
-'----------------- $ATXXX Output Functions -------------------------
-'-------------------------------------------------------------------
-'-------------------------------------------------------------------
-
-	
-CON
-	TYPE_INT = 0
-	TYPE_FLOAT = 1
-PUB PrintArray(type_string_addr, array_addr, length, type) | i
-'' Parameters:
-''  - type_string_addr: a string that has the three capital letters that 
-''      denote which type of data this packet is, eg PWM or MKP
-''  - array_addr: the values to send. A long array only.
-''  - length: the length of the array.
-
-
-	serial.str(string("$AD"))
-	serial.str(type_string_addr)
-	serial.tx(" ")
-	serial.dec(phsb)
-
-	repeat i from 0 to length - 1
-		serial.tx(",")
-		if type == TYPE_INT
-			serial.dec(long[array_addr][i])
-		elseif type == TYPE_FLOAT
-			FPrint(long[array_addr][i])
-		else
-			serial.tx("?") 'Warning!
-		
-	serial.tx(10)
-	serial.tx(13)
-		
-		
-PUB PrintSTR(addr)
-	serial.str(string("$ADSTR "))
-	serial.dec(phsb)
-	serial.tx(",")
-	serial.tx("'")
-	serial.str(addr)
-	serial.str(string("'", 10, 13))
-
-'-------------------------------------------------------------------
-'-------------------------------------------------------------------
-'----------------- Support Functions -------------------------------
-'-------------------------------------------------------------------
-'-------------------------------------------------------------------
-PRI FPrint(fnumA)
-''Will print a floating point number up to 3 decimal places (without rounding)
-'	if fnumA == $7FFF_FFFF
-'		serial.str(string("QNaN"))
-'		return
-''	if fp.FCmp(fnumA, float(0)) == -1 'less than 0...
-'	if fnumA & $8000_0000 'If sign bit is set
-'		serial.tx("-")
-'	serial.dec(fp.FAbs(fp.FTrunc(fnumA)))
-'	serial.tx(".")
-'	serial.dec(fp.FTrunc(fp.FMul(fp.Frac(fnumA), float(1000) )))
-
-	serial.str(fp.FloatToString(fnumA))
-
-'-------------------------------------------------------------------
-'-------------------------------------------------------------------
-'----------------- Init Functions ----------------------------------
-'-------------------------------------------------------------------
-'-------------------------------------------------------------------
-	
-PUB InitUart | extra
-	serial.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, SERIAL_BAUD)	
-	waitcnt(clkfreq + cnt)
-	PrintStr(string("Starting..."))
-	
-PUB InitClock
-' sets pin as output
-	DIRA[CLOCK_PIN]~~
-	CTRa := %00100<<26 + CLOCK_PIN           ' set oscillation mode on pin
-	FRQa := FREQ_VALUE                    ' set FRequency of first counter                   
-
-	CTRB := %01010<<26 + CLOCK_PIN           ' at every zero crossing add 1 to phsb
-	FRQB := 1
-
-''Extra code that was useful at one time or another:
-'	dira[14] := 1
-'	outa[14] := 1
-	
-'	repeat
-	
-'	debug.str(string("Type in PWM values (in uS) to send to ESC"))
-'	DebugNewline
-'	debug.str(string("Press * to submit number"))
-'	DebugNewline
-'	debug.str(string("Press # to clear number"))
-'	DebugNewline
-
-
-
-'	repeat
-''		CheckMotor
-'		i := keypad.GetNumber
-'		DebugNewline
-'		if i == -1
-'			debug.str(string("No number"))
-'		else
-'			debug.str(string("Sending to ESC: "))
-'			debug.dec( i )
-'			debug.str(string("uS"))
-'			DebugNewLine
-'			pwm.servo(ESC_PIN, i)
-'		
-'		debug.str(string("Calculated RPM:"))
-'		debug.dec(rpm.getrpm(0))
-'		DebugNewline
-'		DebugNewline
-'			
-'	
-	
-'	
-'	repeat
-'		debug.str(string("Speed LOW"))
-'		DebugNewline
-'		pwm.servo(ESC_PIN, 1650)
-'		waitcnt(clkfreq*3 + cnt)
-'		
-'		debug.str(string("Speed HIGH"))
-'		DebugNewline
-'		pwm.servo(ESC_PIN, 1900)
-'		waitcnt(clkfreq*3 + cnt)
-'		
-	
-'	
-'	repeat
-'		debug.str(string("Keypad: "))
-'		debug.dec(ReadKeyPad)
-'		DebugNewline
-'		debug.str(string("ADC(0): "))
-'		debug.dec(adc.in(0))
-'		debugNewline
-'		debug.str(string("ADC(1): "))
-'		debug.dec(adc.in(1))
-'		DebugNewline
-
-'		waitcnt(clkfreq + cnt)
-'		
-'		
 
 	
 {{
