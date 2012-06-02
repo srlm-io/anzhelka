@@ -202,6 +202,11 @@ class RPMGraph(wx.Panel):
 		# sliding window effect. therefore, xmin is assigned after
 		# xmax.
 		#
+		
+		if len(self.data) == 0:
+			return
+			
+			
 		if self.xmax_control.is_auto():
 			xmax = len(self.data) if len(self.data) > 50 else 50
 		else:
@@ -223,12 +228,10 @@ class RPMGraph(wx.Panel):
 			ymin = round(min(self.data), 0) - 1
 		else:
 			ymin = int(self.ymin_control.manual_value())
-		
 		if self.ymax_control.is_auto():
 			ymax = round(max(self.data), 0) + 1
 		else:
 			ymax = int(self.ymax_control.manual_value())
-
 		self.axes.set_xbound(lower=xmin, upper=xmax)
 		self.axes.set_ybound(lower=ymin, upper=ymax)
 		
