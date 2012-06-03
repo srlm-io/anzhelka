@@ -32,6 +32,20 @@ paused = False
 
 motor_num = 4
 motor_settings = ["Motor", "RPS", "DRPM", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
+motor_adjustments = {}
+# Layout          NAME     MIN, MAX, 10^, STR Front,  STR Back
+motor_adjustments["MKP 1"] = [0, 10, 3, '$ACSDR MKP,', ',*,*,*']
+motor_adjustments["MKP 2"] = [0, 10, 3, '$ACSDR MKP,*,', ',*,*']
+motor_adjustments["MKP 3"] = [0, 10, 3, '$ACSDR MKP,*,*,', ',*']
+motor_adjustments["MKP 4"] = [0, 10, 3, '$ACSDR MKP,*,*,*,', '']
+motor_adjustments["MKI 1"] = [0, 10, 3, '$ACSDR MKI,', ',*,*,*']
+motor_adjustments["MKI 2"] = [0, 10, 3, '$ACSDR MKI,*,', ',*,*']
+motor_adjustments["MKI 3"] = [0, 10, 3, '$ACSDR MKI,*,*,', ',*']
+motor_adjustments["MKI 4"] = [0, 10, 3, '$ACSDR MKI,*,*,*,', '']
+motor_adjustments["MKD 1"] = [0, 10, 3, '$ACSDR MKD,', ',*,*,*']
+motor_adjustments["MKD 2"] = [0, 10, 3, '$ACSDR MKD,*,', ',*,*']
+motor_adjustments["MKD 3"] = [0, 10, 3, '$ACSDR MKD,*,*,', ',*']
+motor_adjustments["MKD 4"] = [0, 10, 3, '$ACSDR MKD,*,*,*,', '']
 
 
 class BoundControlBox(wx.Panel):
@@ -429,8 +443,8 @@ class AdjustmentTable(wx.Panel):
 		sizer = wx.GridBagSizer(hgap=5, vgap=5)
 
 		self.outputstring = ''
-		
-		self.dropbox = wx.ComboBox(self, -1, choices=["9600", "19200", "38400", "57600", "115200"], style=wx.CB_DROPDOWN|wx.CB_SORT)
+
+		self.dropbox = wx.ComboBox(self, -1, choices=list(motor_adjustments.keys()), style=wx.CB_DROPDOWN|wx.CB_SORT)
 		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
 		self.display1 = wx.TextCtrl(self, -1, style=wx.TE_LEFT)
 		self.display2 = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
@@ -453,6 +467,7 @@ class AdjustmentTable(wx.Panel):
 		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
 		self.Bind(wx.EVT_TEXT, self.sliderBoxAuto)
 		self.Bind(wx.EVT_SLIDER, self.sliderUpdate)
+		self.Bind(wx.EVT_COMBOBOX, self.comboSelection)
 		
 		topSizer.Add(sizer, 0, wx.ALL|wx.EXPAND, 5)
 
@@ -461,39 +476,40 @@ class AdjustmentTable(wx.Panel):
 		topSizer.Fit(self)
 
 	def setOutputString(self, value):
-                self.outputstring = value
+		self.outputstring = value
 
 	def OnUpdate(self, event):
-                #COMMENTED OUT FOR CODY'S TESTS
-		#self.sliderboxval = self.sliderbox.GetValue()
-		#self.display.SetValue(str(self.sliderboxval))
-                self.outputstring = self.display.GetValue()
+		self.displaynum = self.display.GetValue()
+		self.outputstring = (motor_adjustments[self.thiskey])[3] + self.displaynum + (motor_adjustments[self.thiskey])[4]
 		sending(ser, self.outputstring)
 
 	def OnBox2Slider(self, event):
 		self.sliderboxval = self.display.GetValue()
-		self.sliderbox.SetValue(int(self.sliderboxval))
+		self.sliderbox.SetValue(float(self.sliderboxval))
 
 	def sliderUpdate(self, event):
 		self.pos = self.sliderbox.GetValue()
-		#COMMENTED OUT FOR CODY'S TESTS
-		#self.display.SetValue(str(self.pos))
+		self.devideby = pow(10,(motor_adjustments[self.thiskey])[2])
+		self.display.SetValue(str(float(self.pos)/self.devideby))
 
 	def sliderBoxAuto(self, event):
 		self.sliderboxval = self.display.GetValue()
-		#COMMENTED OUT FOR CODY'S TESTS
-		#self.sliderbox.SetValue(int(self.sliderboxval))
+		self.multiplyby = pow(10,(motor_adjustments[self.thiskey])[2])
+		self.sliderbox.SetValue(int(self.sliderboxval)*multiplyby)
 
 	def comboSelection(self, event):
-		self.maxpos = 20 #Get Value from TABLE
-		self.minpos = 10000 #Get Value from TABLE
+                self.thiskey = self.dropbox.GetValue()
+                self.minpos = (motor_adjustments[self.thiskey])[0]*pow(10,(motor_adjustments[self.thiskey])[2])
+		self.maxpos = (motor_adjustments[self.thiskey])[1]*pow(10,(motor_adjustments[self.thiskey])[2])
 		self.sliderbox.SetRange(self.minpos, self.maxpos)
+		self.devideby = pow(10,(motor_adjustments[self.thiskey])[2])
 		self.display1.SetValue(str(self.minpos))
-		self.display2.SetValue(str(self.maxpos))
+		self.display2.SetValue(str(float(self.maxpos)/self.devideby))
 
 	def updateMotor(motor, value):
 		self.maxpos = 20 #Get Value from TABLE
-                
+		
+
 
 
 def reverseenum(string, l):
