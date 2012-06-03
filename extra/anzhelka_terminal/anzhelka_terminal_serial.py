@@ -29,13 +29,15 @@ class RxParser(object):
 			nums = line.split(",")
 			try:
 				for i in range(len(nums)):
-					if i != 0:
+					if i != 0: #Get rid of clock (for now, debug)
 					#	nums[i-1] = float(nums[i-1])
-					# FIX THIS TO ENABLE TIMING
+					# TODO: FIX THIS TO ENABLE TIMING
 						nums[i-1] = float(nums[i])
+				nums.pop() #Get rid last (non converted) string element (since the first space was occupied by the clock, but now holds a variable value)
 			except ValueError:
 				print "RxParser: Could not parse ", code, " String. RX Line: ", original_line
 				return []
+			
 			
 			return nums
 		else:
@@ -141,7 +143,8 @@ class DataGen(object):
 			else:
 				global ser
 				ser = serial.Serial(
-					port = '/dev/ttyUSB0',
+#					port = '/dev/ttyUSB0',
+					port = '/dev/ttyACM0',
 					baudrate=115200,
 #					bytesize=serial.EIGHTBITS,
 #					parity=serial.PARITY_NONE,

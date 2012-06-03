@@ -13,7 +13,7 @@
 #    ymin = round(min(self.data), 0) - 1
 #ValueError: min() arg is an empty sequence
 
-
+# TODO: update RPS to DIM terms.
 
 
 import wx
@@ -31,7 +31,7 @@ REFRESH_INTERVAL_MS = 50
 paused = False
 
 motor_num = 4
-motor_settings = ["Motor", "RPS", "DRPM", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
+motor_settings = ["Motor", "NIM", "DRPM", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
 motor_adjustments = {}
 # Layout          NAME     MIN, MAX, 10^, STR Front,  STR Back
 motor_adjustments["MKP 1"] = [0, 10, 3, '$ACSDR MKP,', ',*,*,*']
@@ -46,7 +46,7 @@ motor_adjustments["MKD 1"] = [0, 10, 3, '$ACSDR MKD,', ',*,*,*']
 motor_adjustments["MKD 2"] = [0, 10, 3, '$ACSDR MKD,*,', ',*,*']
 motor_adjustments["MKD 3"] = [0, 10, 3, '$ACSDR MKD,*,*,', ',*']
 motor_adjustments["MKD 4"] = [0, 10, 3, '$ACSDR MKD,*,*,*,', '']
-
+motor_adjustments["NID 1"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*']
 
 class BoundControlBox(wx.Panel):
 	""" A static box with a couple of radio buttons and a text
@@ -195,7 +195,7 @@ class RPMGraph(wx.Panel):
 
 		self.axes = self.fig.add_subplot(111)
 		self.axes.set_axis_bgcolor('black')
-		self.axes.set_title('RPM Serial Data', size=12)
+		self.axes.set_title('NIM Serial Data', size=12)
 		
 		pylab.setp(self.axes.get_xticklabels(), fontsize=8)
 		pylab.setp(self.axes.get_yticklabels(), fontsize=8)
@@ -227,7 +227,7 @@ class RPMGraph(wx.Panel):
 			xmax = int(self.xmax_control.manual_value())
 			
 		if self.xmin_control.is_auto():			
-			xmin = xmax - 1000
+			xmin = xmax - 500 #TODO: Make this a slider option
 		else:
 			xmin = int(self.xmin_control.manual_value())
 
@@ -351,7 +351,7 @@ class RPMGraph(wx.Panel):
 #						print "len(rx_buffer) == ", len(rx_buffer)		
 #						print "Reading last i == ", i
 #						i += 1
-						motor_rps = rxparser.match(rx_buffer[self.rx_last_read], "$ADRPS")
+						motor_rps = rxparser.match(rx_buffer[self.rx_last_read], "$ADNIM")
 						self.rx_last_read += 1
 						if len(motor_rps) != 0:
 							self.data.append(float(motor_rps[0])) #Get first motor RPS...
@@ -493,13 +493,14 @@ class AdjustmentTable(wx.Panel):
 		self.display.SetValue(str(float(self.pos)/self.devideby))
 
 	def sliderBoxAuto(self, event):
+		self.thiskey = self.dropbox.GetValue()
 		self.sliderboxval = self.display.GetValue()
 		self.multiplyby = pow(10,(motor_adjustments[self.thiskey])[2])
-		self.sliderbox.SetValue(int(self.sliderboxval)*multiplyby)
+		self.sliderbox.SetValue(int(float(self.sliderboxval)*self.multiplyby))
 
 	def comboSelection(self, event):
-                self.thiskey = self.dropbox.GetValue()
-                self.minpos = (motor_adjustments[self.thiskey])[0]*pow(10,(motor_adjustments[self.thiskey])[2])
+		self.thiskey = self.dropbox.GetValue()
+		self.minpos = (motor_adjustments[self.thiskey])[0]*pow(10,(motor_adjustments[self.thiskey])[2])
 		self.maxpos = (motor_adjustments[self.thiskey])[1]*pow(10,(motor_adjustments[self.thiskey])[2])
 		self.sliderbox.SetRange(self.minpos, self.maxpos)
 		self.devideby = pow(10,(motor_adjustments[self.thiskey])[2])
@@ -541,7 +542,7 @@ class MotorTable(wx.Panel):
 			for j in range(len(motor_settings)):
 				if j == reverseenum("Motor", motor_settings): # Motor number
 					self.motor_table[i+1].append(wx.TextCtrl(self, -1, str(i)))
-				elif j == reverseenum("RPS", motor_settings): # Motor number
+				elif j == reverseenum("NIM", motor_settings): # Motor number
 					self.motor_table[i+1].append(wx.TextCtrl(self, -1, "---"))
 				elif j == reverseenum("Volts", motor_settings): # Motor number
 					self.motor_table[i+1].append(wx.TextCtrl(self, -1, "---"))
@@ -571,6 +572,7 @@ class MotorTable(wx.Panel):
 		
 	def update_field(self, code, enum_field):
 		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
+		print "Matchlist: ", matchlist
 		for i in range(len(matchlist)): # != 0:
 			self.motor_table[i+1][reverseenum(enum_field, motor_settings)].SetValue(str(matchlist[i]))
 			
@@ -590,7 +592,7 @@ class MotorTable(wx.Panel):
 					#Go through all the received strings and add whatever is relevant.
 					while self.rx_last_read < len(rx_buffer):
 						
-						self.update_field("$ADRPS", "RPS")
+						self.update_field("$ADNIM", "NIM")
 						self.update_field("$ADMIA", "Amps")
 						self.update_field("$ADMVV", "Volts")
 						self.update_field("$ADPWM", "ESC(uS)")

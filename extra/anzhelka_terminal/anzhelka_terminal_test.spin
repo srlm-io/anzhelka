@@ -77,7 +77,7 @@ PUB Main | i, random
 		outa[JITTER_LED]~~
 		PrintStr(string("Beginning jitter phase..."))	
 		repeat 500
-			PrintArray(string("RPS"), @motorrps, 4, TYPE_INT)
+			PrintArray(string("NIM"), @motorrps, 4, TYPE_INT)
 			PrintArray(string("THR"), @motorthrust, 4, TYPE_INT)
 			waitcnt((clkfreq / ((?random & $FFF) + 1)) + cnt) 'Add some jitter between strings
 		outa[JITTER_LED]~
@@ -86,14 +86,14 @@ PUB Main | i, random
 		outa[SATURATE_LED]~~
 		PrintStr(string("Beginning saturate phase..."))
 		repeat 500
-			PrintArray(string("RPS"), @motorrps, 4, TYPE_INT)
+			PrintArray(string("NIM"), @motorrps, 4, TYPE_INT)
 			PrintArray(string("THR"), @motorthrust, 4, TYPE_INT)
 		outa[SATURATE_LED]~
 		
 		'Test the pause functionality
 		pause := True
 		waitcnt(clkfreq/100 + cnt)
-		PrintArray(string("RPS"), @motorrps, 4, TYPE_INT)
+		PrintArray(string("NIM"), @motorrps, 4, TYPE_INT)
 		PrintArray(string("THR"), @motorthrust, 4, TYPE_INT)
 		outa[PAUSE_LED]~~
 		PrintSTR(string("Beginning pause phase..."))

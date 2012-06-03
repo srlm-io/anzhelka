@@ -117,8 +117,8 @@ PUB Main | i, pwmoutput
 	u_1 := float(1200)
 	n_d_1 := fp.FFloat(i)
 	repeat
-		serial.str(string(10, 13, "pid_output: "))
-		FPrint(pid_output)
+'		serial.str(string(10, 13, "pid_output: "))
+'		FPrint(pid_output)
 		repeat 100
 	'		serial.str(string(10, 13, "->ITerm: "))
 	'		FPrint(PID_n_1.getITerm)
@@ -129,6 +129,7 @@ PUB Main | i, pwmoutput
 	'		serial.str(string(10, 13))
 			loop(i)
 			ParseSerial
+			PrintArrayAddr(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 			waitcnt(clkfreq/50 + cnt)
 
 
