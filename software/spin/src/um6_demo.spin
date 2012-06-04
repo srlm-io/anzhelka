@@ -30,8 +30,8 @@ CON
 	DEBUG_TX_PIN  = 30
 	DEBUG_RX_PIN  = 31
 	
-	IMU_RX_PIN = 0 'Note: direction is from Propeller IO port
-	IMU_TX_PIN = 2 'Note: direction is form Propeller IO port
+	IMU_RX_PIN = 19 'Note: direction is from Propeller IO port
+	IMU_TX_PIN = 18 'Note: direction is from Propeller IO port
 	
 'Settings
 
@@ -47,10 +47,13 @@ VAR
 	long	euler_phi_theta
 	long	euler_psi
 
+	long	quat_ab
+	long	quat_cd
+
 	long	temp_debug_stack[30]
 
 OBJ
-	debug : "FullDuplexSerialPlus.spin"
+	debug : "FastFullDuplexSerialPlusBuffer.spin"
 '	imu : "FullDuplexSerialPlus.spin"
 	imu : "um6.spin"
 
@@ -65,8 +68,10 @@ PUB Main | i, t1, addr, roll, pitch
 	imu.add_register($61, @mag_proc_z)
 '	imu.add_register($62, @euler_phi_theta)
 	imu.add_register($63, @euler_psi)
+	imu.add_register($64, @quat_ab)
+	imu.add_register($65, @quat_cd)
 
-	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 230400)
+	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 115200)
 	waitcnt(clkfreq + cnt)
 	
 
@@ -81,7 +86,14 @@ PUB Main | i, t1, addr, roll, pitch
 	waitcnt(clkfreq >> 2 + cnt)
 	
 	cognew(debug_transmit_commands, @temp_debug_stack)
-	
+	 
+'	repeat
+'		debug.hex(quat_ab, 8)
+'		debug.tx(" ")
+'		debug.hex(quat_cd, 8)
+'		debug.tx(10)
+'		debug.tx(13)
+	 
 '	repeat
 '		debug.hex(imu.rx, 2)
 '		debug.tx(" ")

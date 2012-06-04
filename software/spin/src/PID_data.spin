@@ -27,6 +27,7 @@ CON
 	OUTMAX              = 9
 	INAUTO              = 10
 	CONTROLLERDIRECTION = 11
+	SAMPLETIME          = 12
 
 VAR
 'A PID Object Variables (12 longs total):
@@ -37,6 +38,7 @@ VAR
 	long voutMin, voutMax
 	long vinAuto
 	long vcontrollerDirection
+	long vSampleTime
 	
 PUB getBase
 	return @vInput_addr
@@ -58,41 +60,23 @@ PUB getKi
 	return vki
 PUB getKd
 	return vkd
+	
+PUB getSampleTime
+	return vSampleTime
 
-PUB setInput_addr(address)
-	vInput_addr := address
-PUB setOutput_addr(address)
-	vOutput_addr := address
-PUB setSetpoint_addr(address)
-	vSetpoint_addr := address
-PUB setOutmin(value)
-	'Value is a floating point number
-	vOutmin := value
-PUB setOutmax(value)
-	'Value is a floating point number
-	vOutmax := value
+'PUB setInput_addr(address)
+'	vInput_addr := address
+'PUB setOutput_addr(address)
+'	vOutput_addr := address
+'PUB setSetpoint_addr(address)
+'	vSetpoint_addr := address
+'PUB setOutmin(value)
+'	'Value is a floating point number
+'	vOutmin := value
+'PUB setOutmax(value)
+'	'Value is a floating point number
+'	vOutmax := value
 	
-PUB setKp(value)
-	'Value is a floating point number
-	vkp := value
-PUB setKi(value)
-	'Value is a floating point number
-	vki := value
-PUB setKd(value)
-	'Value is a floating point number
-	vkd := value
-	
-PUB setKpid(new_kp, new_ki, new_kd)
-	vkp := new_kp
-	vki := new_ki
-	vkd := new_kd
-
-PUB init
-	vlastInput := long[vInput_addr]
-	vIterm := long[vOutput_addr]
-	
-	vinAuto := 0
-	vcontrollerDirection := 0
 	
 
 

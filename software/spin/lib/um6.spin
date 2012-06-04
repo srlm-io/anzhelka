@@ -1076,39 +1076,39 @@ txcode			res		1
 
 
 
-:state_7_batch_loop		'Run once through for each register to write to hub
-'-------------------------------------------
-Test for the various packet types (Fast(?) version)
-{	Input: 
-		data_count 			- number of added registers
-		data_register[n] 	- register addresses to watch for
-		um6_address 		- received address to search with
-	
-	Output:
-		data_offset			- index of matching address, $FF if not found
-}
-				movs	:state_7_loop, #data_register-1
-				mov		data_offset, data_count	'DEBUG:TO_DO: Make it so that the 8 is changeable...
-												'Selected 8 because too many instructions here will make it unable to
-												'receive the bits (it hangs...)
-												
-				add		data_offset, #1
-				add		:state_7_loop, data_offset	'Set the loop index to the last (based on constant in previous instruction) instruction
-				nop								'Can't modify the next instruction
-					
-:state_7_loop	cmp		um6_address, 0-0 wz		'Test received address and the address in memory. Same?
-	if_nz		sub		:state_7_loop, #1		'If different, decrement to next address
-	if_nz		djnz	data_offset, #:state_7_loop		'If different, decrement index. If there's still more to check, jump
-			
-				'Add this point
-				' data_offset - index+1 of matching address
-	if_z		sub		data_offset, #1					'Because counter is +1 from the actual index (so it works with djnz)
-	if_nz		mov		data_offset, #$FF		'$FF indicates no register match found
-'------------------------------------------
-				
-				'Test to see if we should write this register to the hub
-				cmp		data_offset, #$FF	wz			'Did we find the offset, earlier?
-	if_z		jmp		#:state_7_increment				'If not, then don't upload, and skip to next address
+':state_7_batch_loop		'Run once through for each register to write to hub
+''-------------------------------------------
+'Test for the various packet types (Fast(?) version)
+'{	Input: 
+'		data_count 			- number of added registers
+'		data_register[n] 	- register addresses to watch for
+'		um6_address 		- received address to search with
+'	
+'	Output:
+'		data_offset			- index of matching address, $FF if not found
+'}
+'				movs	:state_7_loop, #data_register-1
+'				mov		data_offset, data_count	'DEBUG:TO_DO: Make it so that the 8 is changeable...
+'												'Selected 8 because too many instructions here will make it unable to
+'												'receive the bits (it hangs...)
+'												
+'				add		data_offset, #1
+'				add		:state_7_loop, data_offset	'Set the loop index to the last (based on constant in previous instruction) instruction
+'				nop								'Can't modify the next instruction
+'					
+':state_7_loop	cmp		um6_address, 0-0 wz		'Test received address and the address in memory. Same?
+'	if_nz		sub		:state_7_loop, #1		'If different, decrement to next address
+'	if_nz		djnz	data_offset, #:state_7_loop		'If different, decrement index. If there's still more to check, jump
+'			
+'				'Add this point
+'				' data_offset - index+1 of matching address
+'	if_z		sub		data_offset, #1					'Because counter is +1 from the actual index (so it works with djnz)
+'	if_nz		mov		data_offset, #$FF		'$FF indicates no register match found
+''------------------------------------------
+'				
+'				'Test to see if we should write this register to the hub
+'				cmp		data_offset, #$FF	wz			'Did we find the offset, earlier?
+'	if_z		jmp		#:state_7_increment				'If not, then don't upload, and skip to next address
 				
 ''------------------------------------------
 ''Save received data register to hub

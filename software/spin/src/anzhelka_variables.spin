@@ -169,7 +169,17 @@ n_d_3		long 0
 			long 0, 0
 n_d_4		long 0
 
+				long 0, 0
+PID_n_1_output	long 0
+				long 0, 0
+PID_n_2_output	long 0
+				long 0, 0
+PID_n_3_output	long 0
+				long 0, 0
+PID_n_4_output	long 0
 
+
+'These are the float values of the output:
 			long 0, 0
 u_1			long 0
 			long 0, 0
@@ -178,6 +188,16 @@ u_2			long 0
 u_3			long 0
 			long 0, 0
 u_4			long 0
+
+'These are the integer values of the PWM output:
+			long 0, 0
+motor_pwm_1	long 0
+			long 0, 0
+motor_pwm_2	long 0
+			long 0, 0
+motor_pwm_3	long 0
+			long 0, 0
+motor_pwm_4	long 0
 
 
 			long 0, 0
@@ -193,6 +213,12 @@ const_2_pi	long 0
 '			long 0, 0
 'n_4			long 0
 
+'***************************************************
+'*********** Predefined Constants ******************
+'***************************************************
+
+motor_slope		long 4.61538
+motor_intercept long 92.3077
 
 
 '***************************************************

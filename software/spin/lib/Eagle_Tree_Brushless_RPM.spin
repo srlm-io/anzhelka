@@ -25,7 +25,7 @@ TODO: in getrpm and getrps precompute 80_000_000 / 6
 Con
   Mhz    = (80+10)                                      ' System clock frequency in Mhz. + init instructions
   
-  MAX_RPS_CHANGE = 60
+  MAX_RPS = 400
    
 VAR
   long  Cog
@@ -87,10 +87,11 @@ PUB getrps(i) | delta, speed
 		return -1
 	
 	speed := (clkfreq / (delta*6))
-'	if (||(speed - previous_speed)) > MAX_RPS_CHANGE
-'		return -1
-'	
-'	previous_speed := speed
+
+	if speed > MAX_RPS
+		return previous_speed
+	
+	previous_speed := speed
 	
 	return speed
 

@@ -73,24 +73,19 @@ OBJ
 '	keypad 	:	"Matrix_Membrane_Keypad.spin"
 	
 
-PUB Main | i, pwmoutput
+PUB Main | i, pwmoutput, loop_time, t1, t2, remaining_time
 
 
 	InitFunctions
+	
+	n_1 := float(0)
+	n_d_1 := float(0)
+	
 
+	fp.InitializePID(PID_n_1.getBase, @n_1, @pid_output, @n_d_1, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
+	fp.SetTunings(PID_n_1.getBase, float(1), float(0), float(0))
 	
-	
-	motordesiredrps[0] := float(0)
-	motorrps[0] := float(0)'fp.FFloat(rpm.getrps(0))
-	PID_n_1.setInput_addr(@n_1) 'Warning: it's @motorrpm[0]
-	PID_n_1.setOutput_addr(@pid_output)
-	PID_n_1.setSetpoint_addr(@n_d_1) 'Warning: it's @motordesiredrps[0]
-	PID_n_1.setOutmin(fp.FSub(float(0), float(300)))
-	PID_n_1.setOutmax(float(300))
-	PID_n_1.setKpid(fp.FDiv(float(1), float(10)), float(0), float(0))
-	PID_n_1.init
-	
-	adc.start(ADC_D_PIN, ADC_C_PIN, ADC_S_PIN, 0)
+'	adc.start(ADC_D_PIN, ADC_C_PIN, ADC_S_PIN, 0)
 	pwm.start
 	rpm.setpins(%0001_0000_0000) 'RPM_PIN
 	rpm.start
@@ -116,21 +111,24 @@ PUB Main | i, pwmoutput
 	i := 90
 	u_1 := float(1200)
 	n_d_1 := fp.FFloat(i)
+	
+	
+	loop_time := clkfreq/50
+'	next_cnt := cnt + loop_time
 	repeat
-'		serial.str(string(10, 13, "pid_output: "))
-'		FPrint(pid_output)
-		repeat 100
-	'		serial.str(string(10, 13, "->ITerm: "))
-	'		FPrint(PID_n_1.getITerm)
-	'		serial.str(string(" $"))
-	'		serial.hex(PID_n_1.getITerm, 8)
-	'		serial.str(string(10, 13, "->LastInput: "))
-	'		FPrint(PID_n_1.getLastInput)
-	'		serial.str(string(10, 13))
-			loop(i)
-			ParseSerial
-			PrintArrayAddr(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
-			waitcnt(clkfreq/50 + cnt)
+	'TODO: Put timing code in here
+		t1 := cnt
+		loop(i)
+		ParseSerial
+'		PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
+		
+		t1 := cnt - t1
+
+		remaining_time := loop_time - t1 - 100_000
+		if remaining_time > 0
+			waitcnt(remaining_time + cnt)
+		else
+			PrintStr(string("Missed Timing Period! ***********************"))
 
 
 PUB loop(i)
@@ -138,12 +136,20 @@ PUB loop(i)
 	
 
 	n_1 := fp.FFloat( 0 #> rpm.getrps(0) <# 250) 'Min < rps < Max
-'	pid_output := fp.FMul(PID_n_1.getKp, fp.FSub(n_d_1, n_1))
 
-	fp.FPID(PID_n_1.getBase)
+	fp.FPID(PID_n_1.getBase)	
+
+'	Follows this equation:
+	'rpm = (max_rpm - y_intercept)/(pwm@max_rpm) * pwm + y_intercept
+	
+
+	u_1 := fp.FMul(slope, n_d_1)
+	u_1 := fp.FSub(u_1, intercept)
+	u_1 := fp.FAdd(u_1, float(1000))
 	u_1 := fp.FAdd(u_1, pid_output)
 	u_1 := fp.FLimitMin(u_1, float(1000))
 	u_1 := fp.FLimitMax(u_1, float(1600))
+
 
 	pwm.servo(ESC_PIN, fp.FTrunc(u_1))
 
@@ -155,7 +161,10 @@ PUB readForce | thrust, torque
 	motorthrust[0] := thrust
 	motortorque[0] := torque
 
+DAT
 
+slope long 4.61538
+intercept long 92.3077
 
 	
 {{

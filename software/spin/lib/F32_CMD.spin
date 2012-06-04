@@ -158,52 +158,8 @@ PUB FInterpret(a)
   while f32_Cmd
 
 
-CON
-'	SampleTime = 1000
-	
-	'Enabled
-	MANUAL = 0
-	AUTOMATIC = 1
-	
-	'Direction
-	DIRECT = 0
-	REVERSE = 1
-VAR
-	long SampleTime
-'A PID Object Variables (12 longs total):
-'	long Input_addr, Output_addr, Setpoint_addr
-'	long ITerm, lastInput
-'	long kp, ki, kd
-'	long outMin, outMax
-'	long inAuto
-'	long controllerDirection
-'	
-''Local Copies of values
-'	long Input, Output, Setpoint
-'	
-'	long address 'Where to store all the variables after the PID loop executes	
-
-PUB InitPID
-	SampleTime := 1000
-
-'PUB CopyToLocal(new_address)
-'	'Copies into the fp (local) scope
-'	address := new_address
-'	longmove(@Input_addr, address, 12)
-'	
-'	Input := long[Input_addr]
-'	Output := long[Output_addr]
-'	Setpoint := long[Setpoint_addr]
-
-'PUB CopyToAddress
-'	longmove(address, @Input_addr, 12)
-'	
-'	long[Input_addr] := Input
-'	long[Output_addr] := Output
-'	long[Setpoint_addr] := Setpoint
-'PUB GetOutput
-'	return Output	
-
+OBJ
+	pid_data : "PID_data.spin" 'Used in F32_CMD only for it's constants
 PUB FPID(a)
 	return Compute(a)
 PUB Compute(a) | error, dInput
@@ -213,82 +169,58 @@ PUB Compute(a) | error, dInput
 	repeat
 	while f32_Cmd
 	
-'	return
-'	
-'	CopyToLocal(a)
+PUB SetTunings(base, new_kp, new_ki, new_kd) | SampleTimeInSec
+'Call this after SetTunings 
+'If a k parameter is negative, it is ignore. So, the call
+'	SetTunings(base, 32, -1, -1)
+'Will just set the kp parameter, and ignore the others.
+ 
 
-'''	if inAuto == MANUAL
-'''		return
-''	'TODO test for time change, and whether it's time to compute the PID loop
-''	
-''	
-'	'Compute all the working error variables
-'	error := FSub(Setpoint, Input)
-'	ITerm := FAdd(ITerm, FMul(ki, error))
-'	ITerm := FLimitMax(ITerm, outMax)
-'	ITerm := FLimitMin(ITerm, outMin)
-'	dInput := FSub(Input, lastInput)
-'	
-'	'Compute PID Output
-'	Output := FMul(kp, error)
-'	Output := FAdd(Output, Iterm)
-'	Output := FSub(Output, FMul(kd, dInput))
-'	Output := FLimitMax(Output, outMax)
-'	Output := FLimitMin(Output, outMin)
-'	
-'	'Remember some variables for next time
-'	lastInput := Input
-''	lastTime := now
-
-'	CopyToAddress
-'	return Output
+'TODO: Set reversability	
 	
-'PUB SetTunings(new_kp, new_ki, new_kd) | SampleTimeInSec
-'	'TODO: Bounds checkin on new_*
-'	
-'	SampleTimeInSec := FDiv(FFloat(SampleTime), float(1000))
-'	kp := new_kp
-'	ki := FMul(new_ki, SampleTimeInSec)
-'	kd := FDiv(new_kd, SampleTimeInSec)
-'	
+	if new_kp <> NaN and FCmp(new_kp, float(0)) <> -1
+		long[base][pid_data#KP] := new_kp
+	if new_ki <> NaN and FCmp(new_ki, float(0)) <> -1
+		long[base][pid_data#KI] := FMul(new_ki, long[base][pid_data#SAMPLETIME])
+	if new_kd <> NaN and FCmp(new_kd, float(0)) <> -1
+		long[base][pid_data#KD] := FDiv(new_kd, long[base][pid_data#SAMPLETIME])
+	
+	
+	
+	
+	
 '	if controllerDirection == REVERSE
 '		kp := FNeg(kp)
 '		ki := FNeg(ki)
 '		kd := FNeg(kd)
-'	
-'PUB SetSampleTime(NewSampleTime) | ratio
-'	if NewSampleTime > 0
-'		ratio := FDiv(FFloat(NewSampleTime), FFloat(SampleTime))
-'		ki := FMul(ki, ratio)
-'		kd := FDiv(kd, ratio)
-'		
-'		SampleTime := NewSampleTime
 
-'PUB SetOutputLimits(minimum, maximum)
-'	if FCmp(minimum, maximum) == 1
-'		return 'Error, minimum cannot be more than maximum
-'		
-'	outMin := minimum
-'	outMax := maximum
-'	
-'	FLimitMax(Output, outMax)
-'	FLimitMin(Output, outMin)
-'	
-'	FLimitMax(ITerm, outMax)
-'	FLimitMin(ITerm, outMin)
-'	
-'PUB SetMode(newMode) | newAuto
-'	'TODO Finish this function...
-'	repeat 1
-'	
-'PUB Initialize
-'	lastInput := Input
-'	ITerm := Output
-'	FLimitMax(ITerm, outMax)
-'	FLimitMin(ITerm, outMin)
-'	
-'PUB SetControllerDirection(new_direction)
-'	controllerDirection := new_direction
+PUB InitializePID(base, input_addr, output_addr, setpoint_addr, outMin, outMax, sampleTime) | ITerm
+'Call this before SetTunings
+'
+'Warning! Must have a non-zero sample time!
+'
+
+	long[base][pid_data#INPUT_ADDR]    := input_addr
+	long[base][pid_data#OUTPUT_ADDR]   := output_addr
+	long[base][pid_data#SETPOINT_ADDR] := setpoint_addr
+	
+	long[base][pid_data#OUTMIN] := outMin
+	long[base][pid_data#OUTMAX] := outMax
+	
+	long[base][pid_data#LASTINPUT] := long[ input_addr ]
+	
+	ITerm := long[ output_addr ]
+	FLimitMax(ITerm, outMax)
+	FLimitMin(ITerm, outMin)
+	long[base][pid_data#ITERM] := ITerm
+	
+	if FCmp(sampleTime, float(0)) == 1 'If it's a positive, non-zero sample time
+		long[base][pid_data#SAMPLETIME] := sampleTime
+	else
+		'Do something to compensate! TODO: make it more obvious...
+		long[base][pid_data#OUTMIN] := float(0)
+		long[base][pid_data#OUTMAX] := float(0)
+		long[base][pid_data#SAMPLETIME] := float(1)
 
 PUB getNaN
 	return NaN	

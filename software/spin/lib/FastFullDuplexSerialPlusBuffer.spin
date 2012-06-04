@@ -97,7 +97,8 @@ PUB rx : rxbyte
 '' Receive byte (may wait for byte)
 '' returns $00..$FF
 
-  repeat while (rxbyte := rxcheck) < 0
+  repeat
+  while (rxbyte := rxcheck) < 0
 
 PUB rxpeek : rxbyte
 '' Receives byte without removing from buffer (may wait for byte
@@ -112,12 +113,13 @@ PUB tx(txbyte)
 
 '' Send byte (may wait for room in buffer)
 
-  repeat until (tx_tail <> (tx_head + 1) & buff_mask)
+  repeat
+  until (tx_tail <> (tx_head + 1) & buff_mask)
   tx_buffer[tx_head] := txbyte
   tx_head := (tx_head + 1) & buff_mask
 
-  if rxtx_mode & %1000
-    rx
+'  if rxtx_mode & %1000 'TODO: Make note that this is removed
+'    rx
 
 
 PUB str(stringptr)
@@ -232,12 +234,13 @@ PUB StrToBin(stringptr) : value | char, index
      value := - value
 
 PUB txblock(ptr, num) | num1
+'Call this method (not txchunk)
   repeat while num > 0
     num1 := txchunk(ptr, num)
     num -= num1
     ptr += num1
 
-PUB txchunk(ptr, num) | num1, num2, wrapnum
+PRI txchunk(ptr, num) | num1, num2, wrapnum
   ifnot (num1 := (tx_tail - tx_head - 1) & buff_mask)
     return
   wrapnum := buff_mask + 1 - tx_head
