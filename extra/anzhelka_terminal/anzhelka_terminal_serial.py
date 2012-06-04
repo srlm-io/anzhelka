@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-
+#TODO Find out why there is a 1 being sent through serial
 
 
 from threading import Thread
@@ -110,18 +110,18 @@ def receiving(ser):
 def sending(ser, command):
 	global rx_buffer
 	global threadkillall
-	whatwas = 1
+	#whatwas = 1
 
 	#sersend.open()
-	print ser.isOpen()
-	print ser.portstr
+	#print ser.isOpen()
+	#print ser.portstr
 	
 	ser.write(command)
-	whatwas=2
-	ser.write("hello")
-	whatwas=3
+	#whatwas=2
+	#ser.write("hello")
+	#whatwas=3
 	time.sleep(.01)
-	print whatwas
+	#print whatwas
 
 
 class DataGen(object):
@@ -130,7 +130,7 @@ class DataGen(object):
 			if platform.system() == 'Windows':
 				global ser
 				ser = serial.Serial(
-					port = 'COM11',
+					port = 'COM25',
 					baudrate=115200,
 #					bytesize=serial.EIGHTBITS,
 #					parity=serial.PARITY_NONE,

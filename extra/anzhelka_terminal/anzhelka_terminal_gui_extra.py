@@ -34,19 +34,32 @@ motor_num = 4
 motor_settings = ["Motor", "NIM", "DRPM", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
 motor_adjustments = {}
 # Layout          NAME     MIN, MAX, 10^, STR Front,  STR Back
-motor_adjustments["MKP 1"] = [0, 10, 3, '$ACSDR MKP,', ',*,*,*']
-motor_adjustments["MKP 2"] = [0, 10, 3, '$ACSDR MKP,*,', ',*,*']
-motor_adjustments["MKP 3"] = [0, 10, 3, '$ACSDR MKP,*,*,', ',*']
-motor_adjustments["MKP 4"] = [0, 10, 3, '$ACSDR MKP,*,*,*,', '']
-motor_adjustments["MKI 1"] = [0, 10, 3, '$ACSDR MKI,', ',*,*,*']
-motor_adjustments["MKI 2"] = [0, 10, 3, '$ACSDR MKI,*,', ',*,*']
-motor_adjustments["MKI 3"] = [0, 10, 3, '$ACSDR MKI,*,*,', ',*']
-motor_adjustments["MKI 4"] = [0, 10, 3, '$ACSDR MKI,*,*,*,', '']
-motor_adjustments["MKD 1"] = [0, 10, 3, '$ACSDR MKD,', ',*,*,*']
-motor_adjustments["MKD 2"] = [0, 10, 3, '$ACSDR MKD,*,', ',*,*']
-motor_adjustments["MKD 3"] = [0, 10, 3, '$ACSDR MKD,*,*,', ',*']
-motor_adjustments["MKD 4"] = [0, 10, 3, '$ACSDR MKD,*,*,*,', '']
-motor_adjustments["NID 1"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*']
+motor_adjustments["MKP 1"] = [0, 10, 3, '$ACSDR MKP,', ',*,*,*', "$ADMKP", 0]
+motor_adjustments["MKP 2"] = [0, 10, 3, '$ACSDR MKP,*,', ',*,*', "$ADMKP", 1]
+motor_adjustments["MKP 3"] = [0, 10, 3, '$ACSDR MKP,*,*,', ',*', "$ADMKP", 2]
+motor_adjustments["MKP 4"] = [0, 10, 3, '$ACSDR MKP,*,*,*,', '', "$ADMKP", 3]
+motor_adjustments["MKI 1"] = [0, 30, 3, '$ACSDR MKI,', ',*,*,*', "$ADMKI", 0]
+motor_adjustments["MKI 2"] = [0, 30, 3, '$ACSDR MKI,*,', ',*,*', "$ADMKI", 1]
+motor_adjustments["MKI 3"] = [0, 30, 3, '$ACSDR MKI,*,*,', ',*', "$ADMKI", 2]
+motor_adjustments["MKI 4"] = [0, 30, 3, '$ACSDR MKI,*,*,*,', '', "$ADMKI", 3]
+motor_adjustments["MKD 1"] = [0, 30, 3, '$ACSDR MKD,', ',*,*,*', "$ADMKD", 0]
+motor_adjustments["MKD 2"] = [0, 30, 3, '$ACSDR MKD,*,', ',*,*', "$ADMKD", 1]
+motor_adjustments["MKD 3"] = [0, 30, 3, '$ACSDR MKD,*,*,', ',*', "$ADMKD", 2]
+motor_adjustments["MKD 4"] = [0, 30, 3, '$ACSDR MKD,*,*,*,', '', "$ADMKD", 3]
+motor_adjustments["NID 1"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 0]
+motor_adjustments["NID 2"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 1]
+motor_adjustments["NID 3"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 2]
+motor_adjustments["NID 4"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 3]
+motor_adjustments["FZZ 1"] = [0, 200, 3, '$ACSDR FZZ,', ',*,*,*', "$ADFZZ", 0]
+motor_adjustments["MOM 1"] = [0, 200, 3, '$ACSDR MOM,', ',*,*,*', "$ADMOM", 0]
+motor_adjustments["MOM 2"] = [0, 200, 3, '$ACSDR MOM,*,', ',*,*', "$ADMOM", 1]
+motor_adjustments["MOM 3"] = [0, 200, 3, '$ACSDR MOM,*,*,', ',*', "$ADMOM", 2]
+motor_adjustments["MOM 4"] = [0, 200, 3, '$ACSDR MOM,*,*,*,', '', "$ADMOM", 3]
+motor_adjustments["NIM 1"] = [0, 200, 3, '$ACSDR NIM,', ',*,*,*', "$ADNIM", 0]
+motor_adjustments["NIM 2"] = [0, 200, 3, '$ACSDR NIM,*,', ',*,*', "$ADNIM", 1]
+motor_adjustments["NIM 3"] = [0, 200, 3, '$ACSDR NIM,*,*,', ',*', "$ADNIM", 2]
+motor_adjustments["NIM 4"] = [0, 200, 3, '$ACSDR NIM,*,*,*,', '', "$ADNIM", 3]
+
 
 class BoundControlBox(wx.Panel):
 	""" A static box with a couple of radio buttons and a text
@@ -98,6 +111,83 @@ class BoundControlBox(wx.Panel):
 		return self.value
 
 
+class GraphBox(wx.Panel):
+	def __init__(self, parent, id):
+		wx.Panel.__init__(self, parent, -1)
+
+		topSizer = wx.BoxSizer(wx.VERTICAL)
+		
+		sizer = wx.GridBagSizer(hgap=3, vgap=3)
+
+		self.outputstring = ''
+
+		self.dropbox = wx.ComboBox(self, -1, choices=list(sorted(motor_adjustments.keys())), style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT | wx.TE_PROCESS_ENTER)
+		self.sliderbox = wx.Slider(self, -1, 1, 500, 2000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_LABELS)
+		self.sliderbox.SetTickFreq(200, 1)
+		self.sliderboxval = self.sliderbox.GetValue()
+		self.button1 = wx.Button(self, 1, 'Update')
+		self.button2 = wx.Button(self, 2, 'Box2Slider')
+		self.display.SetValue(str(self.sliderboxval))
+		
+		sizer.Add(self.dropbox, pos=(0,0), span=(1,3), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.display, pos=(1,0), span=(1,3), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.sliderbox, pos=(2,0), span=(1,3), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.button1, pos=(3,0), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		sizer.Add(self.button2, pos=(3,2), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		
+		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
+		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
+		self.Bind(wx.EVT_TEXT, self.sliderBoxAuto)
+		self.Bind(wx.EVT_SLIDER, self.sliderUpdate)
+		self.Bind(wx.EVT_COMBOBOX, self.comboSelection)
+		self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
+		
+		topSizer.Add(sizer, 0, wx.ALL|wx.EXPAND, 5)
+
+		self.SetSizer(topSizer)
+
+		topSizer.Fit(self)
+
+	def setOutputString(self, value):
+		self.outputstring = value
+
+	def OnEnter(self, event):
+		self.displaynum = self.display.GetValue()
+		global userselectedxwidth
+		userselectedxwidth = self.displaynum	
+
+	def OnUpdate(self, event):
+		self.displaynum = self.display.GetValue()
+		global userselectedxwidth
+		userselectedxwidth = self.displaynum
+
+	def OnBox2Slider(self, event):
+		self.sliderboxval = self.display.GetValue()
+		self.sliderbox.SetValue(float(self.sliderboxval))
+
+	def sliderUpdate(self, event):
+		self.pos = self.sliderbox.GetValue()
+		self.display.SetValue(str(float(self.pos)))
+		global userselectedxwidth
+		userselectedxwidth = self.pos
+
+	def sliderBoxAuto(self, event):
+		self.thiskey = self.dropbox.GetValue()
+		self.sliderboxval = self.display.GetValue()
+		self.sliderbox.SetValue(int(float(self.sliderboxval)))
+
+	def comboSelection(self, event):
+		self.thiskey = self.dropbox.GetValue()
+		self.name = motor_adjustments[self.thiskey][5]
+		self.num = motor_adjustments[self.thiskey][6]
+		global vartobegraphed
+		vartobegraphed = self.name
+		global graphedarraynum
+		graphedarraynum = self.num
+		print "Var being graphed: ", vartobegraphed,"[",graphedarraynum,"]"
+
+
 class RPMGraph(wx.Panel):
 #	""" The main frame of the application
 #	"""
@@ -113,6 +203,10 @@ class RPMGraph(wx.Panel):
 		self.data = []
 		paused = False
 		
+		#TODO Better name needed
+		global userselectedxwidth
+		userselectedxwidth = 500
+
 		
 #		self.create_menu()
 #		self.create_status_bar()
@@ -145,6 +239,7 @@ class RPMGraph(wx.Panel):
 		self.xmax_control = BoundControlBox(self, -1, "X max", 50)
 		self.ymin_control = BoundControlBox(self, -1, "Y min", 0)
 		self.ymax_control = BoundControlBox(self, -1, "Y max", 100)
+		self.grid_control = GraphBox(self, -1)
 
 
 		self.pause_button = wx.Button(self, -1, "Pause")
@@ -177,6 +272,8 @@ class RPMGraph(wx.Panel):
 		self.hbox2.AddSpacer(24)
 		self.hbox2.Add(self.ymin_control, border=5, flag=wx.ALL)
 		self.hbox2.Add(self.ymax_control, border=5, flag=wx.ALL)
+		self.hbox2.AddSpacer(24)
+		self.hbox2.Add(self.grid_control, border=5, flag=wx.ALL)
 
 		self.vbox = wx.BoxSizer(wx.VERTICAL)
 		self.vbox.Add(self.canvas, 1, flag=wx.LEFT | wx.TOP | wx.GROW)		
@@ -227,7 +324,7 @@ class RPMGraph(wx.Panel):
 			xmax = int(self.xmax_control.manual_value())
 			
 		if self.xmin_control.is_auto():			
-			xmin = xmax - 500 #TODO: Make this a slider option
+			xmin = xmax - userselectedxwidth #TODO: Make this a slider option
 		else:
 			xmin = int(self.xmin_control.manual_value())
 
@@ -337,6 +434,11 @@ class RPMGraph(wx.Panel):
 		global serial_parse_ADRPS
 		
 		rxparser = RxParser()
+		tobegraphed = []
+		global vartobegraphed
+		vartobegraphed = "$ADNIM"
+		global graphedarraynum
+		graphedarraynum = 0
 		
 		if not paused:
 			if not rx_buffer_lock.acquire(False):
@@ -351,10 +453,10 @@ class RPMGraph(wx.Panel):
 #						print "len(rx_buffer) == ", len(rx_buffer)		
 #						print "Reading last i == ", i
 #						i += 1
-						motor_rps = rxparser.match(rx_buffer[self.rx_last_read], "$ADNIM")
+						tobegraphed = rxparser.match(rx_buffer[self.rx_last_read], vartobegraphed)
 						self.rx_last_read += 1
-						if len(motor_rps) != 0:
-							self.data.append(float(motor_rps[0])) #Get first motor RPS...
+						if len(tobegraphed) != 0:
+							self.data.append(float(tobegraphed[graphedarraynum])) #Get first motor RPS...
 
 				finally:
 					rx_buffer_lock.release()
@@ -425,8 +527,10 @@ class AdjustmentTableSizer(wx.Panel):
 
 
 	def OnUpdate(self, event):
-		self.sliderboxval = self.sliderbox.GetValue()
-		self.display.SetValue(str(self.sliderboxval))
+		self.box0.OnUpdate(self)
+		self.box1.OnUpdate(self)
+		self.box2.OnUpdate(self)
+		self.box3.OnUpdate(self)
 
 	def OnBox2Slider(self, event):
 		self.sliderboxval = self.display.GetValue()
@@ -444,8 +548,8 @@ class AdjustmentTable(wx.Panel):
 
 		self.outputstring = ''
 
-		self.dropbox = wx.ComboBox(self, -1, choices=list(motor_adjustments.keys()), style=wx.CB_DROPDOWN|wx.CB_SORT)
-		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
+		self.dropbox = wx.ComboBox(self, -1, choices=list(sorted(motor_adjustments.keys())), style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT | wx.TE_PROCESS_ENTER)
 		self.display1 = wx.TextCtrl(self, -1, style=wx.TE_LEFT)
 		self.display2 = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
 		self.sliderbox = wx.Slider(self, -1, 1, 20, 10000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_TOP)
@@ -468,6 +572,7 @@ class AdjustmentTable(wx.Panel):
 		self.Bind(wx.EVT_TEXT, self.sliderBoxAuto)
 		self.Bind(wx.EVT_SLIDER, self.sliderUpdate)
 		self.Bind(wx.EVT_COMBOBOX, self.comboSelection)
+		self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
 		
 		topSizer.Add(sizer, 0, wx.ALL|wx.EXPAND, 5)
 
@@ -477,6 +582,11 @@ class AdjustmentTable(wx.Panel):
 
 	def setOutputString(self, value):
 		self.outputstring = value
+
+	def OnEnter(self, event):
+		self.displaynum = self.display.GetValue()
+		self.outputstring = (motor_adjustments[self.thiskey])[3] + self.displaynum + (motor_adjustments[self.thiskey])[4]
+		sending(ser, self.outputstring)
 
 	def OnUpdate(self, event):
 		self.displaynum = self.display.GetValue()
