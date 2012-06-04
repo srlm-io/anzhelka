@@ -60,6 +60,10 @@ motor_adjustments["NIM 2"] = [0, 200, 3, '$ACSDR NIM,*,', ',*,*', "$ADNIM", 1]
 motor_adjustments["NIM 3"] = [0, 200, 3, '$ACSDR NIM,*,*,', ',*', "$ADNIM", 2]
 motor_adjustments["NIM 4"] = [0, 200, 3, '$ACSDR NIM,*,*,*,', '', "$ADNIM", 3]
 
+global vartobegraphed
+vartobegraphed = "$ADNIM"
+global graphedarraynum
+graphedarraynum = 0
 
 class BoundControlBox(wx.Panel):
 	""" A static box with a couple of radio buttons and a text
@@ -182,9 +186,9 @@ class GraphBox(wx.Panel):
 		self.name = motor_adjustments[self.thiskey][5]
 		self.num = motor_adjustments[self.thiskey][6]
 		global vartobegraphed
-		vartobegraphed = self.name
+		vartobegraphed = str(self.name)
 		global graphedarraynum
-		graphedarraynum = self.num
+		graphedarraynum = int(self.num)
 		print "Var being graphed: ", vartobegraphed,"[",graphedarraynum,"]"
 
 
@@ -305,6 +309,11 @@ class RPMGraph(wx.Panel):
 			linewidth=1,
 			color=(1, 1, 0),
 			)[0]
+		#self.plot_data2 = self.axes2.plot(
+		#	self.data2, 
+		#	linewidth=1,
+		#	color=(1, 1, 0),
+		#	)[0]
 
 	def draw_plot(self):
 		""" Redraws the plot
@@ -435,10 +444,6 @@ class RPMGraph(wx.Panel):
 		
 		rxparser = RxParser()
 		tobegraphed = []
-		global vartobegraphed
-		vartobegraphed = "$ADNIM"
-		global graphedarraynum
-		graphedarraynum = 0
 		
 		if not paused:
 			if not rx_buffer_lock.acquire(False):
@@ -456,7 +461,7 @@ class RPMGraph(wx.Panel):
 						tobegraphed = rxparser.match(rx_buffer[self.rx_last_read], vartobegraphed)
 						self.rx_last_read += 1
 						if len(tobegraphed) != 0:
-							self.data.append(float(tobegraphed[graphedarraynum])) #Get first motor RPS...
+							self.data.append(float(tobegraphed[int(graphedarraynum)])) #Get first motor RPS...
 
 				finally:
 					rx_buffer_lock.release()
@@ -682,7 +687,7 @@ class MotorTable(wx.Panel):
 		
 	def update_field(self, code, enum_field):
 		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
-		print "Matchlist: ", matchlist
+		#print "Matchlist: ", matchlist
 		for i in range(len(matchlist)): # != 0:
 			self.motor_table[i+1][reverseenum(enum_field, motor_settings)].SetValue(str(matchlist[i]))
 			

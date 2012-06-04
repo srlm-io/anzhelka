@@ -113,15 +113,15 @@ def sending(ser, command):
 	#whatwas = 1
 
 	#sersend.open()
-	#print ser.isOpen()
-	#print ser.portstr
+	print ser.isOpen()
+	print ser.portstr
 	
 	ser.write(command)
-	#whatwas=2
+	whatwas=2
 	#ser.write("hello")
-	#whatwas=3
+	whatwas=3
 	time.sleep(.01)
-	#print whatwas
+	print whatwas
 
 
 class DataGen(object):
@@ -130,7 +130,7 @@ class DataGen(object):
 			if platform.system() == 'Windows':
 				global ser
 				ser = serial.Serial(
-					port = 'COM25',
+					port = 'COM11',
 					baudrate=115200,
 #					bytesize=serial.EIGHTBITS,
 #					parity=serial.PARITY_NONE,
