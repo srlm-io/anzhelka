@@ -130,7 +130,7 @@ class DataGen(object):
 			if platform.system() == 'Windows':
 				global ser
 				ser = serial.Serial(
-					port = 'COM11',
+					port = 'COM24',
 					baudrate=115200,
 #					bytesize=serial.EIGHTBITS,
 #					parity=serial.PARITY_NONE,
