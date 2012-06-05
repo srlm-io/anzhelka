@@ -20,13 +20,16 @@ thread = Thread()
 
 
 class RxParser(object):
-	def match(self, line, code):
+	def  match(self, line, code):
 		# Line is the received line from the rx_buffer
 		# code is the string type that you want to match against, eg "$ADRPS" or "$ADMIA"
 		original_line = line
 		if line.find(code) != -1: #String matches
 			line = line[len(code)+2:] #Get rid of found string. +2 to account for space and to get to next char
 			nums = line.split(",")
+			if len(nums) > 5:
+                                print "Bad datal. Too many fields."
+                                return []
 			try:
 				for i in range(len(nums)):
 					if i != 0: #Get rid of clock (for now, debug)
@@ -115,8 +118,9 @@ def sending(ser, command):
 	#sersend.open()
 	print ser.isOpen()
 	print ser.portstr
+	print str(command) + "\n"
 	
-	ser.write(command)
+	ser.write(str(command)+ "\n")
 	whatwas=2
 	#ser.write("hello")
 	whatwas=3
@@ -157,9 +161,9 @@ class DataGen(object):
 		except serial.serialutil.SerialException:
 			#no serial connection
 			ser = None
+			print "NO Serial Connection! Check Serial Port! Closing."
 		else:
-			command = 1
-			thread2 = threading.Thread(target=sending, args=(ser,command,)).start()
+			thread2 = threading.Thread(target=sending, args=(ser,'',)).start()
 			thread = threading.Thread(target=receiving, args=(ser,)).start()
 			
 		

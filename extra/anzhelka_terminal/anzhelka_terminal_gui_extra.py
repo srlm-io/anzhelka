@@ -47,9 +47,9 @@ motor_adjustments["MKD 2"] = [0, 30, 3, '$ACSDR MKD,*,', ',*,*', "$ADMKD", 1]
 motor_adjustments["MKD 3"] = [0, 30, 3, '$ACSDR MKD,*,*,', ',*', "$ADMKD", 2]
 motor_adjustments["MKD 4"] = [0, 30, 3, '$ACSDR MKD,*,*,*,', '', "$ADMKD", 3]
 motor_adjustments["NID 1"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 0]
-motor_adjustments["NID 2"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 1]
-motor_adjustments["NID 3"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 2]
-motor_adjustments["NID 4"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 3]
+motor_adjustments["NID 2"] = [0, 160, 3, '$ACSDR NID,*,', ',*,*', "$ADNID", 1]
+motor_adjustments["NID 3"] = [0, 160, 3, '$ACSDR NID,*,*,', ',*', "$ADNID", 2]
+motor_adjustments["NID 4"] = [0, 160, 3, '$ACSDR NID,*,*,*,', '', "$ADNID", 3]
 motor_adjustments["FZZ 1"] = [0, 200, 3, '$ACSDR FZZ,', '', "$ADFZZ", 0]
 motor_adjustments["MOM 1"] = [0, 200, 3, '$ACSDR MOM,', ',*,*', "$ADMOM", 0]
 motor_adjustments["MOM 2"] = [0, 200, 3, '$ACSDR MOM,*,', ',*', "$ADMOM", 1]
@@ -58,12 +58,12 @@ motor_adjustments["NIM 1"] = [0, 200, 3, '$ACSDR NIM,', ',*,*,*', "$ADNIM", 0]
 motor_adjustments["NIM 2"] = [0, 200, 3, '$ACSDR NIM,*,', ',*,*', "$ADNIM", 1]
 motor_adjustments["NIM 3"] = [0, 200, 3, '$ACSDR NIM,*,*,', ',*', "$ADNIM", 2]
 motor_adjustments["NIM 4"] = [0, 200, 3, '$ACSDR NIM,*,*,*,', '', "$ADNIM", 3]
-motor_adjustments["PWM 1"] = [1000, 2000, 1, 'ACSDR PWM,', ',*,*,*', "$ADPWM", 0]
-motor_adjustments["PWM 2"] = [1000, 2000, 1, 'ACSDR PWM,*,', ',*,*', "$ADPWM", 0]
-motor_adjustments["PWM 3"] = [1000, 2000, 1, 'ACSDR PWM,*,*,', ',*', "$ADPWM", 0]
-motor_adjustments["PWM 4"] = [1000, 2000, 1, 'ACSDR PWM,*,*,*,', '', "$ADPWM", 0]
-motor_adjustments["MPP 1"] = [0, 1, 4,   'ACSDR MPP,', ',*', "ADMPP", 0]
-motor_adjustments["MPP 2"] = [0, 500, 3, 'ACSDR MPP,*,', '', "ADMPP", 1]
+motor_adjustments["PWM 1"] = [1000, 2000, 1, '$ACSDR PWM,', ',*,*,*', "$ADPWM", 0]
+motor_adjustments["PWM 2"] = [1000, 2000, 1, '$ACSDR PWM,*,', ',*,*', "$ADPWM", 0]
+motor_adjustments["PWM 3"] = [1000, 2000, 1, '$ACSDR PWM,*,*,', ',*', "$ADPWM", 0]
+motor_adjustments["PWM 4"] = [1000, 2000, 1, '$ACSDR PWM,*,*,*,', '', "$ADPWM", 0]
+motor_adjustments["MPP 1"] = [0, 1, 4,   '$ACSDR MPP,', ',*', "$ADMPP", 0]
+motor_adjustments["MPP 2"] = [0, 500, 3, '$ACSDR MPP,*,', '', "$ADMPP", 1]
 
 global vartobegraphed
 global vartobegraphed2
@@ -447,7 +447,7 @@ class RPMGraph(wx.Panel):
 		
 #		temp = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-		print "self.data: ", self.data[len(self.data)-1]	
+		#print "self.data: ", self.data[len(self.data)-1]	
 		
 		#self.plot_data.set_xdata(np.arange(len(self.data2)))
 		#self.plot_data.set_ydata(np.array(self.data2))
@@ -625,16 +625,11 @@ class AdjustmentTableSizer(wx.Panel):
 		self.box3.OnUpdate(self)
 
 	def OnBox2Slider(self, event):
-		self.outputstring = "$ACSDR PWM,1000,1000,1000,1000"
-		print self.outputstring
-		sending(ser, self.outputstring)
-		self.outputstring = "$ACSDR NID,0,0,0,0"
-		print self.outputstring
-		sending(ser, self.outputstring)
-		self.outputstring = "$ACSDR MOM,0,0,0"
-		print self.outputstring
-		sending(ser, self.outputstring)
-		self.outputstring = "$ACSDR FZZ,0"
+		self.outputstring = """$ACSDR PWM,1000,1000,1000,1000
+                                    $ACSDR NID,0,0,0,0
+                                    $ACSDR MOM,0,0,0
+                                    $ACSDR FZZ,0
+                                    """
 		print self.outputstring
 		sending(ser, self.outputstring)
 
@@ -784,7 +779,7 @@ class MotorTable(wx.Panel):
 		
 	def update_field(self, code, enum_field):
 		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
-		#print "Matchlist: ", matchlist
+		print "Matchlist: ", matchlist
 		for i in range(len(matchlist)): # != 0:
 			self.motor_table[i+1][reverseenum(enum_field, motor_settings)].SetValue(str(matchlist[i]))
 			
