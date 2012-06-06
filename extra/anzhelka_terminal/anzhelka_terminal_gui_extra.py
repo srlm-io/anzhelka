@@ -19,6 +19,7 @@
 import wx
 import matplotlib
 matplotlib.use('WXAgg')
+import math
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import \
 	FigureCanvasWxAgg as FigCanvas, \
@@ -31,7 +32,9 @@ REFRESH_INTERVAL_MS = 50
 paused = False
 
 motor_num = 4
+angle_num = 4
 motor_settings = ["Motor", "NIM", "DRPS", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
+angle_settings = ["Number", "QDI", "QII", "QEI", "Identity","EDI", "EII", "EEI"]
 
 adjustment0 = "PWM 1"
 adjustment1 = "PWM 2"
@@ -50,40 +53,49 @@ motor_selection = ["MKP 1", "MKP 2", "MKP 3", "MKP 4", \
                    "FZZ 1", \
                    "MOM 1", "MOM 2", "MOM 3", "MOM 4", \
                    "PWM 1", "PWM 2", "PWM 3", "PWM 4", \
-                   "MPP 1", "MPP 2"]
+                   "MPP 1", "MPP 2", \
+                   "QDI 1", "QDI 2", "QDI 3", "QDI 4"]
                    
 motor_adjustments = {}
-# Layout          NAME     MIN, MAX, 10^, STR Front, STR Back, Matchlist Name, Array Num
-motor_adjustments["MKP 1"] = [0, 10, 3, '$ACSDR MKP,', ',*,*,*', "$ADMKP", 0]
-motor_adjustments["MKP 2"] = [0, 10, 3, '$ACSDR MKP,*,', ',*,*', "$ADMKP", 1]
-motor_adjustments["MKP 3"] = [0, 10, 3, '$ACSDR MKP,*,*,', ',*', "$ADMKP", 2]
-motor_adjustments["MKP 4"] = [0, 10, 3, '$ACSDR MKP,*,*,*,', '', "$ADMKP", 3]
-motor_adjustments["MKI 1"] = [0, 30, 3, '$ACSDR MKI,', ',*,*,*', "$ADMKI", 0]
-motor_adjustments["MKI 2"] = [0, 30, 3, '$ACSDR MKI,*,', ',*,*', "$ADMKI", 1]
-motor_adjustments["MKI 3"] = [0, 30, 3, '$ACSDR MKI,*,*,', ',*', "$ADMKI", 2]
-motor_adjustments["MKI 4"] = [0, 30, 3, '$ACSDR MKI,*,*,*,', '', "$ADMKI", 3]
-motor_adjustments["MKD 1"] = [0, 30, 3, '$ACSDR MKD,', ',*,*,*', "$ADMKD", 0]
-motor_adjustments["MKD 2"] = [0, 30, 3, '$ACSDR MKD,*,', ',*,*', "$ADMKD", 1]
-motor_adjustments["MKD 3"] = [0, 30, 3, '$ACSDR MKD,*,*,', ',*', "$ADMKD", 2]
-motor_adjustments["MKD 4"] = [0, 30, 3, '$ACSDR MKD,*,*,*,', '', "$ADMKD", 3]
-motor_adjustments["NID 1"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 0]
-motor_adjustments["NID 2"] = [0, 160, 3, '$ACSDR NID,*,', ',*,*', "$ADNID", 1]
-motor_adjustments["NID 3"] = [0, 160, 3, '$ACSDR NID,*,*,', ',*', "$ADNID", 2]
-motor_adjustments["NID 4"] = [0, 160, 3, '$ACSDR NID,*,*,*,', '', "$ADNID", 3]
-motor_adjustments["FZZ 1"] = [0, 200, 3, '$ACSDR FZZ,', '', "$ADFZZ", 0]
-motor_adjustments["MOM 1"] = [0, 200, 3, '$ACSDR MOM,', ',*,*', "$ADMOM", 0]
-motor_adjustments["MOM 2"] = [0, 200, 3, '$ACSDR MOM,*,', ',*', "$ADMOM", 1]
-motor_adjustments["MOM 3"] = [0, 200, 3, '$ACSDR MOM,*,*,', '', "$ADMOM", 2]
-motor_adjustments["NIM 1"] = [0, 200, 3, '$ACSDR NIM,', ',*,*,*', "$ADNIM", 0]
-motor_adjustments["NIM 2"] = [0, 200, 3, '$ACSDR NIM,*,', ',*,*', "$ADNIM", 1]
-motor_adjustments["NIM 3"] = [0, 200, 3, '$ACSDR NIM,*,*,', ',*', "$ADNIM", 2]
-motor_adjustments["NIM 4"] = [0, 200, 3, '$ACSDR NIM,*,*,*,', '', "$ADNIM", 3]
-motor_adjustments["PWM 1"] = [1000, 2000, 1, '$ACSDR PWM,', ',*,*,*', "$ADPWM", 0]
-motor_adjustments["PWM 2"] = [1000, 2000, 1, '$ACSDR PWM,*,', ',*,*', "$ADPWM", 1]
-motor_adjustments["PWM 3"] = [1000, 2000, 1, '$ACSDR PWM,*,*,', ',*', "$ADPWM", 2]
-motor_adjustments["PWM 4"] = [1000, 2000, 1, '$ACSDR PWM,*,*,*,', '', "$ADPWM", 3]
-motor_adjustments["MPP 1"] = [0, 1, 4,   '$ACSDR MPP,', ',*', "$ADMPP", 0]
-motor_adjustments["MPP 2"] = [0, 500, 3, '$ACSDR MPP,*,', '', "$ADMPP", 1]
+# Layout          NAME     MIN, MAX, 10^, STR Front, STR Back, Matchlist Name, Array Num, Default Value
+motor_adjustments["MKP 1"] = [0, 10, 3, '$ACSDR MKP,', ',*,*,*', "$ADMKP", 0, 1]
+motor_adjustments["MKP 2"] = [0, 10, 3, '$ACSDR MKP,*,', ',*,*', "$ADMKP", 1, 1]
+motor_adjustments["MKP 3"] = [0, 10, 3, '$ACSDR MKP,*,*,', ',*', "$ADMKP", 2, 1]
+motor_adjustments["MKP 4"] = [0, 10, 3, '$ACSDR MKP,*,*,*,', '', "$ADMKP", 3, 1]
+motor_adjustments["MKI 1"] = [0, 30, 3, '$ACSDR MKI,', ',*,*,*', "$ADMKI", 0, 0.1]
+motor_adjustments["MKI 2"] = [0, 30, 3, '$ACSDR MKI,*,', ',*,*', "$ADMKI", 1, 0.1]
+motor_adjustments["MKI 3"] = [0, 30, 3, '$ACSDR MKI,*,*,', ',*', "$ADMKI", 2, 0.1]
+motor_adjustments["MKI 4"] = [0, 30, 3, '$ACSDR MKI,*,*,*,', '', "$ADMKI", 3, 0.1]
+motor_adjustments["MKD 1"] = [0, 30, 3, '$ACSDR MKD,', ',*,*,*', "$ADMKD", 0, 0.5]
+motor_adjustments["MKD 2"] = [0, 30, 3, '$ACSDR MKD,*,', ',*,*', "$ADMKD", 1, 0.5]
+motor_adjustments["MKD 3"] = [0, 30, 3, '$ACSDR MKD,*,*,', ',*', "$ADMKD", 2, 0.5]
+motor_adjustments["MKD 4"] = [0, 30, 3, '$ACSDR MKD,*,*,*,', '', "$ADMKD", 3, 0.5]
+motor_adjustments["NID 1"] = [0, 160, 3, '$ACSDR NID,', ',*,*,*', "$ADNID", 0, 80]
+motor_adjustments["NID 2"] = [0, 160, 3, '$ACSDR NID,*,', ',*,*', "$ADNID", 1, 80]
+motor_adjustments["NID 3"] = [0, 160, 3, '$ACSDR NID,*,*,', ',*', "$ADNID", 2, 80]
+motor_adjustments["NID 4"] = [0, 160, 3, '$ACSDR NID,*,*,*,', '', "$ADNID", 3, 80]
+motor_adjustments["FZZ 1"] = [0, 300, 3, '$ACSDR FZZ,', '', "$ADFZZ", 0, 50]
+motor_adjustments["MOM 1"] = [-50, 50, 3, '$ACSDR MOM,', ',*,*', "$ADMOM", 0, 0]
+motor_adjustments["MOM 2"] = [-50, 50, 3, '$ACSDR MOM,*,', ',*', "$ADMOM", 1, 0]
+motor_adjustments["MOM 3"] = [-25, 25, 3, '$ACSDR MOM,*,*,', '', "$ADMOM", 2, 0]
+motor_adjustments["NIM 1"] = [0, 200, 3, '$ACSDR NIM,', ',*,*,*', "$ADNIM", 0, 0]
+motor_adjustments["NIM 2"] = [0, 200, 3, '$ACSDR NIM,*,', ',*,*', "$ADNIM", 1, 0]
+motor_adjustments["NIM 3"] = [0, 200, 3, '$ACSDR NIM,*,*,', ',*', "$ADNIM", 2, 0]
+motor_adjustments["NIM 4"] = [0, 200, 3, '$ACSDR NIM,*,*,*,', '', "$ADNIM", 3, 0]
+motor_adjustments["PWM 1"] = [1000, 2000, 1, '$ACSDR PWM,', ',*,*,*', "$ADPWM", 0, 1000]
+motor_adjustments["PWM 2"] = [1000, 2000, 1, '$ACSDR PWM,*,', ',*,*', "$ADPWM", 1, 1000]
+motor_adjustments["PWM 3"] = [1000, 2000, 1, '$ACSDR PWM,*,*,', ',*', "$ADPWM", 2, 1000]
+motor_adjustments["PWM 4"] = [1000, 2000, 1, '$ACSDR PWM,*,*,*,', '', "$ADPWM", 3, 1000]
+motor_adjustments["MPP 1"] = [0, 1, 4,   '$ACSDR MPP,', ',*', "$ADMPP", 0, .21568]
+motor_adjustments["MPP 2"] = [0, 500, 3, '$ACSDR MPP,*,', '', "$ADMPP", 1, 220.770]
+#TODO
+#QDI  NEEDS TO BE ABLE TO SEND ALL 4 OR SEND JUST 1
+#QII
+#QEI 
+motor_adjustments["QDI 1"] = [-1,1, 3, '$ACSDR QDI,',',*,*,*,', "$ADQDI", 1, 1]
+motor_adjustments["QDI 2"] = [-1,1, 3, '$ACSDR QDI,*,', ',*,*', "$ADQDI", 1, 0]
+motor_adjustments["QDI 3"] = [-1,1, 3, '$ACSDR QDI,*,*,', ',*', "$ADQDI", 1, 0]
+motor_adjustments["QDI 4"] = [-1,1, 3, '$ACSDR QDI,*,*,*,', '', "$ADQDI", 1, 0]
 
 global vartobegraphed
 global vartobegraphed2
@@ -174,6 +186,12 @@ class GraphBox(wx.Panel):
 		self.button2 = wx.Button(self, 2, 'Box2Slider')
 		self.display.SetValue(str(self.sliderboxval))
 
+		#Color of graphs corispond to Box Color
+		self.dropbox.SetBackgroundColour(wx.Colour(255, 255, 0))
+		self.dropbox2.SetBackgroundColour(wx.Colour(255, 0, 0))
+		self.dropbox3.SetBackgroundColour(wx.Colour(255, 255, 255))
+		self.dropbox4.SetBackgroundColour(wx.Colour(255, 0, 255))
+
 		#TODO Set the default variables to be graphed
 		self.setDefault()
 		
@@ -231,14 +249,14 @@ class GraphBox(wx.Panel):
 		self.sliderbox.SetValue(int(float(self.sliderboxval)))
 
 	def setDefault(self):
-                self.dropbox.SetValue(graph0)
-                self.dropbox2.SetValue(graph1)
-                self.dropbox3.SetValue(graph2)
-                self.dropbox4.SetValue(graph3)
-                self.comboSelection1(self)
-                self.comboSelection2(self)
-                self.comboSelection3(self)
-                self.comboSelection4(self)
+		self.dropbox.SetValue(graph0)
+		self.dropbox2.SetValue(graph1)
+		self.dropbox3.SetValue(graph2)
+		self.dropbox4.SetValue(graph3)
+		self.comboSelection1(self)
+		self.comboSelection2(self)
+		self.comboSelection3(self)
+		self.comboSelection4(self)
 
 	def comboSelection1(self, event):
 		self.thiskey = self.dropbox.GetValue()
@@ -578,40 +596,40 @@ class RPMGraph(wx.Panel):
 						if len(tobegraphed) != 0:
 							self.data.append(float(tobegraphed[int(graphedarraynum)])) #Get first graph info...
 							if len(self.datatime) == 0:
-                                                                self.datatime.append(int(0))
-                                                        else:
+ 								self.datatime.append(int(0))
+							else:
 								self.datatime.append(self.datatime[-1]+1)
 							if len(self.data) > 2200:
-                                                                self.data.pop(0)
-                                                                self.datatime.pop(0)
+								self.data.pop(0)
+								self.datatime.pop(0)
                                                                 #print "Data length: ", len(self.data), "\nDatatime length: ", len(self.datatime)
 						if len(tobegraphed2) != 0:
 							self.data2.append(float(tobegraphed2[int(graphedarraynum2)])) #Get second graph info...
 							if len(self.datatime2) == 0:
-                                                                self.datatime2.append(int(0))
-                                                        else:
+								self.datatime2.append(int(0))
+							else:
 								self.datatime2.append(self.datatime2[-1]+1)
 							if len(self.data2) > 2200:
-                                                                self.data2.pop(0)
-                                                                self.datatime2.pop(0)
+								self.data2.pop(0)
+								self.datatime2.pop(0)
 						if len(tobegraphed3) != 0:
 							self.data3.append(float(tobegraphed3[int(graphedarraynum3)])) #Get second graph info...
 							if len(self.datatime3) == 0:
-                                                                self.datatime3.append(int(0))
-                                                        else:
+								self.datatime3.append(int(0))
+							else:
 								self.datatime3.append(self.datatime3[-1]+1)
 							if len(self.data3) > 2200:
-                                                                self.data3.pop(0)
-                                                                self.datatime3.pop(0)
+								self.data3.pop(0)
+								self.datatime3.pop(0)
 						if len(tobegraphed4) != 0:
 							self.data4.append(float(tobegraphed4[int(graphedarraynum4)])) #Get second graph info...
 							if len(self.datatime4) == 0:
-                                                                self.datatime4.append(int(0))
-                                                        else:
+								self.datatime4.append(int(0))
+							else:
 								self.datatime4.append(self.datatime4[-1]+1)
 							if len(self.data4) > 2200:
-                                                                self.data4.pop(0)
-                                                                self.datatime4.pop(0)
+								self.data4.pop(0)
+								self.datatime4.pop(0)
 
 				finally:
 					rx_buffer_lock.release()
@@ -664,17 +682,22 @@ class AdjustmentTableSizer(wx.Panel):
 		self.box3.setDefault(adjustment3)
 		
 		self.button1 = wx.Button(self, 1, 'Update')
-		self.button2 = wx.Button(self, 2, 'STOP ALL')
+		self.button2 = wx.Button(self, 10, 'STOP ALL')
+		self.button2.SetBackgroundColour(wx.RED)
+		self.button2.SetForegroundColour(wx.WHITE)
+		font = wx.Font(family=wx.FONTFAMILY_DEFAULT, style=wx.FONTSTYLE_NORMAL, weight=wx.FONTWEIGHT_NORMAL, pointSize=18)
+		self.button2.SetFont(font)
+		#print self.button2.GetValue()
 
 		sizer.Add(self.box0, pos=(0,0), span=(5,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 		sizer.Add(self.box1, pos=(0,4), span=(5,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 		sizer.Add(self.box2, pos=(0,8), span=(5,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 		sizer.Add(self.box3, pos=(0,12), span=(5,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
-		sizer.Add(self.button1, pos=(5,6), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
-		sizer.Add(self.button2, pos=(5,8), span=(1,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		sizer.Add(self.button1, pos=(5,6), span=(2,2), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
+		sizer.Add(self.button2, pos=(5,8), span=(5,5), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 		
 		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
-		self.Bind(wx.EVT_BUTTON, self.OnStopAll, id=2)
+		self.Bind(wx.EVT_BUTTON, self.OnStopAll, id=10)
 		
 		topSizer.Add(sizer, 0, wx.ALL|wx.EXPAND, 5)
 
@@ -710,14 +733,14 @@ class AdjustmentTable(wx.Panel):
 		self.outputstring = ''
 
 		self.dropbox = wx.ComboBox(self, -1, choices=list(sorted(motor_selection)), style=wx.CB_DROPDOWN|wx.CB_SORT)
-		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT | wx.TE_PROCESS_ENTER)
-		self.display1 = wx.TextCtrl(self, -1, style=wx.TE_LEFT)
-		self.display2 = wx.TextCtrl(self, -1, style=wx.TE_RIGHT)
+		self.display = wx.TextCtrl(self, 3, style=wx.TE_RIGHT | wx.TE_PROCESS_ENTER)
+		self.display1 = wx.TextCtrl(self, 4, style=wx.TE_LEFT)
+		self.display2 = wx.TextCtrl(self, 5, style=wx.TE_RIGHT)
 		self.sliderbox = wx.Slider(self, -1, 1, 20, 10000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_TOP)
 		self.sliderbox.SetTickFreq(1000, 1)
 		self.sliderboxval = self.sliderbox.GetValue()
 		self.button1 = wx.Button(self, 1, 'Update')
-		self.button2 = wx.Button(self, 2, 'Box2Slider')
+		self.button2 = wx.Button(self, 2, 'Defaults')
 		self.display.SetValue(str(self.sliderboxval))
 		
 		sizer.Add(self.dropbox, pos=(0,0), span=(1,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
@@ -729,8 +752,10 @@ class AdjustmentTable(wx.Panel):
 		sizer.Add(self.button2, pos=(4,2), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
 		
 		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
-		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
-		self.Bind(wx.EVT_TEXT, self.sliderBoxAuto)
+		self.Bind(wx.EVT_BUTTON, self.setToDefault, id=2)
+		self.Bind(wx.EVT_TEXT, self.sliderBoxAuto, id=3)
+		self.Bind(wx.EVT_TEXT, self.sliderBoxBounds, id=4)
+		self.Bind(wx.EVT_TEXT, self.sliderBoxBounds, id=5)
 		self.Bind(wx.EVT_SLIDER, self.sliderUpdate)
 		self.Bind(wx.EVT_COMBOBOX, self.comboSelection)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
@@ -745,6 +770,11 @@ class AdjustmentTable(wx.Panel):
 		self.dropbox.SetValue(value)
 		self.comboSelection(self)
 
+	def setToDefault(self, event):
+		self.thiskey = self.dropbox.GetValue()
+		self.display.SetValue(str((motor_adjustments[self.thiskey])[7]))
+		self.sliderUpdate(self)
+                
 	def OnEnter(self, event):
 		self.displaynum = self.display.GetValue()
 		self.outputstring = (motor_adjustments[self.thiskey])[3] + self.displaynum + (motor_adjustments[self.thiskey])[4]
@@ -770,6 +800,13 @@ class AdjustmentTable(wx.Panel):
 		self.multiplyby = pow(10,(motor_adjustments[self.thiskey])[2])
 		self.sliderbox.SetValue(int(float(self.sliderboxval)*self.multiplyby))
 
+	def sliderBoxBounds(self, event):
+		self.thiskey = self.dropbox.GetValue()
+		self.sliderboxlower = float(self.display1.GetValue())
+		self.sliderboxupper = float(self.display2.GetValue())
+		self.multiplyby = pow(10,(motor_adjustments[self.thiskey])[2])
+		self.sliderbox.SetRange(int(float(self.sliderboxlower)*self.multiplyby),int(float(self.sliderboxupper)*self.multiplyby))
+
 	def comboSelection(self, event):
 		self.thiskey = self.dropbox.GetValue()
 		self.minpos = (motor_adjustments[self.thiskey])[0]*pow(10,(motor_adjustments[self.thiskey])[2])
@@ -778,6 +815,7 @@ class AdjustmentTable(wx.Panel):
 		self.devideby = pow(10,(motor_adjustments[self.thiskey])[2])
 		self.display1.SetValue(str(float(self.minpos)/self.devideby))
 		self.display2.SetValue(str(float(self.maxpos)/self.devideby))
+		self.setToDefault(self)
 
 	def updateMotor(motor, value):
 		self.maxpos = 20 #Get Value from TABLE
@@ -847,6 +885,7 @@ class MotorTable(wx.Panel):
 		#print "Matchlist: ", matchlist
 		for i in range(len(matchlist)): # != 0:
 			self.motor_table[i+1][reverseenum(enum_field, motor_settings)].SetValue(str(matchlist[i]))
+			#print "Self.Motor_table[i+1]: ", str(self.motor_table[i+1])
 			
 	def on_redraw_timer(self, event):
 		# if paused do not add data, but still redraw the plot
@@ -886,6 +925,130 @@ class MotorTable(wx.Panel):
 				finally:
 					rx_buffer_lock.release()
 
+
+class Quaternion(wx.Panel):
+	def __init__(self, parent, id):
+		wx.Panel.__init__(self, parent, -1)
+
+		self.rx_last_read = 0
+
+		self.rxparser = RxParser()
+		
+		self.angle_table = []
+
+
+		self.angle_table.append([])
+		for i in angle_settings:
+			self.angle_table[0].append(wx.StaticText(self, -1, i))
+		eulernames = ["Roll", "Pitch", "Yaw", "N/A"]
+		for i in range(angle_num):
+			print "Angle Table init i value: ", i
+			self.angle_table.append([])
+			for j in range(len(angle_settings)):
+				if j == reverseenum("Number", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, str(i+1)))
+				elif j == reverseenum("QDI", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("QII", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("QEI", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("Identity", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, str(eulernames[i])))
+				elif j == reverseenum("EDI", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("EII", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("EEI", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				else:
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "generic"))
+
+		grid_sizer = wx.FlexGridSizer(angle_num+1, len(angle_settings), 10, 10)		
+		for i in self.angle_table:
+			for j in i:
+				grid_sizer.Add(j)
+
+		self.SetSizer(grid_sizer)
+		
+		self.redraw_timer = wx.Timer(self)
+		self.Bind(wx.EVT_TIMER, self.on_redraw_timer, self.redraw_timer)		
+		self.redraw_timer.Start(REFRESH_INTERVAL_MS)
+
+	
+		
+	def update_field(self, code, enum_field):
+		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
+		#print "Matchlist: ", matchlist
+		for i in range(len(matchlist)): # != 0:
+			self.angle_table[i+1][reverseenum(enum_field, angle_settings)].SetValue(str(matchlist[i]))
+
+	def update_fieldq(self, code, enum_field):
+		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
+		#print "Matchlist: ", matchlist
+		for i in range(len(matchlist)): # != 0:
+			self.angle_table[i+1][reverseenum(enum_field, angle_settings)].SetValue(str(matchlist[i]))
+		if len(matchlist) != 4:
+                        return
+		yaw = math.atan2(2*matchlist[1]*matchlist[0]- \
+                                     2*matchlist[0]*matchlist[3], \
+                                     2*matchlist[1]*matchlist[1]- \
+                                     2*matchlist[3]*matchlist[3])
+		pitch = math.asin(2*matchlist[0]*matchlist[1]+ \
+                                     2*matchlist[3]*matchlist[2])
+		roll = math.atan2(2*matchlist[0]*matchlist[2]- \
+                                  2*matchlist[1]*matchlist[3], \
+                                  1-2*matchlist[0]*matchlist[0] - \
+                                  2*matchlist[3]*matchlist[3])
+		eulerlist = [yaw, pitch, roll, 0]
+		euler_field = ''
+		if enum_field == "QDI":
+                        euler_field = "EDI"
+                if enum_field == "QII":
+                        euler_field = "EII"
+                if enum_field == "QEI":
+                        euler_field = "EEI"
+		for i in range(len(eulerlist)): # != 0:
+                        self.angle_table[i+1][reverseenum(euler_field, angle_settings)].SetValue(str(eulerlist[i]))
+			
+
+	def on_redraw_timer(self, event):
+		# if paused do not add data, but still redraw the plot
+		# (to respond to scale modifications, grid change, etc.)
+		#
+		global rx_buffer_lock
+		global rx_buffer
+#		rxparser = RxParser()
+		
+		if not paused:
+			if not rx_buffer_lock.acquire(False):
+				pass
+			else:
+				try:
+					#Go through all the received strings and add whatever is relevant.
+					while self.rx_last_read < len(rx_buffer):
+						#First is the header of string, second is Colomn on angle table heading
+						self.update_fieldq("$ADQDI", "QDI")
+						self.update_fieldq("$ADQII", "QII")
+						self.update_fieldq("$ADQEI", "QEI")
+						#self.update_field("$ADMVV", "Volts")
+						#self.update_field("$ADPWM", "ESC(uS)")
+						#self.update_field("$ADMTH", "Thrust")
+						#self.update_field("$ADMTQ", "Torque")
+						#self.update_field("$ADMKP", "KP")
+						#self.update_field("$ADMKI", "KI")
+						#self.update_field("$ADMKD", "KD")
+						
+						
+						
+#						angle_amp = self.rxparser.match(rx_buffer[self.rx_last_read], "$ADMIA")
+#						for i in range(len(angle_amp)): # != 0:
+#							self.angle_table[i+1][reverseenum("Amps", angle_settings)].SetValue(str(angle_amp[i]))
+
+						self.rx_last_read += 1
+
+				finally:
+					rx_buffer_lock.release()
 
 
 if __name__=='__main__':

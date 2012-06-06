@@ -29,6 +29,7 @@ class MyFrame(wx.Frame):
         self.notebook_2 = wx.Notebook(self.notebook_1_pane_2, -1, style=0)
         self.notebook_2_pane_1 = wx.Panel(self.notebook_2, -1)
         self.notebook_2_pane_2 = wx.Panel(self.notebook_2, -1)
+        self.notebook_2_pane_3 = wx.Panel(self.notebook_2, -1)
         self.panel_1 = wx.Panel(self.notebook_1, -1)
         self.label_7 = wx.StaticText(self.panel_1, -1, "USB Port")
         self.label_5 = wx.StaticText(self.panel_1, -1, "Port")
@@ -43,8 +44,10 @@ class MyFrame(wx.Frame):
         self.label_1_copy_1 = wx.StaticText(self.panel_1, -1, "Some Simple Text")
         self.window_2 = RPMGraph(self.notebook_1_pane_2, -1, datagen)
         self.window_1 = MotorTable(self.notebook_2_pane_1, -1)
+        
         #Added
         self.window_0 = AdjustmentTableSizer(self.notebook_2_pane_2, 2)
+        self.window_3 = Quaternion(self.notebook_2_pane_3, -1)
         #self.window_0 = AdjustmentTable(self.notebook_2_pane_2, -1)
         #self.window_01 = AdjustmentTable(self.notebook_2_pane_2, -1)
         self.notebook_1_pane_3 = wx.Panel(self.notebook_1, -1)
@@ -58,7 +61,7 @@ class MyFrame(wx.Frame):
 
     def __set_properties(self):
         # begin wxGlade: MyFrame.__set_properties
-        self.SetTitle("frame_1")
+        self.SetTitle("Anzhelka Terminal")
         self.SetSize((950, 879))
         self.combo_serial_port.SetToolTipString("Please enter your COM port as appropriate")
         self.combo_serial_port.SetSelection(0)
@@ -70,7 +73,7 @@ class MyFrame(wx.Frame):
         grid_sizer_3 = wx.FlexGridSizer(3, 3, 0, 0)
         grid_sizer_5 = wx.FlexGridSizer(2, 1, 0, 0)
         grid_sizer_6 = wx.FlexGridSizer(1, 1, 0, 0)
-        #grid_sizer_7 = wx.FlexGridSizer(1, 2, 0, 0)
+        grid_sizer_7 = wx.FlexGridSizer(1, 1, 0, 0)
         grid_sizer_4 = wx.FlexGridSizer(3, 3, 0, 0)
         grid_sizer_2 = wx.FlexGridSizer(3, 1, 5, 0)
         grid_sizer_2_copy = wx.FlexGridSizer(2, 2, 5, 5)
@@ -89,10 +92,12 @@ class MyFrame(wx.Frame):
         grid_sizer_5.Add(self.window_2, 1, wx.EXPAND, 0)
         grid_sizer_5.Add(self.notebook_2, 1, wx.EXPAND, 0)
         grid_sizer_6.Add(self.window_1, 1, wx.EXPAND, 0)
+        grid_sizer_7.Add(self.window_3, 1, wx.EXPAND, 0)
         #grid_sizer_7.Add(self.window_0, 1, wx.EXPAND, 0)
         #grid_sizer_7.Add(self.window_01, 1, wx.EXPAND, 0)
         self.notebook_1_pane_2.SetSizer(grid_sizer_5)
         self.notebook_2_pane_1.SetSizer(grid_sizer_6)
+        self.notebook_2_pane_3.SetSizer(grid_sizer_7)
         #self.notebook_2_pane_2.SetSizer(grid_sizer_7)
         grid_sizer_5.AddGrowableRow(0)
         grid_sizer_5.AddGrowableRow(1)
@@ -101,6 +106,7 @@ class MyFrame(wx.Frame):
         self.notebook_1.AddPage(self.notebook_1_pane_2, "Motors")
         self.notebook_2.AddPage(self.notebook_2_pane_1, "Data")
         self.notebook_2.AddPage(self.notebook_2_pane_2, "Vars")
+        self.notebook_2.AddPage(self.notebook_2_pane_3, "Angles")
         self.notebook_1.AddPage(self.notebook_1_pane_3, "Inertial")
         self.notebook_1.AddPage(self.notebook_1_pane_4, "Control")
         grid_sizer_3.Add(self.notebook_1, 1, wx.EXPAND, 0)
