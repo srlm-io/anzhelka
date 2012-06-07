@@ -193,6 +193,7 @@ class GraphBox(wx.Panel):
 		self.dropbox3.SetBackgroundColour((255, 255, 255))
 		self.dropbox4.SetBackgroundColour((255, 0, 255))
 
+
 		#TODO Set the default variables to be graphed
 		self.setDefault()
 		
@@ -967,7 +968,7 @@ class Quaternion(wx.Panel):
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, str(eulernames[i])))
 				elif j == reverseenum("EDI", angle_settings): # angle number
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
-#					self.angle_table[i+1][-1].SetBackgroundColour((255,0,0))
+
 				elif j == reverseenum("EII", angle_settings): # angle number
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
 				elif j == reverseenum("EEI", angle_settings): # angle number
@@ -997,6 +998,7 @@ class Quaternion(wx.Panel):
 	def update_fieldq(self, code, enum_field):
 		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
 		#print "Matchlist: ", matchlist
+
 		
 		if len(matchlist) != 4:
                         return
@@ -1076,6 +1078,7 @@ class Quaternion(wx.Panel):
 			euler_field = "EII"
 		if enum_field == "QEI":
 			euler_field = "EEI"
+
 		for i in range(len(eulerlist)): # != 0:
                         self.angle_table[i+1][reverseenum(euler_field, angle_settings)].SetValue(str(eulerlist[i]))
 			
