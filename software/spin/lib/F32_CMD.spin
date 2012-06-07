@@ -98,29 +98,29 @@ Notes to self:
 CON
   ' the list of all the PASM functions' offsets in the dispatch table
   ' You probably only need this table can be used to call F32 routines from inside your own PASM code
-  offAdd        = offGain * 0
-  offSub        = offGain * 1
-  offMul        = offGain * 2
-  offDiv        = offGain * 3
-  offFloat      = offGain * 4
-  offTruncRound = offGain * 5
-  offUintTrunc  = offGain * 6
-  offSqr        = offGain * 7
-  offCmp        = offGain * 8
-  offSin        = offGain * 9
-  offCos        = offGain * 10
-  offTan        = offGain * 11
-  offLog2       = offGain * 12
-  offExp2       = offGain * 13
-  offPow        = offGain * 14
-  offFrac       = offGain * 15
-  offMod        = offGain * 16
-  offASinCos    = offGain * 17
-  offATan2      = offGain * 18
-  offCeil       = offGain * 19
-  offFloor      = offGain * 20
-  ' each entry is a long...4 bytes
-  offGain       = 4
+'  offAdd        = offGain * 0
+'  offSub        = offGain * 1
+'  offMul        = offGain * 2
+'  offDiv        = offGain * 3
+'  offFloat      = offGain * 4
+'  offTruncRound = offGain * 5
+'  offUintTrunc  = offGain * 6
+'  offSqr        = offGain * 7
+'  offCmp        = offGain * 8
+'  offSin        = offGain * 9
+'  offCos        = offGain * 10
+'  offTan        = offGain * 11
+'  offLog2       = offGain * 12
+'  offExp2       = offGain * 13
+'  offPow        = offGain * 14
+'  offFrac       = offGain * 15
+'  offMod        = offGain * 16
+'  offASinCos    = offGain * 17
+'  offATan2      = offGain * 18
+'  offCeil       = offGain * 19
+'  offFloor      = offGain * 20
+'  ' each entry is a long...4 bytes
+'  offGain       = 4
   
 VAR
 
@@ -158,12 +158,13 @@ PUB FInterpret(a)
   while f32_Cmd
 
 
+
+
 OBJ
 	pid_data : "PID_data.spin" 'Used in F32_CMD only for it's constants
 PUB FPID(a)
 	return Compute(a)
-PUB Compute(a) | error, dInput
-'A is the address of the PID data structure
+PUB Compute(a)'A is the address of the PID data structure
 	result  := cmdPID
 	f32_Cmd := @result
 	repeat

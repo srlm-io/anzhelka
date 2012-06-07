@@ -18,11 +18,13 @@ Revision History:
 
 }}
 CON
+'TODO: This section needs to be adjusted to be clock independent.
   _CLKMODE = XTAL1 + PLL16X
   _XINFREQ = 5_000_000
 
 ''Resolution
 Resolution      = 8200 '<-- 8.2us             
+'Resolution      = 6150 <-- 8.2us @ 100MHz
 
 ''Commands
 UpdateTonToff   = 1

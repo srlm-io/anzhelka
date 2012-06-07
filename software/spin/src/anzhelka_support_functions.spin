@@ -101,6 +101,13 @@ CON
 
 	sSDR = ("S" << 16) | ("D" << 8) | "R"
 	sRDR = ("R" << 16) | ("D" << 8) | "R"
+	sSTP = ("S" << 16) | ("T" << 8) | "P"
+	
+	
+	sSTP_EMG = ("E" << 16) | ("M" << 8) | "G"
+	sSTP_IMM = ("I" << 16) | ("M" << 8) | "M"
+	sSTP_CON = ("C" << 16) | ("O" << 8) | "N"
+	sSTP_RES = ("R" << 16) | ("E" << 8) | "S"
 PUB ParseSerialCommand | t1, t2, t3, command
 ''Parses packets of the form "$ACXXX ...", ie command packets
 	
@@ -115,6 +122,16 @@ PUB ParseSerialCommand | t1, t2, t3, command
 			ParseSerialXDR(XDR_WRITE)
 		sRDR:
 			ParseSerialXDR(XDR_READ)
+
+		sSTP:
+			'Discard spaces, and then get first letter
+			repeat
+			while (stop_command := serial.rx) == " " 'Ignore spaces
+			
+			stop_command <<= 16 
+			stop_command |= serial.rx << 8
+			stop_command |= serial.rx
+
 		OTHER:
 			PrintStrStart
 			serial.str(string("Warning: Unknown command type: "))
@@ -135,6 +152,15 @@ CON
 	sNIM = ("N" << 16) | ("I" << 8) | "M"
 	sMOM = ("M" << 16) | ("O" << 8) | "M"
 	sFZZ = ("F" << 16) | ("Z" << 8) | "Z"
+	sMPP = ("M" << 16) | ("P" << 8) | "P"
+	sQII = ("Q" << 16) | ("I" << 8) | "I"
+	sQDI = ("Q" << 16) | ("D" << 8) | "I"
+	sQEI = ("Q" << 16) | ("E" << 8) | "I"
+	sCLF = ("C" << 16) | ("L" << 8) | "F"
+	
+
+'	 = ("" << 16) | ("" << 8) | ""
+'	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
 
@@ -165,6 +191,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, values[2], FNeg1, FNeg1)
 				fp.SetTunings(PID_n_4.getBase, values[3], FNeg1, FNeg1)
 '				WriteList(@values, PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr)
+				PrintArrayAddr4(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 		sMKI:
@@ -175,6 +202,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, FNeg1, values[2], FNeg1)
 				fp.SetTunings(PID_n_4.getBase, FNeg1, values[3], FNeg1)
 '				WriteList(@values, PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr)
+				PrintArrayAddr4(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
 			
@@ -186,18 +214,21 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, FNeg1, FNeg1, values[2])
 				fp.SetTunings(PID_n_4.getBase, FNeg1, FNeg1, values[3])
 '				WriteList(@values, PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr)
+				PrintArrayAddr4(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
 		sPWM:
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @u_1, @u_2, @u_3, @u_4)
+				PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
 		sNID:
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @n_d_1, @n_d_2, @n_d_3, @n_d_4)
+				PrintArrayAddr4(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
 				
@@ -205,6 +236,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @n_1, @n_2, @n_3, @n_4)
+				PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 				
@@ -212,6 +244,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 3, TYPE_FLOAT)
 				WriteList3(@values, @M_x, @M_y, @M_z)
+				PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
 		
@@ -221,6 +254,42 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				WriteList1(@values, @F_z)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr1(string("FZZ"), @F_z, TYPE_FLOAT)
+		
+		sMPP:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 2, TYPE_FLOAT)
+				WriteList2(@values, @motor_slope, @motor_intercept)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr2(string("MPP"), @motor_slope, @motor_intercept, TYPE_FLOAT)
+				
+		sQII:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_0, @q_1, @q_2, @q_3)
+				PrintArrayAddr4(string("QII"), @q_0, @q_1, @q_2, @q_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QII"), @q_0, @q_1, @q_2, @q_3, TYPE_FLOAT)
+		sQDI:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_d_0, @q_d_1, @q_d_2, @q_d_3)
+				PrintArrayAddr4(string("QDI"), @q_d_0, @q_d_1, @q_d_2, @q_d_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QDI"), @q_d_0, @q_d_1, @q_d_2, @q_d_3, TYPE_FLOAT)
+		sQEI:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_tilde_0, @q_tilde_1, @q_tilde_2, @q_tilde_3)
+				PrintArrayAddr4(string("QEI"), @q_tilde_b_0, @q_tilde_b_1, @q_tilde_b_2, @q_tilde_b_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QEI"), @q_tilde_b_0, @q_tilde_b_1, @q_tilde_b_2, @q_tilde_b_3, TYPE_FLOAT)
+				
+		sCLF:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 1, TYPE_FLOAT)
+				WriteList1(@values, @control_loop_frequency)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr1(string("CLF"), @control_loop_frequency, TYPE_FLOAT)
 				
 		OTHER:
 			PrintStrStart
@@ -239,6 +308,18 @@ PUB WriteList1(input_array_addr, a_addr)
 	if long[input_array_addr][0] <> NAN
 		long[a_addr] := long[input_array_addr][0]
 
+
+PUB WriteList2(input_array_addr, a_addr, b_addr)
+'Writes the four variables in the input array to the four addresses specified.
+'If a number is NAN, it will not write it.
+	
+	if long[input_array_addr][0] <> NAN
+		long[a_addr] := long[input_array_addr][0]
+	
+	if long[input_array_addr][1] <> NAN
+		long[b_addr] := long[input_array_addr][1]
+	
+
 PUB WriteList3(input_array_addr, a_addr, b_addr, c_addr)
 'Writes the four variables in the input array to the four addresses specified.
 'If a number is NAN, it will not write it.
@@ -251,6 +332,8 @@ PUB WriteList3(input_array_addr, a_addr, b_addr, c_addr)
 	
 	if long[input_array_addr][2] <> NAN
 		long[c_addr] := long[input_array_addr][2]
+		
+
 					
 
 PUB WriteList4(input_array_addr, a_addr, b_addr, c_addr, d_addr)
@@ -344,7 +427,7 @@ PUB PrintArray(type_string_addr, array_addr, length, type) | i
 	serial.tx(10)
 	serial.tx(13)
 
-PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i
+PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -362,14 +445,17 @@ PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i
 		if type == TYPE_INT
 			serial.dec(long[long[@a_addr][i]])
 		elseif type == TYPE_FLOAT
-			FPrint(long[long[@a_addr][i]])
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
 		else
 			serial.tx("?") 'Warning!
 		
 	serial.tx(10)
 	serial.tx(13)
 
-PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i
+PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -387,14 +473,45 @@ PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i
 		if type == TYPE_INT
 			serial.dec(long[long[@a_addr][i]])
 		elseif type == TYPE_FLOAT
-			FPrint(long[long[@a_addr][i]])
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
 		else
 			serial.tx("?") 'Warning!
 		
 	serial.tx(10)
 	serial.tx(13)
 	
-PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i
+PUB PrintArrayAddr2(type_string_addr, a_addr, b_addr, type) | i, temp_addr
+'' Parameters:
+''  - type_string_addr: a string that has the three capital letters that 
+''      denote which type of data this packet is, eg PWM or MKP
+''  - [a|b|c|d]_addr - the address of the variable to print
+''  - type - either TYPE_FLOAT or TYPE_INT
+
+
+	serial.str(string("$AD"))
+	serial.str(type_string_addr)
+	serial.tx(" ")
+	serial.dec(phsb)
+
+	repeat i from 0 to 2 - 1
+		serial.tx(",")
+		if type == TYPE_INT
+			serial.dec(long[long[@a_addr][i]])
+		elseif type == TYPE_FLOAT
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
+		else
+			serial.tx("?") 'Warning!
+		
+	serial.tx(10)
+	serial.tx(13)
+	
+PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -412,7 +529,9 @@ PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i
 	if type == TYPE_INT
 		serial.dec(long[a_addr])
 	elseif type == TYPE_FLOAT
-		FPrint(long[a_addr])
+'		FPrint(long[a_addr])
+		temp_addr := fp.FloatToString(long[a_addr])
+		serial.txblock(temp_addr, strsize(temp_addr))
 	else
 		serial.tx("?") 'Warning!
 	
@@ -471,15 +590,17 @@ PUB InitUart | i, char
 	waitcnt(clkfreq + cnt)
 	PrintStr(string("Starting..."))
 	
-	PrintStrStart
-	serial.str(string("Compile Time: "))
-	i := 0
 	
-	'Output the compile time, but not the LF at the end
-	repeat until (char := byte[@compile_time][i++]) == 10
-		serial.tx(char)
+	if compile_time <> 0
+		PrintStrStart
+		serial.str(string("Compile Time: "))
+		i := 0
+	
+		'Output the compile time, but not the LF at the end
+		repeat until (char := byte[@compile_time][i++]) == 10
+			serial.tx(char)
 		
-	PrintStrStop
+		PrintStrStop
 
 DAT
 	compile_time file "compile_time.dat"

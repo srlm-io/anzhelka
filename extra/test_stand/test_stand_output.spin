@@ -33,9 +33,9 @@ CON
 '	KEYPAD_LOW_PIN  = 0
 '	KEYPAD_HIGH_PIN = 7
 	
-	ESC_PIN = 15 'turns on at ~1600 us
+	ESC_PIN = 9 'turns on at ~1600 us
 	
-	RPM_PIN = 8 'Note: currently not used in code (a pin mask is used instead)
+	RPM_PIN = 5 'Note: currently not used in code (a pin mask is used instead)
 	
 'Settings
 	NUM_MOT = 4
@@ -52,6 +52,8 @@ CON
 	ADC_THRUST = 1
 	ADC_TORQUE = 0
 	
+	
+	
 
 VAR
 	long motorrps[NUM_MOT]
@@ -63,6 +65,8 @@ VAR
 	long motordesiredrps[NUM_MOT]
 
 	long pid_output
+	
+	long pid_base_address_temp
 
 OBJ
 '	debug : "FullDuplexSerialPlus.spin"
@@ -77,24 +81,23 @@ PUB Main | i, pwmoutput, loop_time, t1, t2, remaining_time
 
 
 	InitFunctions
+'	Init_Instructions
 	
 	n_1 := float(0)
 	n_d_1 := float(0)
-	
 
 	fp.InitializePID(PID_n_1.getBase, @n_1, @pid_output, @n_d_1, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
 	fp.SetTunings(PID_n_1.getBase, float(1), float(0), float(0))
 	
-	serial.str(string("SampleTime: "))
-	FPrint(PID_n_1.getSampleTime)
 '	adc.start(ADC_D_PIN, ADC_C_PIN, ADC_S_PIN, 0)
 	pwm.start
-	rpm.setpins(%0001_0000_0000) 'RPM_PIN
+'	rpm.setpins(%0001_0000_0000) 'RPM_PIN
+	rpm.setpins(%0000_0010_0000) 'RPM_PIN
 	rpm.start
 	
 	pwm.servo(ESC_PIN, 1000)
 
-	repeat i from 0 to 0
+	repeat i from 2 to 0
 		waitcnt(clkfreq + cnt)
 		serial.str(string("$ADSTR "))
 		serial.dec(phsb)
@@ -103,27 +106,29 @@ PUB Main | i, pwmoutput, loop_time, t1, t2, remaining_time
 		serial.tx("'")
 		serial.tx(10)
 		serial.tx(13)
-		
-
 	
-	pwm.servo(ESC_PIN, 1200)
+	pwm.servo(ESC_PIN, 1300)
 	waitcnt(clkfreq * 1 + cnt)
-		
 	
+	repeat i from 0 to 1000
+		pwm.servo(ESC_PIN, i + 1000)
+		
+	repeat
+		n_1 := fp.FFloat( 0 #> rpm.getrps(0) <# 250) 'Min < rps < Max
+		PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)	
+			
 	i := 90
-	u_1 := float(1200)
 	n_d_1 := fp.FFloat(i)
 	
-	
 	loop_time := clkfreq/50
-'	next_cnt := cnt + loop_time
+
 	repeat
-	'TODO: Put timing code in here
 		t1 := cnt
 		loop(i)
 		ParseSerial
-'		PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
-		
+		PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
+'		PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)	
+
 		t1 := cnt - t1
 
 		remaining_time := loop_time - t1 - 100_000
@@ -132,29 +137,28 @@ PUB Main | i, pwmoutput, loop_time, t1, t2, remaining_time
 		else
 			PrintStr(string("Missed Timing Period! ***********************"))
 
-
 PUB loop(i)
-	
-	
-
 	n_1 := fp.FFloat( 0 #> rpm.getrps(0) <# 250) 'Min < rps < Max
 
-	fp.FPID(PID_n_1.getBase)	
+	fp.FPID(PID_n_1.getBase)
+	
+		
+'	fp.FInterpret(@CONTROL_LOOP_INSTRUCTIONS)
 
 '	Follows this equation:
 	'rpm = (max_rpm - y_intercept)/(pwm@max_rpm) * pwm + y_intercept
-	
 
-	u_1 := fp.FMul(slope, n_d_1)
-	u_1 := fp.FSub(u_1, intercept)
-	u_1 := fp.FAdd(u_1, float(1000))
+'	u_1 := fp.FMul(slope, n_d_1)
+'	u_1 := fp.FSub(u_1, intercept)
+	u_1 := fp.FAdd(n_d_1, motor_intercept)
+	u_1 := fp.FDiv(u_1, motor_slope)
+'	u_1 := fp.FAdd(u_1, MIN_PWM)
 	u_1 := fp.FAdd(u_1, pid_output)
-	u_1 := fp.FLimitMin(u_1, float(1000))
-	u_1 := fp.FLimitMax(u_1, float(1600))
+	u_1 := fp.FLimitMin(u_1, MIN_PWM)
+	u_1 := fp.FLimitMax(u_1, MAX_PWM)
 
 
 	pwm.servo(ESC_PIN, fp.FTrunc(u_1))
-
 
 PUB readForce | thrust, torque
 	torque := ADC.average(ADC_TORQUE, 4)
@@ -163,11 +167,16 @@ PUB readForce | thrust, torque
 	motorthrust[0] := thrust
 	motortorque[0] := torque
 
-DAT
 
-slope long 4.61538
-intercept long 92.3077
 
+
+
+
+{{AZM_MATH CONTROL_LOOP
+
+t_1 = pid_base_address_temp ~ 0
+
+}}
 	
 {{
 --------------------------------------------------------------------------------  
@@ -294,6 +303,13 @@ CON
 
 	sSDR = ("S" << 16) | ("D" << 8) | "R"
 	sRDR = ("R" << 16) | ("D" << 8) | "R"
+	sSTP = ("S" << 16) | ("T" << 8) | "P"
+	
+	
+	sSTP_EMG = ("E" << 16) | ("M" << 8) | "G"
+	sSTP_IMM = ("I" << 16) | ("M" << 8) | "M"
+	sSTP_CON = ("C" << 16) | ("O" << 8) | "N"
+	sSTP_RES = ("R" << 16) | ("E" << 8) | "S"
 PUB ParseSerialCommand | t1, t2, t3, command
 ''Parses packets of the form "$ACXXX ...", ie command packets
 	
@@ -308,6 +324,16 @@ PUB ParseSerialCommand | t1, t2, t3, command
 			ParseSerialXDR(XDR_WRITE)
 		sRDR:
 			ParseSerialXDR(XDR_READ)
+
+		sSTP:
+			'Discard spaces, and then get first letter
+			repeat
+			while (stop_command := serial.rx) == " " 'Ignore spaces
+			
+			stop_command <<= 16 
+			stop_command |= serial.rx << 8
+			stop_command |= serial.rx
+
 		OTHER:
 			PrintStrStart
 			serial.str(string("Warning: Unknown command type: "))
@@ -328,6 +354,15 @@ CON
 	sNIM = ("N" << 16) | ("I" << 8) | "M"
 	sMOM = ("M" << 16) | ("O" << 8) | "M"
 	sFZZ = ("F" << 16) | ("Z" << 8) | "Z"
+	sMPP = ("M" << 16) | ("P" << 8) | "P"
+	sQII = ("Q" << 16) | ("I" << 8) | "I"
+	sQDI = ("Q" << 16) | ("D" << 8) | "I"
+	sQEI = ("Q" << 16) | ("E" << 8) | "I"
+	sCLF = ("C" << 16) | ("L" << 8) | "F"
+	
+
+'	 = ("" << 16) | ("" << 8) | ""
+'	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
 
@@ -358,6 +393,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, values[2], FNeg1, FNeg1)
 				fp.SetTunings(PID_n_4.getBase, values[3], FNeg1, FNeg1)
 '				WriteList(@values, PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr)
+				PrintArrayAddr4(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 		sMKI:
@@ -368,6 +404,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, FNeg1, values[2], FNeg1)
 				fp.SetTunings(PID_n_4.getBase, FNeg1, values[3], FNeg1)
 '				WriteList(@values, PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr)
+				PrintArrayAddr4(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
 			
@@ -379,18 +416,21 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, FNeg1, FNeg1, values[2])
 				fp.SetTunings(PID_n_4.getBase, FNeg1, FNeg1, values[3])
 '				WriteList(@values, PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr)
+				PrintArrayAddr4(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
 		sPWM:
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @u_1, @u_2, @u_3, @u_4)
+				PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
 		sNID:
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @n_d_1, @n_d_2, @n_d_3, @n_d_4)
+				PrintArrayAddr4(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
 				
@@ -398,6 +438,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @n_1, @n_2, @n_3, @n_4)
+				PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 				
@@ -405,6 +446,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 3, TYPE_FLOAT)
 				WriteList3(@values, @M_x, @M_y, @M_z)
+				PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
 		
@@ -414,6 +456,42 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				WriteList1(@values, @F_z)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr1(string("FZZ"), @F_z, TYPE_FLOAT)
+		
+		sMPP:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 2, TYPE_FLOAT)
+				WriteList2(@values, @motor_slope, @motor_intercept)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr2(string("MPP"), @motor_slope, @motor_intercept, TYPE_FLOAT)
+				
+		sQII:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_0, @q_1, @q_2, @q_3)
+				PrintArrayAddr4(string("QII"), @q_0, @q_1, @q_2, @q_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QII"), @q_0, @q_1, @q_2, @q_3, TYPE_FLOAT)
+		sQDI:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_d_0, @q_d_1, @q_d_2, @q_d_3)
+				PrintArrayAddr4(string("QDI"), @q_d_0, @q_d_1, @q_d_2, @q_d_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QDI"), @q_d_0, @q_d_1, @q_d_2, @q_d_3, TYPE_FLOAT)
+		sQEI:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_tilde_0, @q_tilde_1, @q_tilde_2, @q_tilde_3)
+				PrintArrayAddr4(string("QEI"), @q_tilde_0, @q_tilde_1, @q_tilde_2, @q_tilde_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QEI"), @q_tilde_0, @q_tilde_1, @q_tilde_2, @q_tilde_3, TYPE_FLOAT)
+				
+		sCLF:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 1, TYPE_FLOAT)
+				WriteList1(@values, @control_loop_frequency)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr1(string("CLF"), @control_loop_frequency, TYPE_FLOAT)
 				
 		OTHER:
 			PrintStrStart
@@ -432,6 +510,18 @@ PUB WriteList1(input_array_addr, a_addr)
 	if long[input_array_addr][0] <> NAN
 		long[a_addr] := long[input_array_addr][0]
 
+
+PUB WriteList2(input_array_addr, a_addr, b_addr)
+'Writes the four variables in the input array to the four addresses specified.
+'If a number is NAN, it will not write it.
+	
+	if long[input_array_addr][0] <> NAN
+		long[a_addr] := long[input_array_addr][0]
+	
+	if long[input_array_addr][1] <> NAN
+		long[b_addr] := long[input_array_addr][1]
+	
+
 PUB WriteList3(input_array_addr, a_addr, b_addr, c_addr)
 'Writes the four variables in the input array to the four addresses specified.
 'If a number is NAN, it will not write it.
@@ -444,6 +534,8 @@ PUB WriteList3(input_array_addr, a_addr, b_addr, c_addr)
 	
 	if long[input_array_addr][2] <> NAN
 		long[c_addr] := long[input_array_addr][2]
+		
+
 					
 
 PUB WriteList4(input_array_addr, a_addr, b_addr, c_addr, d_addr)
@@ -537,7 +629,7 @@ PUB PrintArray(type_string_addr, array_addr, length, type) | i
 	serial.tx(10)
 	serial.tx(13)
 
-PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i
+PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -555,14 +647,17 @@ PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i
 		if type == TYPE_INT
 			serial.dec(long[long[@a_addr][i]])
 		elseif type == TYPE_FLOAT
-			FPrint(long[long[@a_addr][i]])
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
 		else
 			serial.tx("?") 'Warning!
 		
 	serial.tx(10)
 	serial.tx(13)
 
-PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i
+PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -580,14 +675,45 @@ PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i
 		if type == TYPE_INT
 			serial.dec(long[long[@a_addr][i]])
 		elseif type == TYPE_FLOAT
-			FPrint(long[long[@a_addr][i]])
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
 		else
 			serial.tx("?") 'Warning!
 		
 	serial.tx(10)
 	serial.tx(13)
 	
-PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i
+PUB PrintArrayAddr2(type_string_addr, a_addr, b_addr, type) | i, temp_addr
+'' Parameters:
+''  - type_string_addr: a string that has the three capital letters that 
+''      denote which type of data this packet is, eg PWM or MKP
+''  - [a|b|c|d]_addr - the address of the variable to print
+''  - type - either TYPE_FLOAT or TYPE_INT
+
+
+	serial.str(string("$AD"))
+	serial.str(type_string_addr)
+	serial.tx(" ")
+	serial.dec(phsb)
+
+	repeat i from 0 to 2 - 1
+		serial.tx(",")
+		if type == TYPE_INT
+			serial.dec(long[long[@a_addr][i]])
+		elseif type == TYPE_FLOAT
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
+		else
+			serial.tx("?") 'Warning!
+		
+	serial.tx(10)
+	serial.tx(13)
+	
+PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -605,7 +731,9 @@ PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i
 	if type == TYPE_INT
 		serial.dec(long[a_addr])
 	elseif type == TYPE_FLOAT
-		FPrint(long[a_addr])
+'		FPrint(long[a_addr])
+		temp_addr := fp.FloatToString(long[a_addr])
+		serial.txblock(temp_addr, strsize(temp_addr))
 	else
 		serial.tx("?") 'Warning!
 	
@@ -664,15 +792,17 @@ PUB InitUart | i, char
 	waitcnt(clkfreq + cnt)
 	PrintStr(string("Starting..."))
 	
-	PrintStrStart
-	serial.str(string("Compile Time: "))
-	i := 0
 	
-	'Output the compile time, but not the LF at the end
-	repeat until (char := byte[@compile_time][i++]) == 10
-		serial.tx(char)
+	if compile_time <> 0
+		PrintStrStart
+		serial.str(string("Compile Time: "))
+		i := 0
+	
+		'Output the compile time, but not the LF at the end
+		repeat until (char := byte[@compile_time][i++]) == 10
+			serial.tx(char)
 		
-	PrintStrStop
+		PrintStrStop
 
 DAT
 	compile_time file "compile_time.dat"
@@ -739,6 +869,27 @@ OBJ
 	PID_n_4	: "PID_data.spin"
 
 DAT
+
+
+control_loop_frequency long 0.0 'Frequency in Hz of the control loop.
+
+stop_command long 0
+
+'***************************************************
+'*********** MOTOR BLOCK ***************************
+'***************************************************
+PID_M_x_base long 0
+PID_M_y_base long 0
+PID_M_z_base long 0
+PID_F_z_base long 0
+PID_n_1_base long 0
+PID_n_2_base long 0
+PID_n_3_base long 0
+PID_n_4_base long 0
+
+
+
+
 '***************************************************
 '*********** MOMENT BLOCK **************************
 '***************************************************
@@ -756,15 +907,15 @@ q_2			long 0
 q_3			long 0
 
 			long 0, 0
-q_d_0		long 0
-q_d_1		long 0
-q_d_2		long 0
-q_d_3		long 0
+q_d_0		long 1.0
+q_d_1		long 0.0
+q_d_2		long 0.0
+q_d_3		long 0.0
 
 			long 0, 0
-M_x			long 0
-M_y			long 0
-M_z			long 0
+M_x			long 0.0'-1.15762          'Needs to be on the order of 0-15
+M_y			long 0.0'1.15762'0.4280494 'Needs to be on the order of 0-15
+M_z			long 0.0'-0.4372189        'Needs to be on the order of 0-0.1
 	
 'Moment Intermediate Variables
 	
@@ -818,22 +969,24 @@ r_e_3		long 0
 r_x			long 0
 r_y			long 0
 
-
+K_PH_x		long 3.0
+K_PH_y		long 3.0
+K_P_z		long 0.0
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
 
 
 			long 0, 0
-K_Q			long 0
+K_Q			long 0.003782 'Measured with pot scale (measured with spring scale->2.65764)
 			long 0, 0
-K_T			long 0
+K_T			long 0.67504 'Measured with spring scale
 
 			long 0, 0
-diameter	long 0		'D in the documentation
+diameter	long 0.254		'D in the documentation, 10in rotors
 
 			long 0, 0
-offset		long 0		'd in the documentation
+offset		long 0.333		'd in the documentation
 
 			long 0, 0
 c			long 0
@@ -849,7 +1002,7 @@ F_3			long 0
 F_4			long 0
 
 			long 0, 0
-rho			long 0		'Air density
+rho			long 1.151		'Air density @ 20C (70F), 305m, and 30%humidity
 
 			long 0, 0
 omega_d_1	long 0
@@ -870,7 +1023,14 @@ n_3			long 0
 			long 0, 0
 n_4			long 0
 
-
+			long 0, 0
+n_1_int		long 0
+			long 0, 0
+n_2_int		long 0
+			long 0, 0
+n_3_int		long 0
+			long 0, 0
+n_4_int		long 0
 
 			long 0, 0
 n_d_1		long 0
@@ -929,9 +1089,20 @@ const_2_pi	long 0
 '*********** Predefined Constants ******************
 '***************************************************
 
-motor_slope		long 4.61538
-motor_intercept long 92.3077
+'Black motor, black ESC
+'motor_slope		long 0.238867
+'motor_intercept long 229.37517
+'MIN_PWM long 1000.0
+'MAX_PWM long 1600.0
 
+'Black motor, red ESC
+motor_slope		long 0.21568 '4.6365
+motor_intercept long 220.770 '1023.57
+MIN_PWM long 1000.0
+MAX_PWM long 1800.0
+
+
+quat_scalar long 0.0000335693 'From the UM6 datasheet
 
 '***************************************************
 '*********** WORKING VARIABLES *********************

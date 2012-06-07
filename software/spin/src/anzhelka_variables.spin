@@ -27,6 +27,27 @@ OBJ
 	PID_n_4	: "PID_data.spin"
 
 DAT
+
+
+control_loop_frequency long 0.0 'Frequency in Hz of the control loop.
+
+stop_command long 0
+
+'***************************************************
+'*********** MOTOR BLOCK ***************************
+'***************************************************
+PID_M_x_base long 0
+PID_M_y_base long 0
+PID_M_z_base long 0
+PID_F_z_base long 0
+PID_n_1_base long 0
+PID_n_2_base long 0
+PID_n_3_base long 0
+PID_n_4_base long 0
+
+
+
+
 '***************************************************
 '*********** MOMENT BLOCK **************************
 '***************************************************
@@ -44,15 +65,15 @@ q_2			long 0
 q_3			long 0
 
 			long 0, 0
-q_d_0		long 0
-q_d_1		long 0
-q_d_2		long 0
-q_d_3		long 0
+q_d_0		long 1.0
+q_d_1		long 0.0
+q_d_2		long 0.0
+q_d_3		long 0.0
 
 			long 0, 0
-M_x			long 0
-M_y			long 0
-M_z			long 0
+M_x			long 0.0'-1.15762          'Needs to be on the order of 0-15
+M_y			long 0.0'1.15762'0.4280494 'Needs to be on the order of 0-15
+M_z			long 0.0'-0.4372189        'Needs to be on the order of 0-0.1
 	
 'Moment Intermediate Variables
 	
@@ -106,22 +127,31 @@ r_e_3		long 0
 r_x			long 0
 r_y			long 0
 
-
+K_PH_x		long 0.2
+K_PH_y		long 0.2
+K_P_z		long 0.0
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
 
 
 			long 0, 0
-K_Q			long 0
+K_Q			long 0.003782 'Measured with pot scale (measured with spring scale->2.65764)
 			long 0, 0
-K_T			long 0
+K_T			long 0.077277 ' Measured 0.67504kg with the spring scale
+
+				'Measured with accurate scale:
+				'Torque: 3.400kg at 0.1524m (6in)
+				'The motor is at 24 in, so it has 3.4/4 == 0.85kg of thrust
+				'That's 0.85*9.8 == 8.33 Newtons
+				'K_T = 8.33 / (1.151 * 150^2 * .254^4) = .077277
+				
 
 			long 0, 0
-diameter	long 0		'D in the documentation
+diameter	long 0.254		'D in the documentation, 10in rotors
 
 			long 0, 0
-offset		long 0		'd in the documentation
+offset		long 0.333		'd in the documentation
 
 			long 0, 0
 c			long 0
@@ -137,7 +167,7 @@ F_3			long 0
 F_4			long 0
 
 			long 0, 0
-rho			long 0		'Air density
+rho			long 1.151		'Air density @ 20C (70F), 305m, and 30%humidity
 
 			long 0, 0
 omega_d_1	long 0
@@ -158,7 +188,14 @@ n_3			long 0
 			long 0, 0
 n_4			long 0
 
-
+			long 0, 0
+n_1_int		long 0
+			long 0, 0
+n_2_int		long 0
+			long 0, 0
+n_3_int		long 0
+			long 0, 0
+n_4_int		long 0
 
 			long 0, 0
 n_d_1		long 0
@@ -217,9 +254,20 @@ const_2_pi	long 0
 '*********** Predefined Constants ******************
 '***************************************************
 
-motor_slope		long 4.61538
-motor_intercept long 92.3077
+'Black motor, black ESC
+'motor_slope		long 0.238867
+'motor_intercept long 229.37517
+'MIN_PWM long 1000.0
+'MAX_PWM long 1600.0
 
+'Black motor, red ESC
+motor_slope		long 0.21568 '4.6365
+motor_intercept long 220.770 '1023.57
+MIN_PWM long 1000.0
+MAX_PWM long 1800.0
+
+
+quat_scalar long 0.0000335693 'From the UM6 datasheet
 
 '***************************************************
 '*********** WORKING VARIABLES *********************

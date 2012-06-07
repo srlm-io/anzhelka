@@ -29,7 +29,10 @@ import re
 con = [] #Used for staring indexes
 
 #TODO: BUG: For the keywords list, arcXXX has to before XXX, otherwise it gets substituted wrong...
-keywords = {"*":"Mul", "/":"Div", "+":"Add", "-":"Sub", "sqrt":"Sqr", "#>":"LimitMin", "<#":"LimitMax", "arc_t2":"ATan2", "arc_c":"ACos", "arc_s":"ASin", "sin":"Sin", "cos":"Cos", "tan":"Tan", "~":"PID", "||":"TruncRound"}
+keywords = {"*":"Mul", "/":"Div", "+":"Add", "-":"Sub", "sqrt":"Sqr", \
+			"#>":"LimitMin", "<#":"LimitMax", "arc_t2":"ATan2", "arc_c":"ACos", \
+			"arc_s":"ASin", "sin":"Sin", "cos":"Cos", "tan":"Tan", "~":"PID", "||":"TruncRound", \
+			"ffloat":"Float"}
 variables = {}
 constants = {}
 sequence = []

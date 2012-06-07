@@ -132,7 +132,7 @@ PUB str(stringptr)
 PUB getstr(stringptr, terminator) | index
     '' Gets "terminator" terminated or newline (Ascii 13) terminated string and stores it, starting at the stringptr memory address
     index~
-    repeat until ((byte[stringptr][index++] := rx) == terminator or byte[stringptr][index-1] == 13)
+    repeat until ((byte[stringptr][index++] := rx) == terminator or byte[stringptr][index-1] == 13 or byte[stringptr][index-1] == 10)
     byte[stringptr][--index]~   
 
 PUB dec(value) | i, x

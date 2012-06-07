@@ -33,9 +33,9 @@ CON
 '	KEYPAD_LOW_PIN  = 0
 '	KEYPAD_HIGH_PIN = 7
 	
-	ESC_PIN = 15 'turns on at ~1600 us
+	ESC_PIN = 9 'turns on at ~1600 us
 	
-	RPM_PIN = 8 'Note: currently not used in code (a pin mask is used instead)
+	RPM_PIN = 5 'Note: currently not used in code (a pin mask is used instead)
 	
 'Settings
 	NUM_MOT = 4
@@ -52,6 +52,8 @@ CON
 	ADC_THRUST = 1
 	ADC_TORQUE = 0
 	
+	
+	
 
 VAR
 	long motorrps[NUM_MOT]
@@ -63,6 +65,8 @@ VAR
 	long motordesiredrps[NUM_MOT]
 
 	long pid_output
+	
+	long pid_base_address_temp
 
 OBJ
 '	debug : "FullDuplexSerialPlus.spin"
@@ -77,22 +81,23 @@ PUB Main | i, pwmoutput, loop_time, t1, t2, remaining_time
 
 
 	InitFunctions
+'	Init_Instructions
 	
 	n_1 := float(0)
 	n_d_1 := float(0)
-	
 
 	fp.InitializePID(PID_n_1.getBase, @n_1, @pid_output, @n_d_1, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
 	fp.SetTunings(PID_n_1.getBase, float(1), float(0), float(0))
 	
 '	adc.start(ADC_D_PIN, ADC_C_PIN, ADC_S_PIN, 0)
 	pwm.start
-	rpm.setpins(%0001_0000_0000) 'RPM_PIN
+'	rpm.setpins(%0001_0000_0000) 'RPM_PIN
+	rpm.setpins(%0000_0010_0000) 'RPM_PIN
 	rpm.start
 	
 	pwm.servo(ESC_PIN, 1000)
 
-	repeat i from 0 to 0
+	repeat i from 2 to 0
 		waitcnt(clkfreq + cnt)
 		serial.str(string("$ADSTR "))
 		serial.dec(phsb)
@@ -101,27 +106,23 @@ PUB Main | i, pwmoutput, loop_time, t1, t2, remaining_time
 		serial.tx("'")
 		serial.tx(10)
 		serial.tx(13)
-		
-
 	
-	pwm.servo(ESC_PIN, 1200)
+	pwm.servo(ESC_PIN, 1300)
 	waitcnt(clkfreq * 1 + cnt)
-		
-	
+
+			
 	i := 90
-	u_1 := float(1200)
 	n_d_1 := fp.FFloat(i)
 	
-	
 	loop_time := clkfreq/50
-'	next_cnt := cnt + loop_time
+
 	repeat
-	'TODO: Put timing code in here
 		t1 := cnt
 		loop(i)
 		ParseSerial
-'		PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
-		
+		PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
+'		PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)	
+
 		t1 := cnt - t1
 
 		remaining_time := loop_time - t1 - 100_000
@@ -130,29 +131,28 @@ PUB Main | i, pwmoutput, loop_time, t1, t2, remaining_time
 		else
 			PrintStr(string("Missed Timing Period! ***********************"))
 
-
 PUB loop(i)
-	
-	
-
 	n_1 := fp.FFloat( 0 #> rpm.getrps(0) <# 250) 'Min < rps < Max
 
-	fp.FPID(PID_n_1.getBase)	
+	fp.FPID(PID_n_1.getBase)
+	
+		
+'	fp.FInterpret(@CONTROL_LOOP_INSTRUCTIONS)
 
 '	Follows this equation:
 	'rpm = (max_rpm - y_intercept)/(pwm@max_rpm) * pwm + y_intercept
-	
 
-	u_1 := fp.FMul(slope, n_d_1)
-	u_1 := fp.FSub(u_1, intercept)
-	u_1 := fp.FAdd(u_1, float(1000))
+'	u_1 := fp.FMul(slope, n_d_1)
+'	u_1 := fp.FSub(u_1, intercept)
+	u_1 := fp.FAdd(n_d_1, motor_intercept)
+	u_1 := fp.FDiv(u_1, motor_slope)
+'	u_1 := fp.FAdd(u_1, MIN_PWM)
 	u_1 := fp.FAdd(u_1, pid_output)
-	u_1 := fp.FLimitMin(u_1, float(1000))
-	u_1 := fp.FLimitMax(u_1, float(1600))
+	u_1 := fp.FLimitMin(u_1, MIN_PWM)
+	u_1 := fp.FLimitMax(u_1, MAX_PWM)
 
 
 	pwm.servo(ESC_PIN, fp.FTrunc(u_1))
-
 
 PUB readForce | thrust, torque
 	torque := ADC.average(ADC_TORQUE, 4)
@@ -161,11 +161,16 @@ PUB readForce | thrust, torque
 	motorthrust[0] := thrust
 	motortorque[0] := torque
 
-DAT
 
-slope long 4.61538
-intercept long 92.3077
 
+
+
+
+{{AZM_MATH CONTROL_LOOP
+
+t_1 = pid_base_address_temp ~ 0
+
+}}
 	
 {{
 --------------------------------------------------------------------------------  

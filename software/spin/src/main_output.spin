@@ -7,6 +7,7 @@ For the latest code and support, please visit:
 http://code.anzhelka.com
 --------------------------------------------------------------------------------
 
+
 Title: main.spin
 Author: Cody Lewis
 Date: 28 May 2012
@@ -21,8 +22,8 @@ TODO
 }}
 CON
 	_clkmode = xtal1 + pll16x
-'	_xinfreq = 5_000_000
-	_xinfreq = 6_250_000
+	_xinfreq = 5_000_000
+'	_xinfreq = 6_250_000
 
 'IO Pins
 	DEBUG_TX_PIN  = 30
@@ -30,6 +31,16 @@ CON
 	
 	CLOCK_PIN = 20 'Unconnected to anything else
 	
+	
+	'Main quadrotor board
+	IMU_RX_PIN = 27 'Note: direction is from Propeller IO port
+	IMU_TX_PIN = 26 'Note: direction is from Propeller IO port
+
+	
+'	'Demo Board (green case)
+'	IMU_RX_PIN = 0 'Note: direction is from Propeller IO port
+'	IMU_TX_PIN = 1 'Note: direction is from Propeller IO port
+'	
 	MOTOR_1_PIN =  9 'NUMBER FOR TESTING
 	MOTOR_2_PIN = 10 'NUMBER FOR TESTING
 	MOTOR_3_PIN = 11 'NUMBER FOR TESTING
@@ -37,22 +48,55 @@ CON
 	
 	'RPM pins are a mask, so shift 1 to make that
 	'Note: will not work with pin 0 ( aka, 0-1 == -1, can't shift by that)
-	RPM_1_PIN = 1 << (5 -1)
-	RPM_2_PIN = 1 << (6 -1)
-	RPM_3_PIN = 1 << (7 -1)
-	RPM_4_PIN = 1 << (8 -1)
+	RPM_1_PIN = 1 << 5
+	RPM_2_PIN = 1 << 6
+	RPM_3_PIN = 1 << 7
+	RPM_4_PIN = 1 << 8
+'	RPM_1_PIN =     %1'0_0000
+'	RPM_2_PIN =    %100_0000
+'	RPM_3_PIN =   %1000_0000
+'	RPM_4_PIN = %1_0000_0000
 	
 	'Motor lower limits
 	MOTOR_ZERO = 1000
+	
+	
+	cntMin     = 4000      ' Minimum waitcnt value to prevent lock-up (400 in MikeGreens Basic functions
 
 OBJ
 	pwm 	:	"PWM_32_v4.spin"
 	rpm 	:	"Eagle_Tree_Brushless_RPM.spin"
+	imu : "um6.spin"
+
+VAR
+	long	gyro_proc_xy
+	long	gyro_proc_z
+	long	accel_proc_xy
+	long	accel_proc_z
+	long	mag_proc_xy
+	long	mag_proc_z
+	long	euler_phi_theta
+	long	euler_psi
+
+	long	quat_ab
+	long	quat_cd
+	
+	long	quat_a
+	long	quat_b
+	long	quat_c
+	long	quat_d
+
+
+PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cnt, debug_count
+	
+	InitFunctions
+	Init_Instructions
+'	InitConstants
+	InitPID
 	
 
-PUB Main | t1, i
 	
-	
+	PrintStr(string("Zeroing Motors"))
 	u_1 := u_2 := u_3 := u_4 := float(MOTOR_ZERO)
 	motor_pwm_1 := motor_pwm_2 := motor_pwm_3 := motor_pwm_4 := MOTOR_ZERO
 	pwm.start
@@ -60,42 +104,133 @@ PUB Main | t1, i
 	pwm.servo(MOTOR_2_PIN, MOTOR_ZERO)
 	pwm.servo(MOTOR_3_PIN, MOTOR_ZERO)
 	pwm.servo(MOTOR_4_PIN, MOTOR_ZERO)
+'	waitcnt(clkfreq*3 + cnt)
 	
-	repeat
+	imu.add_register($5C, @gyro_proc_xy)
+	imu.add_register($5D, @gyro_proc_z)
+	imu.add_register($5E, @accel_proc_xy)
+	imu.add_register($5F, @accel_proc_z)
+	imu.add_register($60, @mag_proc_xy)
+	imu.add_register($61, @mag_proc_z)
+	imu.add_register($62, @euler_phi_theta)
+	imu.add_register($63, @euler_psi)
+	imu.add_register($64, @quat_ab)
+	imu.add_register($65, @quat_cd)
+	imu.start(IMU_RX_PIN, IMU_TX_PIN, 0, 115200)
 	
-	InitFunctions
-	Init_Instructions
-	InitPID
+	PrintStr(string("Zeroing IMU. Do not move."))
+	waitcnt(clkfreq + cnt)
+	imu.zero
+	PrintStr(string("Done Zeroing Motors"))
+	
+	'DEBUG TODO: Set desired orientation to the current orientation
+	q_d_0 := fp.FMul(fp.FFloat(quat_ab  ~> 16),        quat_scalar)
+	q_d_1 := fp.FMul(fp.FFloat((quat_ab << 16) ~> 16), quat_scalar)
+	q_d_2 := fp.FMul(fp.FFloat(quat_cd  ~> 16),        quat_scalar)
+	q_d_3 := fp.FMul(fp.FFloat((quat_cd << 16) ~> 16), quat_scalar)
+	
+	PrintStr(string("Done zeroing IMU"))
+	
 	
 	rpm.setpins(RPM_1_PIN | RPM_2_PIN | RPM_3_PIN | RPM_4_PIN) 'RPM_PIN
 	rpm.start
 
-	PrintStrStart
-	serial.str(string("RPM Pins: %"))
-	serial.bin(RPM_1_PIN | RPM_2_PIN | RPM_3_PIN | RPM_4_PIN, 32)
-	PrintStrStop
-	
-	'TODO: set U_1, etc.
-	
 
+
+	M_x := M_y := M_z :=  float(0) 'DEBUG TODO
+	F_z := float(4) 'DEBUG TODO: to get the motors spinning at least a little bit...
+
+	lastcnt := cnt
+	string_to_print := -1
+	loop_time := clkfreq/50 'Run at 50 Hz
+	actual_time := cnt
+	
+	debug_count := 0
 	repeat	
-		n_1 := fp.FFloat( 0 #> rpm.getrps(0) <# 250) 'Min < rps < Max
-		n_2 := fp.FFloat( 0 #> rpm.getrps(1) <# 250) 'Min < rps < Max
-		n_3 := fp.FFloat( 0 #> rpm.getrps(2) <# 250) 'Min < rps < Max
-		n_4 := fp.FFloat( 0 #> rpm.getrps(3) <# 250) 'Min < rps < Max
+		debug_count ++
+		if debug_count == 10
+			q_d_0 := q_0
+			q_d_1 := q_1
+			q_d_2 := q_2
+			q_d_3 := q_3
+	
+'***************** Inputs **************************
+		n_1_int := 0 #> rpm.getrps(0) <# 250 'Min < rps < Max
+		n_2_int := 0 #> rpm.getrps(1) <# 250 'Min < rps < Max
+		n_3_int := 0 #> rpm.getrps(2) <# 250 'Min < rps < Max
+		n_4_int := 0 #> rpm.getrps(3) <# 250 'Min < rps < Max
+
+		quat_a :=  quat_ab ~> 16
+		quat_b := (quat_ab << 16) ~> 16
+		quat_c :=  quat_cd ~> 16
+		quat_d := (quat_cd << 16) ~> 16
+	
+	
+	
+'***************** Serial **************************
+		ParseSerial
 		
-		PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
+		case string_to_print++
+			0: PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
+			1: PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
+			2: PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
+			3: PrintArrayAddr4(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
+			4: PrintArrayAddr4(string("QII"), @q_0, @q_1, @q_2, @q_3, TYPE_FLOAT)
+			5: PrintArrayAddr4(string("QDI"), @q_d_0, @q_d_1, @q_d_2, @q_d_3, TYPE_FLOAT)
+			6: PrintArrayAddr4(string("QEI"), @q_tilde_b_0, @q_tilde_b_1, @q_tilde_b_2, @q_tilde_b_3, TYPE_FLOAT)
+			7: PrintArrayAddr1(string("FZZ"), @F_z, TYPE_FLOAT)
+			OTHER:
+				PrintArrayAddr1(string("CLF"), @control_loop_frequency, TYPE_FLOAT)	
+				string_to_print~ 'Reset to head
+		
+'***************** Stop *****************************
+		if stop_command <> 0
+			'Check for resume from stop.
+			if stop_command == sSTP_RES
+				stop_command := 0
+				next
+			
+			stop_command := sSTP_EMG 'DEBUG TODO: treat all stops as emergency.
+			if stop_command == sSTP_EMG
+				pwm.servo(MOTOR_1_PIN, MOTOR_ZERO)
+				pwm.servo(MOTOR_2_PIN, MOTOR_ZERO)
+				pwm.servo(MOTOR_3_PIN, MOTOR_ZERO)
+				pwm.servo(MOTOR_4_PIN, MOTOR_ZERO)
+				u_1 := float(MOTOR_ZERO)
+				u_2 := float(MOTOR_ZERO)
+				u_3 := float(MOTOR_ZERO)
+				u_4 := float(MOTOR_ZERO)				
+				PrintStr(string("Warning: Emergency stop completed. Please reset quadrotor."))
+				waitcnt(clkfreq/10 + cnt)
+				next
+		
+'***************** Control **************************
 		
 		fp.FInterpret(@CONTROL_LOOP_INSTRUCTIONS)
-		
+			
 		pwm.servo(MOTOR_1_PIN, motor_pwm_1)
 		pwm.servo(MOTOR_2_PIN, motor_pwm_2)
 		pwm.servo(MOTOR_3_PIN, motor_pwm_3)
 		pwm.servo(MOTOR_4_PIN, motor_pwm_4)
+			
+			
+'***************** Time **************************
+		actual_time := cnt - actual_time + cntMin
+		if actual_time < loop_time
+			waitcnt(loop_time - actual_time + cnt + cntMin) 'Wait the remainder
+			actual_time := cnt
+		else
+			actual_time := cnt
+			PrintStr(string("Missed Timing Period! ***********************"))
+			
+
 		
-		ParseSerial
-
-
+		t1 := cnt
+		frequency_cnt := t1 - frequency_cnt
+		control_loop_frequency := fp.FDiv(fp.FFloat(clkfreq), fp.FFloat(frequency_cnt))
+		frequency_cnt := t1
+		
+		
 
 '-------------------------------------------------------------------
 '-------------------------------------------------------------------
@@ -122,16 +257,20 @@ PUB InitPID
 	
 	
 	fp.InitializePID(PID_n_1.getBase, @n_1, @PID_n_1_output, @n_d_1, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_1.getBase, float(1), float(0), float(0))
+	fp.SetTunings(PID_n_1.getBase, float(2), float(0), float(0))
+	PID_n_1_base := PID_n_1.getBase
 	
 	fp.InitializePID(PID_n_2.getBase, @n_2, @PID_n_2_output, @n_d_2, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_2.getBase, float(1), float(0), float(0))
+	fp.SetTunings(PID_n_2.getBase, float(2), float(0), float(0))
+	PID_n_2_base := PID_n_2.getBase
 	
 	fp.InitializePID(PID_n_3.getBase, @n_3, @PID_n_3_output, @n_d_3, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_3.getBase, float(1), float(0), float(0))
+	fp.SetTunings(PID_n_3.getBase, float(2), float(0), float(0))
+	PID_n_3_base := PID_n_3.getBase
 	
 	fp.InitializePID(PID_n_4.getBase, @n_4, @PID_n_4_output, @n_d_4, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_4.getBase, float(1), float(0), float(0))
+	fp.SetTunings(PID_n_4.getBase, float(2), float(0), float(0))
+	PID_n_4_base := PID_n_4.getBase
 	
 
 
@@ -148,7 +287,11 @@ PUB Calculate
 'Should be called from a repeat loop...
 'Writes object local variables, does not write to address
 	
-	fp.FInterpret(@CONTROL_LOOP_INSTRUCTIONS)
+'	fp.FInterpret(@CONTROL_LOOP_INSTRUCTIONS)
+	
+	
+
+	
 	
 	
 {{
@@ -181,111 +324,828 @@ CON
 	CONTROL_LOOP_INDEX = 0
 
 VAR
-	long CONTROL_LOOP_INSTRUCTIONS[(4 * 4) + 1]
+	long CONTROL_LOOP_INSTRUCTIONS[(4 * 243) + 1]
+	long azm_temp_0
+	long azm_temp_1
+	long azm_temp_2
+	long azm_temp_3
+	long azm_temp_4
+	long azm_temp_5
+	long azm_temp_6
 	long const_0
+	long const_1
+	long const_2
+	long const_4
+	long const_pi
 
 PUB Init_Instructions
 
 	fp.AddSequence(CONTROL_LOOP_INDEX, @CONTROL_LOOP_Instructions)
 
-	const_0 := float(0)'***************************************************
+	const_0 := float(0)
+	const_1 := float(1)
+	const_2 := float(2)
+	const_4 := float(4)
+	const_pi := pi
+'------------
+'' n_1 = n_1_int ffloat 0
+	'n_1 = @n_1_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @n_1_int, @const_0, @n_1)
+
+'------------
+'' n_2 = n_2_int ffloat 0
+	'n_2 = @n_2_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @n_2_int, @const_0, @n_2)
+
+'------------
+'' n_3 = n_3_int ffloat 0
+	'n_3 = @n_3_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @n_3_int, @const_0, @n_3)
+
+'------------
+'' n_4 = n_4_int ffloat 0
+	'n_4 = @n_4_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @n_4_int, @const_0, @n_4)
+'Make sure to do the shifting before calling this routine!
+
+'------------
+'' q_0 = (quat_a ffloat 0) * quat_scalar
+	'azm_temp_0 = @quat_a ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @quat_a, @const_0, @azm_temp_0)
+	'q_0 = @azm_temp_0 * @quat_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @quat_scalar, @q_0)
+
+'------------
+'' q_1 = (quat_b ffloat 0) * quat_scalar
+	'azm_temp_0 = @quat_b ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @quat_b, @const_0, @azm_temp_0)
+	'q_1 = @azm_temp_0 * @quat_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @quat_scalar, @q_1)
+
+'------------
+'' q_2 = (quat_c ffloat 0) * quat_scalar
+	'azm_temp_0 = @quat_c ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @quat_c, @const_0, @azm_temp_0)
+	'q_2 = @azm_temp_0 * @quat_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @quat_scalar, @q_2)
+
+'------------
+'' q_3 = (quat_d ffloat 0) * quat_scalar
+	'azm_temp_0 = @quat_d ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @quat_d, @const_0, @azm_temp_0)
+	'q_3 = @azm_temp_0 * @quat_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @quat_scalar, @q_3)
+'Normalize measured quaternion:
+
+'------------
+'' t_1 = (((q_0 * q_0) + (q_1 * q_1)) + ((q_2 * q_2) + (q_3 * q_3))) sqrt 0
+	'azm_temp_0 = @q_0 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_0, @q_0, @azm_temp_0)
+	'azm_temp_1 = @q_1 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_1, @q_1, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_2 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_2, @q_2, @azm_temp_3)
+	'azm_temp_4 = @q_3 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_3, @q_3, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'azm_temp_6 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @azm_temp_6)
+	't_1 = @azm_temp_6 sqrt @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSqr, @azm_temp_6, @const_0, @t_1)
+
+'------------
+'' q_0 = q_0 / t_1
+	'q_0 = @q_0 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_0, @t_1, @q_0)
+
+'------------
+'' q_1 = q_1 / t_1
+	'q_1 = @q_1 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_1, @t_1, @q_1)
+
+'------------
+'' q_2 = q_2 / t_1
+	'q_2 = @q_2 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_2, @t_1, @q_2)
+
+'------------
+'' q_3 = q_3 / t_1
+	'q_3 = @q_3 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_3, @t_1, @q_3)
+'***************************************************
 '*********** MOMENT BLOCK **************************
 '***************************************************
-''q star:
-'q_1 = 0 - q_1
-'q_2 = 0 - q_2
-'q_3 = 0 - q_3
-''Moment Block, first Quat Mul
+''
+'q star:
+
+'------------
+'' q_1 = 0 - q_1
+	'q_1 = @const_0 - @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @const_0, @q_1, @q_1)
+
+'------------
+'' q_2 = 0 - q_2
+	'q_2 = @const_0 - @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @const_0, @q_2, @q_2)
+
+'------------
+'' q_3 = 0 - q_3
+	'q_3 = @const_0 - @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @const_0, @q_3, @q_3)
+'Moment Block, first Quat Mul
+'From here: http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q53
 'q_tilde_0 = ((q_d_0*q_0) - (q_d_1*q_1)) - ((q_d_2*q_2) - (q_d_3*q_3))
 'q_tilde_1 = ((q_d_0*q_1) + (q_d_1*q_0)) + ((q_d_2*q_3) - (q_d_3*q_2))
-'q_tilde_2 = ((q_d_0*q_2) - (q_d_1*q_3)) + ((q_d_2*q_0) + (q_d_3*q_1))
-'q_tilde_3 = ((q_d_0*q_3) + (q_d_1*q_2)) - ((q_d_2*q_1) + (q_d_3*q_0))
-'alpha = 2 * (q_tilde_0 arc_c 0)
-'t_1 = (alpha / 2) sin 0
-'r_e_1 = q_tilde_1 / t_1
-'r_e_2 = q_tilde_2 / t_1
-'r_e_3 = q_tilde_3 / t_1
-''Moment Block, r_b first (lhs) quat mult:
-'q_temp_0 = ((q_0*0) - (q_1*r_e_1)) - ((q_2*r_e_2) - (q_3*r_e_3))
-'q_temp_1 = ((q_0*r_e_1) + (q_1*0)) + ((q_2*r_e_3) - (q_3*r_e_2))
-'q_temp_2 = ((q_0*r_e_2) - (q_1*r_e_3)) + ((q_2*0) + (q_3*r_e_1))
-'q_temp_3 = ((q_0*r_e_3) + (q_1*r_e_2)) - ((q_2*r_e_1) + (q_3*0))
-''q star:
-'q_1 = 0 - q_1
-'q_2 = 0 - q_2
-'q_3 = 0 - q_3
-''Moment Block, r_b second (rhs) quat mult:
-''0 = ((q_temp_0*q_0) - (q_temp_1*q_1)) - ((q_temp_2*q_2) - (q_temp_3*q_3))
-'r_b_1 = ((q_temp_0*q_1) + (q_temp_1*q_0)) + ((q_temp_2*q_3) - (q_temp_3*q_2))
-'r_b_2 = ((q_temp_0*q_2) - (q_temp_1*q_3)) + ((q_temp_2*q_0) + (q_temp_3*q_1))
-'r_b_3 = ((q_temp_0*q_3) + (q_temp_1*q_2)) - ((q_temp_2*q_1) + (q_temp_3*q_0))
-'q_tilde_b_0 = (alpha / 2) sin 0
-'q_tilde_b_1 = t_1 * r_b_1
-'q_tilde_b_2 = t_1 * r_b_2
-'q_tilde_b_3 = t_1 * r_b_3
-'alpha_H =  (1- (2 * ((q_1 * q_1) + (q_2 * q_2)))) arc_c 0
-'phi = 2 * (q_3 arc_t2 q_0)
-'t_1 = (phi / 2) cos 0
-'t_2 = (phi / 2) sin 0
-'t_3 = (alpha_H / 2) sin 0
-'r_x = ((t_1 * q_1) - (t_2 * q_2)) / t_3
-'r_y = ((t_2 * q_1) - (t_1 * q_2)) / t_3
-'beta_H = r_y arc_t2 r_x
+'q_tilde_2 = ((q_d_0*q_2) + (q_d_2*q_0)) + ((q_d_3*q_1) - (q_d_1*q_3))
+'q_tilde_3 = ((q_d_0*q_3) + (q_d_3*q_0)) + ((q_d_1*q_2) - (q_d_2*q_1))
+'Moment Block, first Quat Mul
+
+'------------
+'' q_tilde_0 = ((q_d_0*q_0) - (q_d_1*q_1)) - ((q_d_2*q_2) - (q_d_3*q_3))
+	'azm_temp_0 = @q_d_0 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_0, @q_0, @azm_temp_0)
+	'azm_temp_1 = @q_d_1 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_1, @q_1, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 - @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_d_2 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_2, @q_2, @azm_temp_3)
+	'azm_temp_4 = @q_d_3 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_3, @q_3, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 - @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_tilde_0 = @azm_temp_2 - @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_5, @q_tilde_0)
+
+'------------
+'' q_tilde_1 = ((q_d_0*q_1) + (q_d_1*q_0)) + ((q_d_2*q_3) - (q_d_3*q_2))
+	'azm_temp_0 = @q_d_0 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_0, @q_1, @azm_temp_0)
+	'azm_temp_1 = @q_d_1 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_1, @q_0, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_d_2 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_2, @q_3, @azm_temp_3)
+	'azm_temp_4 = @q_d_3 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_3, @q_2, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 - @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_tilde_1 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @q_tilde_1)
+
+'------------
+'' q_tilde_2 = ((q_d_0*q_2) - (q_d_1*q_3)) + ((q_d_2*q_0) + (q_d_3*q_1))
+	'azm_temp_0 = @q_d_0 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_0, @q_2, @azm_temp_0)
+	'azm_temp_1 = @q_d_1 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_1, @q_3, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 - @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_d_2 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_2, @q_0, @azm_temp_3)
+	'azm_temp_4 = @q_d_3 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_3, @q_1, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_tilde_2 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @q_tilde_2)
+
+'------------
+'' q_tilde_3 = ((q_d_0*q_3) + (q_d_1*q_2)) - ((q_d_2*q_1) + (q_d_3*q_0))
+	'azm_temp_0 = @q_d_0 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_0, @q_3, @azm_temp_0)
+	'azm_temp_1 = @q_d_1 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_1, @q_2, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_d_2 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_2, @q_1, @azm_temp_3)
+	'azm_temp_4 = @q_d_3 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_d_3, @q_0, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_tilde_3 = @azm_temp_2 - @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_5, @q_tilde_3)
+'     Autogenerated quat multiplication with ./tool/quat_replace.py
+''Normalize Quaternion
+
+'------------
+'' t_1 = (((q_tilde_0 * q_tilde_0) + (q_tilde_1 * q_tilde_1)) + ((q_tilde_2 * q_tilde_2) + (q_tilde_3 * q_tilde_3))) sqrt 0
+	'azm_temp_0 = @q_tilde_0 * @q_tilde_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_0, @q_tilde_0, @azm_temp_0)
+	'azm_temp_1 = @q_tilde_1 * @q_tilde_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_1, @q_tilde_1, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_tilde_2 * @q_tilde_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_2, @q_tilde_2, @azm_temp_3)
+	'azm_temp_4 = @q_tilde_3 * @q_tilde_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_3, @q_tilde_3, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'azm_temp_6 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @azm_temp_6)
+	't_1 = @azm_temp_6 sqrt @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSqr, @azm_temp_6, @const_0, @t_1)
+
+'------------
+'' q_tilde_0 = q_tilde_0 / t_1
+	'q_tilde_0 = @q_tilde_0 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_0, @t_1, @q_tilde_0)
+
+'------------
+'' q_tilde_1 = q_tilde_1 / t_1
+	'q_tilde_1 = @q_tilde_1 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_1, @t_1, @q_tilde_1)
+
+'------------
+'' q_tilde_2 = q_tilde_2 / t_1
+	'q_tilde_2 = @q_tilde_2 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_2, @t_1, @q_tilde_2)
+
+'------------
+'' q_tilde_3 = q_tilde_3 / t_1
+	'q_tilde_3 = @q_tilde_3 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_3, @t_1, @q_tilde_3)
+
+'------------
+'' alpha = 2 * (q_tilde_0 arc_c 0)
+	'azm_temp_0 = @q_tilde_0 arc_c @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPACos, @q_tilde_0, @const_0, @azm_temp_0)
+	'alpha = @const_2 * @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @const_2, @azm_temp_0, @alpha)
+
+'------------
+'' t_1 = (alpha / 2) sin 0
+	'azm_temp_0 = @alpha / @const_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @alpha, @const_2, @azm_temp_0)
+	't_1 = @azm_temp_0 sin @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSin, @azm_temp_0, @const_0, @t_1)
+
+'------------
+'' r_e_1 = q_tilde_1 / t_1
+	'r_e_1 = @q_tilde_1 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_1, @t_1, @r_e_1)
+
+'------------
+'' r_e_2 = q_tilde_2 / t_1
+	'r_e_2 = @q_tilde_2 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_2, @t_1, @r_e_2)
+
+'------------
+'' r_e_3 = q_tilde_3 / t_1
+	'r_e_3 = @q_tilde_3 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_3, @t_1, @r_e_3)
+'Moment Block, r_b first (lhs) quat mult:
+'q_temp := q* (x) r_e
+'  Important: q needs to be starred comming into this...
+
+'------------
+'' q_temp_0 = ((q_0*0) - (q_1*r_e_1)) - ((q_2*r_e_2) - (q_3*r_e_3))
+	'azm_temp_0 = @q_0 * @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_0, @const_0, @azm_temp_0)
+	'azm_temp_1 = @q_1 * @r_e_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_1, @r_e_1, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 - @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_2 * @r_e_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_2, @r_e_2, @azm_temp_3)
+	'azm_temp_4 = @q_3 * @r_e_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_3, @r_e_3, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 - @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_temp_0 = @azm_temp_2 - @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_5, @q_temp_0)
+
+'------------
+'' q_temp_1 = ((q_0*r_e_1) + (q_1*0)) + ((q_2*r_e_3) - (q_3*r_e_2))
+	'azm_temp_0 = @q_0 * @r_e_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_0, @r_e_1, @azm_temp_0)
+	'azm_temp_1 = @q_1 * @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_1, @const_0, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_2 * @r_e_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_2, @r_e_3, @azm_temp_3)
+	'azm_temp_4 = @q_3 * @r_e_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_3, @r_e_2, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 - @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_temp_1 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @q_temp_1)
+
+'------------
+'' q_temp_2 = ((q_0*r_e_2) - (q_1*r_e_3)) + ((q_2*0) + (q_3*r_e_1))
+	'azm_temp_0 = @q_0 * @r_e_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_0, @r_e_2, @azm_temp_0)
+	'azm_temp_1 = @q_1 * @r_e_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_1, @r_e_3, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 - @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_2 * @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_2, @const_0, @azm_temp_3)
+	'azm_temp_4 = @q_3 * @r_e_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_3, @r_e_1, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_temp_2 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @q_temp_2)
+
+'------------
+'' q_temp_3 = ((q_0*r_e_3) + (q_1*r_e_2)) - ((q_2*r_e_1) + (q_3*0))
+	'azm_temp_0 = @q_0 * @r_e_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_0, @r_e_3, @azm_temp_0)
+	'azm_temp_1 = @q_1 * @r_e_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_1, @r_e_2, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_2 * @r_e_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_2, @r_e_1, @azm_temp_3)
+	'azm_temp_4 = @q_3 * @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_3, @const_0, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'q_temp_3 = @azm_temp_2 - @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_5, @q_temp_3)
+' Autogenerated quat multiplication with ./tool/quat_replace.py
+'q star:
+
+'------------
+'' q_1 = 0 - q_1
+	'q_1 = @const_0 - @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @const_0, @q_1, @q_1)
+
+'------------
+'' q_2 = 0 - q_2
+	'q_2 = @const_0 - @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @const_0, @q_2, @q_2)
+
+'------------
+'' q_3 = 0 - q_3
+	'q_3 = @const_0 - @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @const_0, @q_3, @q_3)
+'Moment Block, r_b second (rhs) quat mult:
+' r_b := q_temp_0 (x) q
+'  Important: q needs to be not stared before multiplying...
+'0 = ((q_temp_0*q_0) - (q_temp_1*q_1)) - ((q_temp_2*q_2) - (q_temp_3*q_3))
+
+'------------
+'' r_b_1 = ((q_temp_0*q_1) + (q_temp_1*q_0)) + ((q_temp_2*q_3) - (q_temp_3*q_2))
+	'azm_temp_0 = @q_temp_0 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_0, @q_1, @azm_temp_0)
+	'azm_temp_1 = @q_temp_1 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_1, @q_0, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_temp_2 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_2, @q_3, @azm_temp_3)
+	'azm_temp_4 = @q_temp_3 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_3, @q_2, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 - @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'r_b_1 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @r_b_1)
+
+'------------
+'' r_b_2 = ((q_temp_0*q_2) - (q_temp_1*q_3)) + ((q_temp_2*q_0) + (q_temp_3*q_1))
+	'azm_temp_0 = @q_temp_0 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_0, @q_2, @azm_temp_0)
+	'azm_temp_1 = @q_temp_1 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_1, @q_3, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 - @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_temp_2 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_2, @q_0, @azm_temp_3)
+	'azm_temp_4 = @q_temp_3 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_3, @q_1, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'r_b_2 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @r_b_2)
+
+'------------
+'' r_b_3 = ((q_temp_0*q_3) + (q_temp_1*q_2)) - ((q_temp_2*q_1) + (q_temp_3*q_0))
+	'azm_temp_0 = @q_temp_0 * @q_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_0, @q_3, @azm_temp_0)
+	'azm_temp_1 = @q_temp_1 * @q_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_1, @q_2, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_temp_2 * @q_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_2, @q_1, @azm_temp_3)
+	'azm_temp_4 = @q_temp_3 * @q_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_temp_3, @q_0, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'r_b_3 = @azm_temp_2 - @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_5, @r_b_3)
+'     Autogenerated quat multiplication with ./tool/quat_replace.py
+
+'------------
+'' t_1 = (alpha / 2) sin 0
+	'azm_temp_0 = @alpha / @const_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @alpha, @const_2, @azm_temp_0)
+	't_1 = @azm_temp_0 sin @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSin, @azm_temp_0, @const_0, @t_1)
+
+'------------
+'' q_tilde_b_0 = (alpha / 2) cos 0
+	'azm_temp_0 = @alpha / @const_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @alpha, @const_2, @azm_temp_0)
+	'q_tilde_b_0 = @azm_temp_0 cos @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPCos, @azm_temp_0, @const_0, @q_tilde_b_0)
+
+'------------
+'' q_tilde_b_1 = t_1 * r_b_1
+	'q_tilde_b_1 = @t_1 * @r_b_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @r_b_1, @q_tilde_b_1)
+
+'------------
+'' q_tilde_b_2 = t_1 * r_b_2
+	'q_tilde_b_2 = @t_1 * @r_b_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @r_b_2, @q_tilde_b_2)
+
+'------------
+'' q_tilde_b_3 = t_1 * r_b_3
+	'q_tilde_b_3 = @t_1 * @r_b_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @r_b_3, @q_tilde_b_3)
+''Normalize Quaternion
+
+'------------
+'' t_1 = (((q_tilde_b_0 * q_tilde_b_0) + (q_tilde_b_1 * q_tilde_b_1)) + ((q_tilde_b_2 * q_tilde_b_2) + (q_tilde_b_3 * q_tilde_b_3))) sqrt 0
+	'azm_temp_0 = @q_tilde_b_0 * @q_tilde_b_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_b_0, @q_tilde_b_0, @azm_temp_0)
+	'azm_temp_1 = @q_tilde_b_1 * @q_tilde_b_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_b_1, @q_tilde_b_1, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @q_tilde_b_2 * @q_tilde_b_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_b_2, @q_tilde_b_2, @azm_temp_3)
+	'azm_temp_4 = @q_tilde_b_3 * @q_tilde_b_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_b_3, @q_tilde_b_3, @azm_temp_4)
+	'azm_temp_5 = @azm_temp_3 + @azm_temp_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_3, @azm_temp_4, @azm_temp_5)
+	'azm_temp_6 = @azm_temp_2 + @azm_temp_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_2, @azm_temp_5, @azm_temp_6)
+	't_1 = @azm_temp_6 sqrt @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSqr, @azm_temp_6, @const_0, @t_1)
+
+'------------
+'' q_tilde_b_0 = q_tilde_b_0 / t_1
+	'q_tilde_b_0 = @q_tilde_b_0 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_b_0, @t_1, @q_tilde_b_0)
+
+'------------
+'' q_tilde_b_1 = q_tilde_b_1 / t_1
+	'q_tilde_b_1 = @q_tilde_b_1 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_b_1, @t_1, @q_tilde_b_1)
+
+'------------
+'' q_tilde_b_2 = q_tilde_b_2 / t_1
+	'q_tilde_b_2 = @q_tilde_b_2 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_b_2, @t_1, @q_tilde_b_2)
+
+'------------
+'' q_tilde_b_3 = q_tilde_b_3 / t_1
+	'q_tilde_b_3 = @q_tilde_b_3 / @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @q_tilde_b_3, @t_1, @q_tilde_b_3)
+
+'------------
+'' alpha_H =  (1- (2 * ((q_tilde_b_1 * q_tilde_b_1) + (q_tilde_b_2 * q_tilde_b_2)))) arc_c 0
+	'azm_temp_0 = @q_tilde_b_1 * @q_tilde_b_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_b_1, @q_tilde_b_1, @azm_temp_0)
+	'azm_temp_1 = @q_tilde_b_2 * @q_tilde_b_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @q_tilde_b_2, @q_tilde_b_2, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @const_2 * @azm_temp_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @const_2, @azm_temp_2, @azm_temp_3)
+	'azm_temp_4 = @const_1 - @azm_temp_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @const_1, @azm_temp_3, @azm_temp_4)
+	'alpha_H = @azm_temp_4 arc_c @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPACos, @azm_temp_4, @const_0, @alpha_H)
+
+'------------
+'' phi = 2 * (q_tilde_b_3 arc_t2 q_tilde_b_0)
+	'azm_temp_0 = @q_tilde_b_3 arc_t2 @q_tilde_b_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPATan2, @q_tilde_b_3, @q_tilde_b_0, @azm_temp_0)
+	'phi = @const_2 * @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @const_2, @azm_temp_0, @phi)
+
+'------------
+'' t_1 = (phi / 2) cos 0
+	'azm_temp_0 = @phi / @const_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @phi, @const_2, @azm_temp_0)
+	't_1 = @azm_temp_0 cos @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPCos, @azm_temp_0, @const_0, @t_1)
+
+'------------
+'' t_2 = (phi / 2) sin 0
+	'azm_temp_0 = @phi / @const_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @phi, @const_2, @azm_temp_0)
+	't_2 = @azm_temp_0 sin @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSin, @azm_temp_0, @const_0, @t_2)
+
+'------------
+'' t_3 = (alpha_H / 2) sin 0
+	'azm_temp_0 = @alpha_H / @const_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @alpha_H, @const_2, @azm_temp_0)
+	't_3 = @azm_temp_0 sin @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSin, @azm_temp_0, @const_0, @t_3)
+
+'------------
+'' r_x = ((t_1 * q_tilde_b_1) - (t_2 * q_tilde_b_2)) / t_3
+	'azm_temp_0 = @t_1 * @q_tilde_b_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @q_tilde_b_1, @azm_temp_0)
+	'azm_temp_1 = @t_2 * @q_tilde_b_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_2, @q_tilde_b_2, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 - @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'r_x = @azm_temp_2 / @t_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @azm_temp_2, @t_3, @r_x)
+
+'------------
+'' r_y = ((t_2 * q_tilde_b_1) + (t_1 * q_tilde_b_2)) / t_3
+	'azm_temp_0 = @t_2 * @q_tilde_b_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_2, @q_tilde_b_1, @azm_temp_0)
+	'azm_temp_1 = @t_1 * @q_tilde_b_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @q_tilde_b_2, @azm_temp_1)
+	'azm_temp_2 = @azm_temp_0 + @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'r_y = @azm_temp_2 / @t_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @azm_temp_2, @t_3, @r_y)
+
+'------------
+'' beta_H = r_y arc_t2 r_x
+	'beta_H = @r_y arc_t2 @r_x
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPATan2, @r_y, @r_x, @beta_H)
+'TODO: need to add a derivative term, at least.
+
+'------------
+'' M_x = (K_PH_x * alpha_H) * (beta_H cos 0)
+	'azm_temp_0 = @K_PH_x * @alpha_H
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_PH_x, @alpha_H, @azm_temp_0)
+	'azm_temp_1 = @beta_H cos @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPCos, @beta_H, @const_0, @azm_temp_1)
+	'M_x = @azm_temp_0 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @azm_temp_1, @M_x)
+
+'------------
+'' M_y = (K_PH_y * alpha_H) * (beta_H sin 0)
+	'azm_temp_0 = @K_PH_y * @alpha_H
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_PH_y, @alpha_H, @azm_temp_0)
+	'azm_temp_1 = @beta_H sin @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSin, @beta_H, @const_0, @azm_temp_1)
+	'M_y = @azm_temp_0 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @azm_temp_1, @M_y)
+
+'------------
+'' M_z = K_P_z * phi
+	'M_z = @K_P_z * @phi
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_P_z, @phi, @M_z)
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
-'t_5 = 2 * offset
-'const_2_pi = 2 * pi
-'c = (K_Q * diameter) / K_T
-'t_1 = M_z / (4*c)
-'t_2 = M_y / t_5
-'t_3 = M_x / t_5
-'t_4 = F_z / 4
-'F_1 = (t_4 + (t_1 - t_2)) #> 0
-'F_2 = (t_4 - (t_1 + t_3)) #> 0
-'F_3 = (t_4 + (t_1 + t_2)) #> 0
-'F_4 = (t_4 + (t_3 - t_1)) #> 0
-'t_1 = const_2_pi / (diameter * diameter)
-'t_2 = rho * K_T
-'omega_d_1 = t_1 * ((F_1 / t_2) sqrt 0)
-'omega_d_2 = t_1 * ((F_2 / t_2) sqrt 0)
-'omega_d_3 = t_1 * ((F_3 / t_2) sqrt 0)
-'omega_d_4 = t_1 * ((F_4 / t_2) sqrt 0)
-'n_d_1 = omega_d_1 / const_2_pi
-'n_d_2 = omega_d_2 / const_2_pi
-'n_d_3 = omega_d_3 / const_2_pi
-'n_d_4 = omega_d_4 / const_2_pi
-''PID Section, with truncation (||)
-''u_1 = (PID_n_1.getBase ~ 0) || 0
-''u_2 = (PID_n_2.getBase ~ 0) || 0
-''u_3 = (PID_n_3.getBase ~ 0) || 0
-''u_4 = (PID_n_4.getBase ~ 0) || 0
-'Follows the inverse of this equation:
-'	rpm = (max_rpm - y_intercept)/(pwm@max_rpm) * pwm + y_intercept
-' the constants above are determined by experiment.
-' Inverse
-'	pwm = ( pwm@max_rpm / (max_rpm - y_intercept))*rpm - (y_intercept * max_rpm)/(max_rpm - y_intercept)
-'Below, I am using
-' motor_slope = ( pwm@max_rpm / (max_rpm - y_intercept))
-' motor_intercept = (y_intercept * max_rpm)/(max_rpm - y_intercept)
-'t_1, t_2, etc. are placeholders. Results are in:
-'PID_n_1_output
-'PID_n_2_output
-'PID_n_3_output
-'PID_n_4_output
-'t_1 = PID_n_1.getBase ~ 0
-'t_2 = PID_n_2.getBase ~ 0
-'t_3 = PID_n_3.getBase ~ 0
-'t_4 = PID_n_4.getBase ~ 0
+
+'------------
+'' t_5 = 2 * offset
+	't_5 = @const_2 * @offset
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @const_2, @offset, @t_5)
+
+'------------
+'' const_2_pi = 2 * pi
+	'const_2_pi = @const_2 * @const_pi
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @const_2, @const_pi, @const_2_pi)
+
+'------------
+'' c = (K_Q * diameter) / K_T
+	'azm_temp_0 = @K_Q * @diameter
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_Q, @diameter, @azm_temp_0)
+	'c = @azm_temp_0 / @K_T
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @azm_temp_0, @K_T, @c)
+
+'------------
+'' t_1 = M_z / (4*c)
+	'azm_temp_0 = @const_4 * @c
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @const_4, @c, @azm_temp_0)
+	't_1 = @M_z / @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @M_z, @azm_temp_0, @t_1)
+
+'------------
+'' t_2 = M_y / t_5
+	't_2 = @M_y / @t_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @M_y, @t_5, @t_2)
+
+'------------
+'' t_3 = M_x / t_5
+	't_3 = @M_x / @t_5
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @M_x, @t_5, @t_3)
+
+'------------
+'' t_4 = F_z / 4
+	't_4 = @F_z / @const_4
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @F_z, @const_4, @t_4)
+
+'------------
+'' F_1 = (t_4 + (t_1 - t_2)) #> 0
+	'azm_temp_0 = @t_1 - @t_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @t_1, @t_2, @azm_temp_0)
+	'azm_temp_1 = @t_4 + @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @t_4, @azm_temp_0, @azm_temp_1)
+	'F_1 = @azm_temp_1 #> @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_1)
+
+'------------
+'' F_2 = (t_4 - (t_1 + t_3)) #> 0
+	'azm_temp_0 = @t_1 + @t_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @t_1, @t_3, @azm_temp_0)
+	'azm_temp_1 = @t_4 - @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @t_4, @azm_temp_0, @azm_temp_1)
+	'F_2 = @azm_temp_1 #> @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_2)
+
+'------------
+'' F_3 = (t_4 + (t_1 + t_2)) #> 0
+	'azm_temp_0 = @t_1 + @t_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @t_1, @t_2, @azm_temp_0)
+	'azm_temp_1 = @t_4 + @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @t_4, @azm_temp_0, @azm_temp_1)
+	'F_3 = @azm_temp_1 #> @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_3)
+
+'------------
+'' F_4 = (t_4 + (t_3 - t_1)) #> 0
+	'azm_temp_0 = @t_3 - @t_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @t_3, @t_1, @azm_temp_0)
+	'azm_temp_1 = @t_4 + @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @t_4, @azm_temp_0, @azm_temp_1)
+	'F_4 = @azm_temp_1 #> @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @azm_temp_1, @const_0, @F_4)
+
+'------------
+'' t_1 = const_2_pi / (diameter * diameter)
+	'azm_temp_0 = @diameter * @diameter
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @diameter, @diameter, @azm_temp_0)
+	't_1 = @const_pi / @azm_temp_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @const_pi, @azm_temp_0, @t_1)
+
+'------------
+'' t_2 = rho * K_T
+	't_2 = @rho * @K_T
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @rho, @K_T, @t_2)
+
+'------------
+'' omega_d_1 = t_1 * ((F_1 / t_2) sqrt 0)
+	'azm_temp_0 = @F_1 / @t_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @F_1, @t_2, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
+	'omega_d_1 = @t_1 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_1)
+
+'------------
+'' omega_d_2 = t_1 * ((F_2 / t_2) sqrt 0)
+	'azm_temp_0 = @F_2 / @t_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @F_2, @t_2, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
+	'omega_d_2 = @t_1 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_2)
+
+'------------
+'' omega_d_3 = t_1 * ((F_3 / t_2) sqrt 0)
+	'azm_temp_0 = @F_3 / @t_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @F_3, @t_2, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
+	'omega_d_3 = @t_1 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_3)
+
+'------------
+'' omega_d_4 = t_1 * ((F_4 / t_2) sqrt 0)
+	'azm_temp_0 = @F_4 / @t_2
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @F_4, @t_2, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 sqrt @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSqr, @azm_temp_0, @const_0, @azm_temp_1)
+	'omega_d_4 = @t_1 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @t_1, @azm_temp_1, @omega_d_4)
+
+'------------
+'' n_d_1 = omega_d_1 / const_2_pi
+	'n_d_1 = @omega_d_1 / @const_pi
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @omega_d_1, @const_pi, @n_d_1)
+
+'------------
+'' n_d_2 = omega_d_2 / const_2_pi
+	'n_d_2 = @omega_d_2 / @const_pi
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @omega_d_2, @const_pi, @n_d_2)
+
+'------------
+'' n_d_3 = omega_d_3 / const_2_pi
+	'n_d_3 = @omega_d_3 / @const_pi
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @omega_d_3, @const_pi, @n_d_3)
+
+'------------
+'' n_d_4 = omega_d_4 / const_2_pi
+	'n_d_4 = @omega_d_4 / @const_pi
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @omega_d_4, @const_pi, @n_d_4)
+''Follows the inverse of this equation:
+''	rpm = slope * pwm + intercept
+'' Graph it in open office, then create a trend line. The given values plug directly in (in anzhelka_variables)
+''t_1, t_2, etc. are placeholders. Results are in:
+''PID_n_1_output
+''PID_n_2_output
+''PID_n_3_output
+''PID_n_4_output
+
+'------------
+'' t_1 = PID_n_1_base ~ 0
+	't_1 = @PID_n_1_base ~ @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPPID, @PID_n_1_base, @const_0, @t_1)
+
+'------------
+'' t_2 = PID_n_2_base ~ 0
+	't_2 = @PID_n_2_base ~ @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPPID, @PID_n_2_base, @const_0, @t_2)
+
+'------------
+'' t_3 = PID_n_3_base ~ 0
+	't_3 = @PID_n_3_base ~ @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPPID, @PID_n_3_base, @const_0, @t_3)
+
+'------------
+'' t_4 = PID_n_4_base ~ 0
+	't_4 = @PID_n_4_base ~ @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPPID, @PID_n_4_base, @const_0, @t_4)
 'Apply the PID to the motor output equation
-'u_1 = ((motor_slope * n_d_1) - motor_intercept) + PID_n_1_output
-'u_1 = (u_1 #> 1000) <# 1600
-'u_2 = ((motor_slope * n_d_2) - motor_intercept) + PID_n_2_output
-'u_2 = (u_2 #> 1000) <# 1600
-'u_3 = ((motor_slope * n_d_3) - motor_intercept) + PID_n_3_output
-'u_3 = (u_3 #> 1000) <# 1600
-'u_4 = ((motor_slope * n_d_4) - motor_intercept) + PID_n_4_output
-'u_4 = (u_4 #> 1000) <# 1600
+
+'------------
+'' u_1 = ((n_d_1 + motor_intercept) / motor_slope ) + PID_n_1_output
+	'azm_temp_0 = @n_d_1 + @motor_intercept
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @n_d_1, @motor_intercept, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 / @motor_slope
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @azm_temp_0, @motor_slope, @azm_temp_1)
+	'u_1 = @azm_temp_1 + @PID_n_1_output
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_1, @PID_n_1_output, @u_1)
+
+'------------
+'' u_1 = (u_1 #> MIN_PWM) <# MAX_PWM
+	'azm_temp_0 = @u_1 #> @MIN_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @u_1, @MIN_PWM, @azm_temp_0)
+	'u_1 = @azm_temp_0 <# @MAX_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMax, @azm_temp_0, @MAX_PWM, @u_1)
+
+'------------
+'' u_2 = ((n_d_2 + motor_intercept) / motor_slope ) + PID_n_2_output
+	'azm_temp_0 = @n_d_2 + @motor_intercept
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @n_d_2, @motor_intercept, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 / @motor_slope
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @azm_temp_0, @motor_slope, @azm_temp_1)
+	'u_2 = @azm_temp_1 + @PID_n_2_output
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_1, @PID_n_2_output, @u_2)
+
+'------------
+'' u_2 = (u_2 #> MIN_PWM) <# MAX_PWM
+	'azm_temp_0 = @u_2 #> @MIN_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @u_2, @MIN_PWM, @azm_temp_0)
+	'u_2 = @azm_temp_0 <# @MAX_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMax, @azm_temp_0, @MAX_PWM, @u_2)
+
+'------------
+'' u_3 = ((n_d_3 + motor_intercept) / motor_slope ) + PID_n_3_output
+	'azm_temp_0 = @n_d_3 + @motor_intercept
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @n_d_3, @motor_intercept, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 / @motor_slope
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @azm_temp_0, @motor_slope, @azm_temp_1)
+	'u_3 = @azm_temp_1 + @PID_n_3_output
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_1, @PID_n_3_output, @u_3)
+
+'------------
+'' u_3 = (u_3 #> MIN_PWM) <# MAX_PWM
+	'azm_temp_0 = @u_3 #> @MIN_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @u_3, @MIN_PWM, @azm_temp_0)
+	'u_3 = @azm_temp_0 <# @MAX_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMax, @azm_temp_0, @MAX_PWM, @u_3)
+
+'------------
+'' u_4 = ((n_d_4 + motor_intercept) / motor_slope ) + PID_n_4_output
+	'azm_temp_0 = @n_d_4 + @motor_intercept
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @n_d_4, @motor_intercept, @azm_temp_0)
+	'azm_temp_1 = @azm_temp_0 / @motor_slope
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPDiv, @azm_temp_0, @motor_slope, @azm_temp_1)
+	'u_4 = @azm_temp_1 + @PID_n_4_output
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPAdd, @azm_temp_1, @PID_n_4_output, @u_4)
+
+'------------
+'' u_4 = (u_4 #> MIN_PWM) <# MAX_PWM
+	'azm_temp_0 = @u_4 #> @MIN_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMin, @u_4, @MIN_PWM, @azm_temp_0)
+	'u_4 = @azm_temp_0 <# @MAX_PWM
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPLimitMax, @azm_temp_0, @MAX_PWM, @u_4)
 'Convert to integer outputs
 
 '------------
@@ -308,15 +1168,174 @@ PUB Init_Instructions
 	'motor_pwm_4 = @u_4 || @const_0
 	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPTruncRound, @u_4, @const_0, @motor_pwm_4)
 'All variables that are used or created:
+'	long @F_1
+'	long @F_2
+'	long @F_3
+'	long @F_4
+'	long @F_z
+'	long @K_PH_x
+'	long @K_PH_y
+'	long @K_P_z
+'	long @K_Q
+'	long @K_T
+'	long @MAX_PWM
+'	long @MIN_PWM
+'	long @M_x
+'	long @M_y
+'	long @M_z
+'	long @PID_n_1_base
+'	long @PID_n_1_output
+'	long @PID_n_2_base
+'	long @PID_n_2_output
+'	long @PID_n_3_base
+'	long @PID_n_3_output
+'	long @PID_n_4_base
+'	long @PID_n_4_output
+'	long @alpha
+'	long @alpha_H
+'	long @azm_temp_0
+'	long @azm_temp_1
+'	long @azm_temp_2
+'	long @azm_temp_3
+'	long @azm_temp_4
+'	long @azm_temp_5
+'	long @azm_temp_6
+'	long @beta_H
+'	long @c
 '	long @const_0
+'	long @const_1
+'	long @const_2
+'	long @const_4
+'	long @const_pi
+'	long @diameter
+'	long @motor_intercept
+'	long @motor_slope
+'	long @n_1_int
+'	long @n_2_int
+'	long @n_3_int
+'	long @n_4_int
+'	long @n_d_1
+'	long @n_d_2
+'	long @n_d_3
+'	long @n_d_4
+'	long @offset
+'	long @omega_d_1
+'	long @omega_d_2
+'	long @omega_d_3
+'	long @omega_d_4
+'	long @phi
+'	long @q_0
+'	long @q_1
+'	long @q_2
+'	long @q_3
+'	long @q_d_0
+'	long @q_d_1
+'	long @q_d_2
+'	long @q_d_3
+'	long @q_temp_0
+'	long @q_temp_1
+'	long @q_temp_2
+'	long @q_temp_3
+'	long @q_tilde_0
+'	long @q_tilde_1
+'	long @q_tilde_2
+'	long @q_tilde_3
+'	long @q_tilde_b_0
+'	long @q_tilde_b_1
+'	long @q_tilde_b_2
+'	long @q_tilde_b_3
+'	long @quat_a
+'	long @quat_b
+'	long @quat_c
+'	long @quat_d
+'	long @quat_scalar
+'	long @r_b_1
+'	long @r_b_2
+'	long @r_b_3
+'	long @r_e_1
+'	long @r_e_2
+'	long @r_e_3
+'	long @r_x
+'	long @r_y
+'	long @rho
+'	long @t_1
+'	long @t_2
+'	long @t_3
+'	long @t_4
+'	long @t_5
 '	long @u_1
 '	long @u_2
 '	long @u_3
 '	long @u_4
+'	long F_1
+'	long F_2
+'	long F_3
+'	long F_4
+'	long M_x
+'	long M_y
+'	long M_z
+'	long alpha
+'	long alpha_H
+'	long azm_temp_0
+'	long azm_temp_1
+'	long azm_temp_2
+'	long azm_temp_3
+'	long azm_temp_4
+'	long azm_temp_5
+'	long azm_temp_6
+'	long beta_H
+'	long c
+'	long const_2_pi
 '	long motor_pwm_1
 '	long motor_pwm_2
 '	long motor_pwm_3
 '	long motor_pwm_4
+'	long n_1
+'	long n_2
+'	long n_3
+'	long n_4
+'	long n_d_1
+'	long n_d_2
+'	long n_d_3
+'	long n_d_4
+'	long omega_d_1
+'	long omega_d_2
+'	long omega_d_3
+'	long omega_d_4
+'	long phi
+'	long q_0
+'	long q_1
+'	long q_2
+'	long q_3
+'	long q_temp_0
+'	long q_temp_1
+'	long q_temp_2
+'	long q_temp_3
+'	long q_tilde_0
+'	long q_tilde_1
+'	long q_tilde_2
+'	long q_tilde_3
+'	long q_tilde_b_0
+'	long q_tilde_b_1
+'	long q_tilde_b_2
+'	long q_tilde_b_3
+'	long r_b_1
+'	long r_b_2
+'	long r_b_3
+'	long r_e_1
+'	long r_e_2
+'	long r_e_3
+'	long r_x
+'	long r_y
+'	long t_1
+'	long t_2
+'	long t_3
+'	long t_4
+'	long t_5
+'	long u_1
+'	long u_2
+'	long u_3
+'	long u_4
 '=========================================
 {{
 --------------------------------------------------------------------------------
@@ -421,6 +1440,13 @@ CON
 
 	sSDR = ("S" << 16) | ("D" << 8) | "R"
 	sRDR = ("R" << 16) | ("D" << 8) | "R"
+	sSTP = ("S" << 16) | ("T" << 8) | "P"
+	
+	
+	sSTP_EMG = ("E" << 16) | ("M" << 8) | "G"
+	sSTP_IMM = ("I" << 16) | ("M" << 8) | "M"
+	sSTP_CON = ("C" << 16) | ("O" << 8) | "N"
+	sSTP_RES = ("R" << 16) | ("E" << 8) | "S"
 PUB ParseSerialCommand | t1, t2, t3, command
 ''Parses packets of the form "$ACXXX ...", ie command packets
 	
@@ -435,6 +1461,16 @@ PUB ParseSerialCommand | t1, t2, t3, command
 			ParseSerialXDR(XDR_WRITE)
 		sRDR:
 			ParseSerialXDR(XDR_READ)
+
+		sSTP:
+			'Discard spaces, and then get first letter
+			repeat
+			while (stop_command := serial.rx) == " " 'Ignore spaces
+			
+			stop_command <<= 16 
+			stop_command |= serial.rx << 8
+			stop_command |= serial.rx
+
 		OTHER:
 			PrintStrStart
 			serial.str(string("Warning: Unknown command type: "))
@@ -455,6 +1491,15 @@ CON
 	sNIM = ("N" << 16) | ("I" << 8) | "M"
 	sMOM = ("M" << 16) | ("O" << 8) | "M"
 	sFZZ = ("F" << 16) | ("Z" << 8) | "Z"
+	sMPP = ("M" << 16) | ("P" << 8) | "P"
+	sQII = ("Q" << 16) | ("I" << 8) | "I"
+	sQDI = ("Q" << 16) | ("D" << 8) | "I"
+	sQEI = ("Q" << 16) | ("E" << 8) | "I"
+	sCLF = ("C" << 16) | ("L" << 8) | "F"
+	
+
+'	 = ("" << 16) | ("" << 8) | ""
+'	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
 
@@ -485,6 +1530,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, values[2], FNeg1, FNeg1)
 				fp.SetTunings(PID_n_4.getBase, values[3], FNeg1, FNeg1)
 '				WriteList(@values, PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr)
+				PrintArrayAddr4(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKP"), PID_n_1.getKpAddr, PID_n_2.getKpAddr, PID_n_3.getKpAddr, PID_n_4.getKpAddr, TYPE_FLOAT)
 		sMKI:
@@ -495,6 +1541,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, FNeg1, values[2], FNeg1)
 				fp.SetTunings(PID_n_4.getBase, FNeg1, values[3], FNeg1)
 '				WriteList(@values, PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr)
+				PrintArrayAddr4(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKI"), PID_n_1.getKiAddr, PID_n_2.getKiAddr, PID_n_3.getKiAddr, PID_n_4.getKiAddr, TYPE_FLOAT)
 			
@@ -506,18 +1553,21 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				fp.SetTunings(PID_n_3.getBase, FNeg1, FNeg1, values[2])
 				fp.SetTunings(PID_n_4.getBase, FNeg1, FNeg1, values[3])
 '				WriteList(@values, PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr)
+				PrintArrayAddr4(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
 			elseif TYPE == XDR_READ
 				PrintArrayAddr4(string("MKD"), PID_n_1.getKdAddr, PID_n_2.getKdAddr, PID_n_3.getKdAddr, PID_n_4.getKdAddr, TYPE_FLOAT)
 		sPWM:
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @u_1, @u_2, @u_3, @u_4)
+				PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("PWM"), @u_1, @u_2, @u_3, @u_4, TYPE_FLOAT)
 		sNID:
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @n_d_1, @n_d_2, @n_d_3, @n_d_4)
+				PrintArrayAddr4(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("NID"), @n_d_1, @n_d_2, @n_d_3, @n_d_4, TYPE_FLOAT)
 				
@@ -525,6 +1575,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 4, TYPE_FLOAT)
 				WriteList4(@values, @n_1, @n_2, @n_3, @n_4)
+				PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 				
@@ -532,6 +1583,7 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 			if TYPE == XDR_WRITE
 				ParseSerialList(@values, 3, TYPE_FLOAT)
 				WriteList3(@values, @M_x, @M_y, @M_z)
+				PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
 		
@@ -541,6 +1593,42 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				WriteList1(@values, @F_z)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr1(string("FZZ"), @F_z, TYPE_FLOAT)
+		
+		sMPP:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 2, TYPE_FLOAT)
+				WriteList2(@values, @motor_slope, @motor_intercept)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr2(string("MPP"), @motor_slope, @motor_intercept, TYPE_FLOAT)
+				
+		sQII:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_0, @q_1, @q_2, @q_3)
+				PrintArrayAddr4(string("QII"), @q_0, @q_1, @q_2, @q_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QII"), @q_0, @q_1, @q_2, @q_3, TYPE_FLOAT)
+		sQDI:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_d_0, @q_d_1, @q_d_2, @q_d_3)
+				PrintArrayAddr4(string("QDI"), @q_d_0, @q_d_1, @q_d_2, @q_d_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QDI"), @q_d_0, @q_d_1, @q_d_2, @q_d_3, TYPE_FLOAT)
+		sQEI:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 4, TYPE_FLOAT)
+				WriteList4(@values, @q_tilde_0, @q_tilde_1, @q_tilde_2, @q_tilde_3)
+				PrintArrayAddr4(string("QEI"), @q_tilde_b_0, @q_tilde_b_1, @q_tilde_b_2, @q_tilde_b_3, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr4(string("QEI"), @q_tilde_b_0, @q_tilde_b_1, @q_tilde_b_2, @q_tilde_b_3, TYPE_FLOAT)
+				
+		sCLF:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 1, TYPE_FLOAT)
+				WriteList1(@values, @control_loop_frequency)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr1(string("CLF"), @control_loop_frequency, TYPE_FLOAT)
 				
 		OTHER:
 			PrintStrStart
@@ -559,6 +1647,18 @@ PUB WriteList1(input_array_addr, a_addr)
 	if long[input_array_addr][0] <> NAN
 		long[a_addr] := long[input_array_addr][0]
 
+
+PUB WriteList2(input_array_addr, a_addr, b_addr)
+'Writes the four variables in the input array to the four addresses specified.
+'If a number is NAN, it will not write it.
+	
+	if long[input_array_addr][0] <> NAN
+		long[a_addr] := long[input_array_addr][0]
+	
+	if long[input_array_addr][1] <> NAN
+		long[b_addr] := long[input_array_addr][1]
+	
+
 PUB WriteList3(input_array_addr, a_addr, b_addr, c_addr)
 'Writes the four variables in the input array to the four addresses specified.
 'If a number is NAN, it will not write it.
@@ -571,6 +1671,8 @@ PUB WriteList3(input_array_addr, a_addr, b_addr, c_addr)
 	
 	if long[input_array_addr][2] <> NAN
 		long[c_addr] := long[input_array_addr][2]
+		
+
 					
 
 PUB WriteList4(input_array_addr, a_addr, b_addr, c_addr, d_addr)
@@ -664,7 +1766,7 @@ PUB PrintArray(type_string_addr, array_addr, length, type) | i
 	serial.tx(10)
 	serial.tx(13)
 
-PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i
+PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -682,14 +1784,17 @@ PUB PrintArrayAddr4(type_string_addr, a_addr, b_addr, c_addr, d_addr, type) | i
 		if type == TYPE_INT
 			serial.dec(long[long[@a_addr][i]])
 		elseif type == TYPE_FLOAT
-			FPrint(long[long[@a_addr][i]])
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
 		else
 			serial.tx("?") 'Warning!
 		
 	serial.tx(10)
 	serial.tx(13)
 
-PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i
+PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -707,14 +1812,45 @@ PUB PrintArrayAddr3(type_string_addr, a_addr, b_addr, c_addr, type) | i
 		if type == TYPE_INT
 			serial.dec(long[long[@a_addr][i]])
 		elseif type == TYPE_FLOAT
-			FPrint(long[long[@a_addr][i]])
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
 		else
 			serial.tx("?") 'Warning!
 		
 	serial.tx(10)
 	serial.tx(13)
 	
-PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i
+PUB PrintArrayAddr2(type_string_addr, a_addr, b_addr, type) | i, temp_addr
+'' Parameters:
+''  - type_string_addr: a string that has the three capital letters that 
+''      denote which type of data this packet is, eg PWM or MKP
+''  - [a|b|c|d]_addr - the address of the variable to print
+''  - type - either TYPE_FLOAT or TYPE_INT
+
+
+	serial.str(string("$AD"))
+	serial.str(type_string_addr)
+	serial.tx(" ")
+	serial.dec(phsb)
+
+	repeat i from 0 to 2 - 1
+		serial.tx(",")
+		if type == TYPE_INT
+			serial.dec(long[long[@a_addr][i]])
+		elseif type == TYPE_FLOAT
+'			FPrint(long[long[@a_addr][i]])
+'			serial.str(fp.FloatToString(long[long[@a_addr][i]]))
+			temp_addr := fp.FloatToString(long[long[@a_addr][i]])
+			serial.txblock(temp_addr, strsize(temp_addr))
+		else
+			serial.tx("?") 'Warning!
+		
+	serial.tx(10)
+	serial.tx(13)
+	
+PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i, temp_addr
 '' Parameters:
 ''  - type_string_addr: a string that has the three capital letters that 
 ''      denote which type of data this packet is, eg PWM or MKP
@@ -732,7 +1868,9 @@ PUB PrintArrayAddr1(type_string_addr, a_addr, type) | i
 	if type == TYPE_INT
 		serial.dec(long[a_addr])
 	elseif type == TYPE_FLOAT
-		FPrint(long[a_addr])
+'		FPrint(long[a_addr])
+		temp_addr := fp.FloatToString(long[a_addr])
+		serial.txblock(temp_addr, strsize(temp_addr))
 	else
 		serial.tx("?") 'Warning!
 	
@@ -791,15 +1929,17 @@ PUB InitUart | i, char
 	waitcnt(clkfreq + cnt)
 	PrintStr(string("Starting..."))
 	
-	PrintStrStart
-	serial.str(string("Compile Time: "))
-	i := 0
 	
-	'Output the compile time, but not the LF at the end
-	repeat until (char := byte[@compile_time][i++]) == 10
-		serial.tx(char)
+	if compile_time <> 0
+		PrintStrStart
+		serial.str(string("Compile Time: "))
+		i := 0
+	
+		'Output the compile time, but not the LF at the end
+		repeat until (char := byte[@compile_time][i++]) == 10
+			serial.tx(char)
 		
-	PrintStrStop
+		PrintStrStop
 
 DAT
 	compile_time file "compile_time.dat"
@@ -866,6 +2006,27 @@ OBJ
 	PID_n_4	: "PID_data.spin"
 
 DAT
+
+
+control_loop_frequency long 0.0 'Frequency in Hz of the control loop.
+
+stop_command long 0
+
+'***************************************************
+'*********** MOTOR BLOCK ***************************
+'***************************************************
+PID_M_x_base long 0
+PID_M_y_base long 0
+PID_M_z_base long 0
+PID_F_z_base long 0
+PID_n_1_base long 0
+PID_n_2_base long 0
+PID_n_3_base long 0
+PID_n_4_base long 0
+
+
+
+
 '***************************************************
 '*********** MOMENT BLOCK **************************
 '***************************************************
@@ -883,15 +2044,15 @@ q_2			long 0
 q_3			long 0
 
 			long 0, 0
-q_d_0		long 0
-q_d_1		long 0
-q_d_2		long 0
-q_d_3		long 0
+q_d_0		long 1.0
+q_d_1		long 0.0
+q_d_2		long 0.0
+q_d_3		long 0.0
 
 			long 0, 0
-M_x			long 0
-M_y			long 0
-M_z			long 0
+M_x			long 0.0'-1.15762          'Needs to be on the order of 0-15
+M_y			long 0.0'1.15762'0.4280494 'Needs to be on the order of 0-15
+M_z			long 0.0'-0.4372189        'Needs to be on the order of 0-0.1
 	
 'Moment Intermediate Variables
 	
@@ -945,22 +2106,31 @@ r_e_3		long 0
 r_x			long 0
 r_y			long 0
 
-
+K_PH_x		long 0.4
+K_PH_y		long 0.4
+K_P_z		long 0.0
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
 
 
 			long 0, 0
-K_Q			long 0
+K_Q			long 0.003782 'Measured with pot scale (measured with spring scale->2.65764)
 			long 0, 0
-K_T			long 0
+K_T			long 0.077277 ' Measured 0.67504kg with the spring scale
+
+				'Measured with accurate scale:
+				'Torque: 3.400kg at 0.1524m (6in)
+				'The motor is at 24 in, so it has 3.4/4 == 0.85kg of thrust
+				'That's 0.85*9.8 == 8.33 Newtons
+				'K_T = 8.33 / (1.151 * 150^2 * .254^4) = .077277
+				
 
 			long 0, 0
-diameter	long 0		'D in the documentation
+diameter	long 0.254		'D in the documentation, 10in rotors
 
 			long 0, 0
-offset		long 0		'd in the documentation
+offset		long 0.333		'd in the documentation
 
 			long 0, 0
 c			long 0
@@ -976,7 +2146,7 @@ F_3			long 0
 F_4			long 0
 
 			long 0, 0
-rho			long 0		'Air density
+rho			long 1.151		'Air density @ 20C (70F), 305m, and 30%humidity
 
 			long 0, 0
 omega_d_1	long 0
@@ -997,7 +2167,14 @@ n_3			long 0
 			long 0, 0
 n_4			long 0
 
-
+			long 0, 0
+n_1_int		long 0
+			long 0, 0
+n_2_int		long 0
+			long 0, 0
+n_3_int		long 0
+			long 0, 0
+n_4_int		long 0
 
 			long 0, 0
 n_d_1		long 0
@@ -1056,9 +2233,20 @@ const_2_pi	long 0
 '*********** Predefined Constants ******************
 '***************************************************
 
-motor_slope		long 4.61538
-motor_intercept long 92.3077
+'Black motor, black ESC
+'motor_slope		long 0.238867
+'motor_intercept long 229.37517
+'MIN_PWM long 1000.0
+'MAX_PWM long 1600.0
 
+'Black motor, red ESC
+motor_slope		long 0.21568 '4.6365
+motor_intercept long 220.770 '1023.57
+MIN_PWM long 1000.0
+MAX_PWM long 1800.0
+
+
+quat_scalar long 0.0000335693 'From the UM6 datasheet
 
 '***************************************************
 '*********** WORKING VARIABLES *********************

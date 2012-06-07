@@ -30,8 +30,8 @@ CON
 	DEBUG_TX_PIN  = 30
 	DEBUG_RX_PIN  = 31
 	
-	IMU_RX_PIN = 19 'Note: direction is from Propeller IO port
-	IMU_TX_PIN = 18 'Note: direction is from Propeller IO port
+	IMU_RX_PIN = 27 'Note: direction is from Propeller IO port
+	IMU_TX_PIN = 26 'Note: direction is from Propeller IO port
 	
 'Settings
 
@@ -49,16 +49,36 @@ VAR
 
 	long	quat_ab
 	long	quat_cd
+	
+	long	qyaw
+'	long    qroll
+'	long    qpitch
+	long    qbank
+	long	qheading
+
+	long    qw
+	long    qx
+	long    qy
+	long    qz
+	long    t_1
+	long    t_2
+	long    t_3
+	long    t_4
+	
 
 	long	temp_debug_stack[30]
+DAT
+quat_scalar long 0.0000335693 'From the UM6 datasheet
 
 OBJ
 	debug : "FastFullDuplexSerialPlusBuffer.spin"
 '	imu : "FullDuplexSerialPlus.spin"
 	imu : "um6.spin"
+	fp		:	"F32_CMD.spin"
 
-PUB Main | i, t1, addr, roll, pitch
+PUB Main | i, addr, roll, pitch, t1
 
+	fp.start
 
 	imu.add_register($5C, @gyro_proc_xy)
 	imu.add_register($5D, @gyro_proc_z)
@@ -73,7 +93,6 @@ PUB Main | i, t1, addr, roll, pitch
 
 	debug.start(DEBUG_RX_PIN, DEBUG_TX_PIN, 0, 115200)
 	waitcnt(clkfreq + cnt)
-	
 
 	debug.str(string("Starting", 10, 13))
 '	debug.str(string("Register count added: "))
@@ -83,9 +102,9 @@ PUB Main | i, t1, addr, roll, pitch
 
 	imu.start(IMU_RX_PIN, IMU_TX_PIN, 0, 115200)
 
-	waitcnt(clkfreq >> 2 + cnt)
+	waitcnt(clkfreq/4 + cnt)
 	
-	cognew(debug_transmit_commands, @temp_debug_stack)
+'	cognew(debug_transmit_commands, @temp_debug_stack)
 	 
 '	repeat
 '		debug.hex(quat_ab, 8)
@@ -94,24 +113,34 @@ PUB Main | i, t1, addr, roll, pitch
 '		debug.tx(10)
 '		debug.tx(13)
 	 
+'Print the received bytes exactly as the IMU sends them
+'Remember not to add any registers
 '	repeat
 '		debug.hex(imu.rx, 2)
 '		debug.tx(" ")
+
+	debug.str(string(10,13,"Zeroing IMU. Remain Stationary.", 10, 13))
+	imu.zero
 	
+	
+'	debug.str(string(10, 13, "Reset EKF"))
 '	imu.str(@UM6_RESET_EKF)	
 '	waitcnt(clkfreq >> 2 + cnt)
+'	debug.str(string(10, 13, "Set ACCEL_REF"))
 '	imu.str(@UM6_SET_ACCEL_REF)
 '	waitcnt(clkfreq >> 2 + cnt)
+'	debug.str(string(10, 13, "Set MAG_REF"))
 '	imu.str(@UM6_SET_MAG_REF)
 '	waitcnt(clkfreq >> 2 + cnt)
+'	debug.str(string(10, 13, "ZERO_GYROS"))
 '	imu.str(@UM6_ZERO_GYROS)
+'	waitcnt(clkfreq * 2 + cnt)
 
-
-'	repeat
-'		debug.hex(euler_phi_theta, 8)
-'		debug.tx(9)
-'		debug.hex(euler_psi, 8)
-'		debug.tx(9)
+	repeat
+		debug.hex(quat_ab, 8)
+		debug.tx(9)
+		debug.hex(quat_cd, 8)
+		debug.tx(9)
 '		debug.hex(gyro_proc_xy, 8)
 '		debug.tx(9)
 '		debug.hex(gyro_proc_z, 8)
@@ -119,8 +148,65 @@ PUB Main | i, t1, addr, roll, pitch
 '		debug.hex(accel_proc_xy, 8)
 '		debug.tx(9)
 '		debug.hex(mag_proc_xy, 8)
-'		debug.tx(10)
-'		debug.tx(13)
+'		debug.tx(9)
+		
+		'Output attitude (via quaternions)
+		'attitude = asin(2 * qx * qy + 2 * qz * qw)
+		
+		qw := fp.FMul(fp.FFloat(quat_ab  ~> 16),         quat_scalar)
+		qx := fp.FMul(fp.FFloat((quat_ab << 16) ~> 16), quat_scalar)
+		qy := fp.FMul(fp.FFloat(quat_cd  ~> 16),         quat_scalar)
+		qz := fp.FMul(fp.FFloat((quat_cd << 16) ~> 16), quat_scalar)
+		
+		FPrint(qw)
+		debug.tx(9)
+		FPrint(qx)
+		debug.tx(9)
+		FPrint(qy)
+		debug.tx(9)
+		FPrint(qz)
+		debug.tx(9)
+		
+		
+		'Equations came from http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/index.htm
+'		attitude = asin(2*qx*qy + 2*qz*qw)
+		t_1 := fp.FMul(float(2), fp.FMul(qx, qy))
+		t_2 := fp.FMul(float(2), fp.FMul(qz, qw))
+		t_3 := fp.FAdd(t_1, t_2)
+		qyaw := fp.FDiv(fp.FMul(fp.ASin(t_3), float(180)), pi) 'arcsin, then convert to degrees
+		FPrint(qyaw)
+		debug.tx(9)
+		
+'		heading = atan2(2*qy*qw-2*qx*qz , 1 - 2*qy2 - 2*qz2)
+		t_1 := fp.FMul(float(2), fp.FMul(qy, qw))
+		t_2 := fp.FMul(float(2), fp.FMul(qx, qz))
+		t_1 := fp.FSub(t_1, t_2)
+		
+		
+		t_3 := fp.FMul(float(2), fp.FMul(qy, qy))
+		t_4 := fp.FMul(float(2), fp.FMul(qz, qz))
+		t_3 := fp.FSub(float(1), fp.FSub(t_3, t_4))
+		
+		qheading := fp.FDiv(fp.FMul(fp.ATan2(t_1, t_3), float(180)), pi) 'atan2, then convert to degrees
+		FPrint(qheading)
+		debug.tx(9)
+
+				
+'		bank = atan2(2*qx*qw-2*qy*qz , 1 - 2*qx^2 - 2*qz^2)
+		t_1 := fp.FMul(float(2), fp.FMul(qx, qw))
+		t_2 := fp.FMul(float(2), fp.FMul(qy, qz))
+		t_1 := fp.FSub(t_1, t_2)
+		
+		
+		t_3 := fp.FMul(float(2), fp.FMul(qx, qx))
+		t_4 := fp.FMul(float(2), fp.FMul(qz, qz))
+		t_3 := fp.FSub(float(1), fp.FSub(t_3, t_4))
+		
+		qbank := fp.FDiv(fp.FMul(fp.ATan2(t_1, t_3), float(180)), pi) 'atan2, then convert to degrees
+		FPrint(qbank)
+		
+		debug.tx(10)
+		debug.tx(13)
 ''	
 '	
 '	AppendChecksum(@UM6_GET_FW_VERSION)
@@ -348,7 +434,8 @@ PRI debug_transmit_commands
 		imu.str(@UM6_ZERO_GYROS)
 		waitcnt(clkfreq * 5 + cnt)
 
-	
+PRI FPrint(fnumA) | temp
+	debug.str(fp.FloatToString(fnumA))	
 DAT
 	'Debug strings
 	APPEND_CHECKSUM_ERROR byte 10, 13, "ERROR: in string passed to AppendChecksum", 10, 13, 0

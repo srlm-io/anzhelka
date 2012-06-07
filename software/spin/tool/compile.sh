@@ -73,6 +73,8 @@ if [ "$2" = "--functions" ] ; then
 elif [ "$2" = "--mathfunctions" ] ; then
 	if [ "$path" != "" ] ; then
 #		cat $1 > "$path"/"$filename"_output."$extension"
+		echo "Compiling with non-local file --mathfunctions"
+		rm "$path"/"$filename"_output."$extension"
 		./tool/math_processor.py $1 "$path"/"$filename"_output."$extension"
 		cat src/anzhelka_support_functions.spin >> "$path"/"$filename"_output."$extension"
 		cat src/anzhelka_variables.spin >> "$path"/"$filename"_output."$extension"

@@ -49,61 +49,61 @@ TODO:
 ''--------------------[BEGIN][DEBUGGER]-----------------------------
 ''------------------------------------------------------------------
 
-VAR
-	long command
-	long readptr
-	long readbuf[256/4]
+'VAR
+'	long command
+'	long readptr
+'	long readbuf[256/4]
 
-	long	gyro_proc_xy
-	long	accel_proc_xy
-	long	mag_proc_xy
-	long	euler_phi_theta
+'	long	gyro_proc_xy
+'	long	accel_proc_xy
+'	long	mag_proc_xy
+'	long	euler_phi_theta
 
-CON
-  _clkmode = xtal1 + pll16x
-  _xinfreq = 5_000_000
+'CON
+'  _clkmode = xtal1 + pll16x
+'  _xinfreq = 5_000_000
 
-'IO Pins
-	IMU_RX_PIN = 0 'Note: direction is from Propeller IO port
-	IMU_TX_PIN = 1 'Note: direction is form Propeller IO port
+''IO Pins
+'	IMU_RX_PIN = 0 'Note: direction is from Propeller IO port
+'	IMU_TX_PIN = 1 'Note: direction is form Propeller IO port
 
-OBJ
-	bu	: "BMAutility"
-	s : "FullDuplexSingleton"
-PUB main_debug
-{{ Should be run when this object is being debugged. Otherwise, don't call!
-}}
+'OBJ
+'	bu	: "BMAutility"
+'	s : "FullDuplexSingleton"
+'PUB main_debug
+'{{ Should be run when this object is being debugged. Otherwise, don't call!
+'}}
 
-	waitcnt(clkfreq*1+cnt)        ' wait a second for user to start terminal
-	s.start(31,30,0,230400)       ' start the default serial interface
+'	waitcnt(clkfreq*1+cnt)        ' wait a second for user to start terminal
+'	s.start(31,30,0,230400)       ' start the default serial interface
 
-	'Setup parameters
-	add_register($5C, @gyro_proc_xy)
-	add_register($5E, @accel_proc_xy)
-	add_register($60, @mag_proc_xy)
-	add_register($62, @euler_phi_theta)
-
-
-	readptr := @readbuf
-
-	bu.taskstart(@entry, start_debug(IMU_RX_PIN, IMU_TX_PIN, 0, 115200), string("Main Task"))
-	bu.start                      ' start multi cog task debugger
-	repeat
+'	'Setup parameters
+'	add_register($5C, @gyro_proc_xy)
+'	add_register($5E, @accel_proc_xy)
+'	add_register($60, @mag_proc_xy)
+'	add_register($62, @euler_phi_theta)
 
 
-PUB start_debug(rxpin, txpin, mode, baudrate) : okay
-  {{
+'	readptr := @readbuf
 
-  DEBUG VERSION - Identical, except it doesnt't start a cog, and instead returns parameter address
-}}  
+'	bu.taskstart(@entry, start_debug(IMU_RX_PIN, IMU_TX_PIN, 0, 115200), string("Main Task"))
+'	bu.start                      ' start multi cog task debugger
+'	repeat
 
-	stop
-	longfill(@rx_head, 0, 4)
-	longmove(@rx_pin, @rxpin, 3)
-	bit_ticks := clkfreq / baudrate
-	buffer_ptr := @rx_buffer
 
-	okay := @rx_head 'For Debugger
+'PUB start_debug(rxpin, txpin, mode, baudrate) : okay
+'  {{
+
+'  DEBUG VERSION - Identical, except it doesnt't start a cog, and instead returns parameter address
+'}}  
+
+'	stop
+'	longfill(@rx_head, 0, 4)
+'	longmove(@rx_pin, @rxpin, 3)
+'	bit_ticks := clkfreq / baudrate
+'	buffer_ptr := @rx_buffer
+
+'	okay := @rx_head 'For Debugger
 
 ''------------------------------------------------------------------
 ''--------------------[END][DEBUGGER]-------------------------------
@@ -142,8 +142,34 @@ VAR
 
 
 
+PUB zero
+'Will call various calibration routines on the IMU. Should be stationary for at least 6 seconds!
+	str(@UM6_RESET_EKF)	
+	waitcnt(clkfreq >> 2 + cnt)
+'	debug.str(string(10, 13, "Set ACCEL_REF"))
+	str(@UM6_SET_ACCEL_REF)
+	waitcnt(clkfreq >> 2 + cnt)
+'	debug.str(string(10, 13, "Set MAG_REF"))
+	str(@UM6_SET_MAG_REF)
+	waitcnt(clkfreq >> 2 + cnt)
+'	debug.str(string(10, 13, "ZERO_GYROS"))
+	str(@UM6_ZERO_GYROS)
+	waitcnt(clkfreq * 3 + cnt)
 
-
+DAT
+	'Debug strings
+	APPEND_CHECKSUM_ERROR byte 10, 13, "ERROR: in string passed to AppendChecksum", 10, 13, 0
+	RECEIVE_PACKET_ERROR  byte 10, 13, "ERROR: in receiving a packet from UM6", 10, 13, 0
+	
+	UM6_GET_FW_VERSION 	byte "snp", %0_0_0000_0_0, $AA, $01, $FB, 0   '0 here, but should have a checksum of $1FB
+'	UM6_GET_FW_VERSION byte "snp", %0_0_0000_0_0, $AA, 0, 0, 0   '0 here, but should have a checksum of $1FB
+	
+	UM6_ZERO_GYROS 		byte "snp", %0_0_0000_0_0, $AC, $01, $FD, 0
+	UM6_RESET_EKF  		byte "snp", %0_0_0000_0_0, $AD, $01, $FE, 0
+	UM6_SET_ACCEL_REF 	byte "snp", %0_0_0000_0_0, $AF, $02, $00, 0
+	UM6_SET_MAG_REF 	byte "snp", %0_0_0000_0_0, $B0, $02, $01, 0
+	
+	
 PUB add_register(register, hub_address_a)
 {{ Adds a register to watch for to the current count.
 	Must be called before start method.
