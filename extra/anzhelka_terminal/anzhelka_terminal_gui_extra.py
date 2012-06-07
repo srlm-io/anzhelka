@@ -13,8 +13,7 @@
 #    ymin = round(min(self.data), 0) - 1
 #ValueError: min() arg is an empty sequence
 
-# TODO: update RPS to DIM terms.
-
+# TODO: figure out how graph euler angles
 
 import wx
 import matplotlib
@@ -31,10 +30,13 @@ from anzhelka_terminal_serial import *
 REFRESH_INTERVAL_MS = 50
 paused = False
 
+global angle_selectionS
+angle_selectionS = False
+
 motor_num = 4
 angle_num = 4
 motor_settings = ["Motor", "NIM", "DRPS", "Volts", "Amps", "ESC(uS)", "Thrust", "Torque", "KP", "KI", "KD"]
-angle_settings = ["Number", "QDI", "QII", "QEI", "Identity","EDI", "EII", "EEI"]
+angle_settings = ["Number", "QDI", "QII", "QEI", "Identity","EDI", "EII", "EEI", "KPH", "KIH", "KDH"]
 
 adjustment0 = "PWM 1"
 adjustment1 = "PWM 2"
@@ -42,9 +44,9 @@ adjustment2 = "PWM 3"
 adjustment3 = "PWM 4"
 
 graph0 = "NIM 1"
-graph1 = "NIM 2"
-graph2 = "NIM 3"
-graph3 = "NIM 4"
+graph1 = "NIM 1"
+graph2 = "NIM 1"
+graph3 = "NIM 1"
 
 motor_selection = ["MKP 1", "MKP 2", "MKP 3", "MKP 4", \
                    "MKI 1", "MKI 2", "MKI 3", "MKI 4", \
@@ -54,7 +56,14 @@ motor_selection = ["MKP 1", "MKP 2", "MKP 3", "MKP 4", \
                    "MOM 1", "MOM 2", "MOM 3", "MOM 4", \
                    "PWM 1", "PWM 2", "PWM 3", "PWM 4", \
                    "MPP 1", "MPP 2", \
-                   "QDI 1", "QDI 2", "QDI 3", "QDI 4"]
+                   "QDI 1", "QDI 2", "QDI 3", \
+                   "KPH 1", "KPH 2", "KPH 3", \
+                   "KIH 1", "KIH 2", "KIH 3", \
+                   "KDH 1", "KDH 2", "KDH 3"]
+
+angle_selection = ["EDI Roll", "EDI Pitch", "EDI Yaw", \
+                   "EII Roll", "EII Pitch", "EII Yaw", \
+                   "EEI Roll", "EEI Pitch", "EEI Yaw"]
                    
 motor_adjustments = {}
 # Layout          NAME     MIN, MAX, 10^, STR Front, STR Back, Matchlist Name, Array Num, Default Value
@@ -88,6 +97,15 @@ motor_adjustments["PWM 3"] = [1000, 2000, 1, '$ACSDR PWM,*,*,', ',*', "$ADPWM", 
 motor_adjustments["PWM 4"] = [1000, 2000, 1, '$ACSDR PWM,*,*,*,', '', "$ADPWM", 3, 1000]
 motor_adjustments["MPP 1"] = [0, 1, 4,   '$ACSDR MPP,', ',*', "$ADMPP", 0, .21568]
 motor_adjustments["MPP 2"] = [0, 500, 3, '$ACSDR MPP,*,', '', "$ADMPP", 1, 220.770]
+motor_adjustments["KPH 1"] = [0, 1, 3, '$ACSDR KPH,', ',*,*', "$ADKPH", 0, 0.4]
+motor_adjustments["KPH 2"] = [0, 1, 3, '$ACSDR KPH,*,', ',*', "$ADKPH", 1, 0.4]
+motor_adjustments["KPH 3"] = [0, 1, 3, '$ACSDR KPH,*,*,', '', "$ADKPH", 2, 0.4]
+motor_adjustments["KIH 1"] = [0, 1, 3, '$ACSDR KIH,', ',*,*', "$ADKIH", 0, 0.4]
+motor_adjustments["KIH 2"] = [0, 1, 3, '$ACSDR KIH,*,', ',*', "$ADKIH", 1, 0.4]
+motor_adjustments["KIH 3"] = [0, 1, 3, '$ACSDR KIH,*,*,', '', "$ADKIH", 2, 0.4]
+motor_adjustments["KDH 1"] = [0, 1, 3, '$ACSDR KDH,', ',*,*', "$ADKDH", 0, 0.4]
+motor_adjustments["KDH 2"] = [0, 1, 3, '$ACSDR KDH,*,', ',*', "$ADKDH", 1, 0.4]
+motor_adjustments["KDH 3"] = [0, 1, 3, '$ACSDR KDH,*,*,', '', "$ADKDH", 2, 0.4]
 #TODO
 #QDI  NEEDS TO BE ABLE TO SEND ALL 4 OR SEND JUST 1
 #QII
@@ -174,25 +192,25 @@ class GraphBox(wx.Panel):
 
 		self.outputstring = ''
 
-		self.dropbox = wx.ComboBox(self, 1, choices=list(sorted(motor_adjustments.keys())), style=wx.CB_DROPDOWN|wx.CB_SORT)
-		self.dropbox2 = wx.ComboBox(self, 2, choices=list(sorted(motor_adjustments.keys())), style=wx.CB_DROPDOWN|wx.CB_SORT)
-		self.dropbox3 = wx.ComboBox(self, 3, choices=list(sorted(motor_adjustments.keys())), style=wx.CB_DROPDOWN|wx.CB_SORT)
-		self.dropbox4 = wx.ComboBox(self, 4, choices=list(sorted(motor_adjustments.keys())), style=wx.CB_DROPDOWN|wx.CB_SORT)
+		choices1 = list(sorted(motor_adjustments.keys()))
+
+		self.dropbox = wx.ComboBox(self, 1, choices=choices1, style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.dropbox2 = wx.ComboBox(self, 2, choices=choices1, style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.dropbox3 = wx.ComboBox(self, 3, choices=choices1, style=wx.CB_DROPDOWN|wx.CB_SORT)
+		self.dropbox4 = wx.ComboBox(self, 4, choices=choices1, style=wx.CB_DROPDOWN|wx.CB_SORT)
 		self.display = wx.TextCtrl(self, -1, style=wx.TE_RIGHT | wx.TE_PROCESS_ENTER)
 		self.sliderbox = wx.Slider(self, -1, 1, 500, 2000, wx.DefaultPosition, (250,-1), wx.SL_AUTOTICKS | wx.SL_HORIZONTAL | wx.SL_LABELS)
 		self.sliderbox.SetTickFreq(200, 1)
 		self.sliderboxval = self.sliderbox.GetValue()
-		self.button1 = wx.Button(self, 1, 'Update')
-		self.button2 = wx.Button(self, 2, 'Box2Slider')
+		#self.button1 = wx.Button(self, 1, 'Update')
+		#self.button2 = wx.Button(self, 2, 'Box2Slider')
 		self.display.SetValue(str(self.sliderboxval))
 
 		#Color of graphs corispond to Box Color
-		print "Setting colours..."
-		self.dropbox.SetBackgroundColour((255, 255, 0))
-		self.dropbox2.SetBackgroundColour((255, 0, 0))
-		self.dropbox3.SetBackgroundColour((255, 255, 255))
-		self.dropbox4.SetBackgroundColour((255, 0, 255))
-
+		self.dropbox.SetBackgroundColour(wx.Colour(255, 255, 0))
+		self.dropbox2.SetBackgroundColour(wx.Colour(255, 0, 0))
+		self.dropbox3.SetBackgroundColour(wx.Colour(255, 255, 255))
+		self.dropbox4.SetBackgroundColour(wx.Colour(255, 0, 255))
 
 		#TODO Set the default variables to be graphed
 		self.setDefault()
@@ -203,11 +221,11 @@ class GraphBox(wx.Panel):
 		sizer.Add(self.dropbox4, pos=(0,3), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 		sizer.Add(self.display, pos=(1,0), span=(1,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 		sizer.Add(self.sliderbox, pos=(2,0), span=(1,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
-		sizer.Add(self.button1, pos=(3,0), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
-		sizer.Add(self.button2, pos=(3,2), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		#sizer.Add(self.button1, pos=(3,0), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
+		#sizer.Add(self.button2, pos=(3,2), span=(1,1), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=1)
 		
-		self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
-		self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
+		#self.Bind(wx.EVT_BUTTON, self.OnUpdate, id=1)
+		#self.Bind(wx.EVT_BUTTON, self.OnBox2Slider, id=2)
 		self.Bind(wx.EVT_TEXT, self.sliderBoxAuto)
 		self.Bind(wx.EVT_SLIDER, self.sliderUpdate)
 		self.Bind(wx.EVT_COMBOBOX, self.comboSelection1, id=1)
@@ -224,6 +242,23 @@ class GraphBox(wx.Panel):
 
 	def setOutputString(self, value):
 		self.outputstring = value
+
+	def changeChoices(self, value):
+		if value == 2:
+			self.dropbox.SetItems(angle_selection)
+			self.dropbox2.SetItems(angle_selection)
+			self.dropbox3.SetItems(angle_selection)
+			self.dropbox4.SetItems(angle_selection)
+			global angle_selectionS
+			angle_selectionS = True
+		else:
+                        if angle_selectionS:
+				self.dropbox.SetItems(motor_selection)
+				self.dropbox2.SetItems(motor_selection)
+				self.dropbox3.SetItems(motor_selection)
+				self.dropbox4.SetItems(motor_selection)
+				global angle_selectionS
+				angle_selectionS = False
 
 	def OnEnter(self, event):
 		self.displaynum = self.display.GetValue()
@@ -377,7 +412,16 @@ class RPMGraph(wx.Panel):
 			style=wx.ALIGN_RIGHT)
 		self.Bind(wx.EVT_CHECKBOX, self.on_cb_xlab, self.cb_xlab)		
 		self.cb_xlab.SetValue(True)
-		
+
+		self.colorBox1 = wx.Button(self, -1, "Line 1")
+		self.colorBox1.SetBackgroundColour(wx.Colour(255, 255, 0))
+		self.colorBox2 = wx.Button(self, -1, "Line 2")
+		self.colorBox2.SetBackgroundColour(wx.Colour(255, 0, 0))
+		self.colorBox3 = wx.Button(self, -1, "Line 3")
+		self.colorBox3.SetBackgroundColour(wx.Colour(255, 255, 255))
+		self.colorBox4 = wx.Button(self, -1, "Line 4")
+		self.colorBox4.SetBackgroundColour(wx.Colour(255, 0, 255))
+		#I am here
 
 		self.hbox1 = wx.BoxSizer(wx.HORIZONTAL)
 		self.hbox1.Add(self.pause_button, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
@@ -385,6 +429,11 @@ class RPMGraph(wx.Panel):
 		self.hbox1.Add(self.cb_grid, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
 		self.hbox1.AddSpacer(10)
 		self.hbox1.Add(self.cb_xlab, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+		self.hbox1.AddSpacer(10)
+		self.hbox1.Add(self.colorBox1, border=1, flag=wx.ALL | wx.ALIGN_CENTRE)
+		self.hbox1.Add(self.colorBox2, border=1, flag=wx.ALL | wx.ALIGN_CENTRE)
+		self.hbox1.Add(self.colorBox3, border=1, flag=wx.ALL | wx.ALIGN_CENTRE)
+		self.hbox1.Add(self.colorBox4, border=1, flag=wx.ALL | wx.ALIGN_CENTRE)
 		
 		self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 		self.hbox2.Add(self.xmin_control, border=5, flag=wx.ALL)
@@ -690,6 +739,8 @@ class AdjustmentTableSizer(wx.Panel):
 		font = wx.Font(family=wx.FONTFAMILY_DEFAULT, style=wx.FONTSTYLE_NORMAL, weight=wx.FONTWEIGHT_NORMAL, pointSize=18)
 		self.button2.SetFont(font)
 		#print self.button2.GetValue()
+		self.outputstring = ''
+		self.stopped = False
 
 		sizer.Add(self.box0, pos=(0,0), span=(5,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 		sizer.Add(self.box1, pos=(0,4), span=(5,4), flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
@@ -706,8 +757,6 @@ class AdjustmentTableSizer(wx.Panel):
 		self.SetSizer(topSizer)
 
 		topSizer.Fit(self)
-		
-		self.stopped = False
 
 
 	def OnUpdate(self, event):
@@ -718,16 +767,15 @@ class AdjustmentTableSizer(wx.Panel):
 
 	def OnStopAll(self, event):
 		if self.stopped == False:
-			self.outputstring = "$ACSTP EMG\n"
-			self.stopped = True
-			self.button2.SetBackgroundColour(wx.GREEN)
-			self.button2.SetLabel('Resume')
-		else:
-			self.outputstring = "$ACSTP RES\n"
-			self.stopped = False
-			self.button2.SetBackgroundColour(wx.RED)
-			self.button2.SetLabel('STOP ALL')
-			
+                        self.outputstring = "$ACSTP EMG\n"
+                        self.stopped = True
+                        self.button2.SetBackgroundColour(wx.GREEN)
+                        self.button2.SetLabel('Resume')
+                else:
+                        self.outputstring = "$ACSTP RES\n"
+                        self.stopped = False
+                        self.button2.SetBackgroundColour(wx.RED)
+                        self.button2.SetLabel('STOP ALL')
 		print self.outputstring
 		sending(ser, self.outputstring)
 
@@ -968,10 +1016,15 @@ class Quaternion(wx.Panel):
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, str(eulernames[i])))
 				elif j == reverseenum("EDI", angle_settings): # angle number
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
-
 				elif j == reverseenum("EII", angle_settings): # angle number
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
 				elif j == reverseenum("EEI", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("KPH", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("KIH", angle_settings): # angle number
+					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
+				elif j == reverseenum("KDH", angle_settings): # angle number
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "---"))
 				else:
 					self.angle_table[i+1].append(wx.TextCtrl(self, -1, "generic"))
@@ -979,7 +1032,7 @@ class Quaternion(wx.Panel):
 		grid_sizer = wx.FlexGridSizer(angle_num+1, len(angle_settings), 10, 10)		
 		for i in self.angle_table:
 			for j in i:
-				grid_sizer.Add(j)
+				grid_sizer.Add(j, flag=wx.EXPAND | wx.ALIGN_CENTRE, border=5)
 
 		self.SetSizer(grid_sizer)
 		
@@ -998,87 +1051,28 @@ class Quaternion(wx.Panel):
 	def update_fieldq(self, code, enum_field):
 		matchlist = self.rxparser.match(rx_buffer[self.rx_last_read], code)
 		#print "Matchlist: ", matchlist
-
-		
-		if len(matchlist) != 4:
-                        return
-		
-
-		#Rotate the quat 180 degrees around X axis
-#		matchlist_0 = matchlist[1]
-#		matchlist_1 = matchlist[0]
-#		matchlist_2 = matchlist[3]
-#		matchlist_3 = matchlist[2]
-		
-		magnitude = math.sqrt(matchlist[0]*matchlist[0] + \
-							  matchlist[1]*matchlist[1] + \
-							  matchlist[2]*matchlist[2] + \
-							  matchlist[3]*matchlist[3])
-		if magnitude == 0:
-			magnitude = 1
-#							  							  
-#		matchlist[0] = matchlist[0] / magnitude
-#		matchlist[1] = matchlist[1] / magnitude
-#		matchlist[2] = matchlist[2] / magnitude
-#		matchlist[3] = matchlist[3] / magnitude
-
-
-		
 		for i in range(len(matchlist)): # != 0:
 			self.angle_table[i+1][reverseenum(enum_field, angle_settings)].SetValue(str(matchlist[i]))
-		
-#		From here: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/index.htm
-#heading = atan2(2*qy*qw-2*qx*qz , 1 - 2*qy2 - 2*qz2)
-#		yaw = math.atan2(2.0*matchlist[2]*matchlist[0]- \
-#                                     2.0*matchlist[1]*matchlist[3], \
-#                                     1.0 - 2.0*matchlist[2]*matchlist[2]- \
-#                                     2.0*matchlist[3]*matchlist[3])
-		yaw = math.atan2(2.0*(matchlist[0]*matchlist[3] + matchlist[1]*matchlist[2]), \
-                                     matchlist[1]*matchlist[1] + matchlist[0]*matchlist[0] - matchlist[3]*matchlist[3] - matchlist[2]*matchlist[2])
-#		estimated_states->psi = atan2(2*(q0*q3+q1*q2),q1*q1 + q0*q0 - q3*q3 - q2*q2)*180/3.14159;
-                                     
-                                     
-#attitude = asin(2*qx*qy + 2*qz*qw) 
-#		pitch = math.asin(2.0*matchlist[1]*matchlist[2]+ \
-#                                     2.0*matchlist[3]*matchlist[0])
-		pitch = -math.asin(2.0*(matchlist[1]*matchlist[3] - matchlist[0]*matchlist[2]))
-#		estimated_states->theta = -asin(2*(q1*q3 - q0*q2))*180/3.14159;
-
-#bank = atan2(2*qx*qw-2*qy*qz , 1 - 2*qx2 - 2*qz2)
-#		roll = math.atan2(2.0*matchlist[1]*matchlist[0]- \
-#                                  2.0*matchlist[2]*matchlist[3], \
-#                                  1.0-2.0*matchlist[1]*matchlist[1] - \
-#                                  2.0*matchlist[3]*matchlist[3])
-		roll = math.atan2(2.0*(matchlist[0]*matchlist[1] + matchlist[2]*matchlist[3]), \
-                                     matchlist[3]*matchlist[3] - matchlist[2]*matchlist[2] - matchlist[1]*matchlist[1] + matchlist[0]*matchlist[0])
-#		estimated_states->phi = atan2(2*(q0*q1 + q2*q3),q3*q3 - q2*q2 - q1*q1 + q0*q0)*180/3.14159;                                  
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-#estimated_states->phi = atan2(2*(q0*q1 + q2*q3),q3*q3 - q2*q2 - q1*q1 + q0*q0)*180/3.14159;
-#estimated_states->theta = -asin(2*(q1*q3 - q0*q2))*180/3.14159;
-#estimated_states->psi = atan2(2*(q0*q3+q1*q2),q1*q1 + q0*q0 - q3*q3 - q2*q2)*180/3.14159;
-		
-		eulerlist = [yaw*180.0/math.pi, pitch*180.0/math.pi, roll*180.0/math.pi, 0]
+		if len(matchlist) != 4:
+                        return
+		yaw = math.atan2(2*matchlist[1]*matchlist[0]- \
+                                     2*matchlist[0]*matchlist[3], \
+                                     2*matchlist[1]*matchlist[1]- \
+                                     2*matchlist[3]*matchlist[3])
+		pitch = math.asin(2*matchlist[0]*matchlist[1]+ \
+                                     2*matchlist[3]*matchlist[2])
+		roll = math.atan2(2*matchlist[0]*matchlist[2]- \
+                                  2*matchlist[1]*matchlist[3], \
+                                  1-2*matchlist[0]*matchlist[0] - \
+                                  2*matchlist[3]*matchlist[3])
+		eulerlist = [yaw, pitch, roll, 0]
 		euler_field = ''
 		if enum_field == "QDI":
-			euler_field = "EDI"
-		if enum_field == "QII":
-			euler_field = "EII"
-		if enum_field == "QEI":
-			euler_field = "EEI"
-
+                        euler_field = "EDI"
+                if enum_field == "QII":
+                        euler_field = "EII"
+                if enum_field == "QEI":
+                        euler_field = "EEI"
 		for i in range(len(eulerlist)): # != 0:
                         self.angle_table[i+1][reverseenum(euler_field, angle_settings)].SetValue(str(eulerlist[i]))
 			
@@ -1102,9 +1096,9 @@ class Quaternion(wx.Panel):
 						self.update_fieldq("$ADQDI", "QDI")
 						self.update_fieldq("$ADQII", "QII")
 						self.update_fieldq("$ADQEI", "QEI")
-						#self.update_field("$ADMVV", "Volts")
-						#self.update_field("$ADPWM", "ESC(uS)")
-						#self.update_field("$ADMTH", "Thrust")
+						self.update_field("$ADKPH", "KPH")
+						self.update_field("$ADKIH", "KIH")
+						self.update_field("$ADKDH", "KDH")
 						#self.update_field("$ADMTQ", "Torque")
 						#self.update_field("$ADMKP", "KP")
 						#self.update_field("$ADMKI", "KI")

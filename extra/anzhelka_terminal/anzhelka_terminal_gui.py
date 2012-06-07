@@ -24,9 +24,9 @@ class MyFrame(wx.Frame):
         # begin wxGlade: MyFrame.__init__
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.notebook_1 = wx.Notebook(self, -1, style=0)
+        self.notebook_1 = wx.Notebook(self, id=100, style=0)
         self.notebook_1_pane_2 = wx.Panel(self.notebook_1, -1)
-        self.notebook_2 = wx.Notebook(self.notebook_1_pane_2, -1, style=0)
+        self.notebook_2 = wx.Notebook(self.notebook_1_pane_2, id=200, style=0)
         self.notebook_2_pane_1 = wx.Panel(self.notebook_2, -1)
         self.notebook_2_pane_2 = wx.Panel(self.notebook_2, -1)
         self.notebook_2_pane_3 = wx.Panel(self.notebook_2, -1)
@@ -57,7 +57,17 @@ class MyFrame(wx.Frame):
         self.__do_layout()
 
         self.Bind(wx.EVT_TOGGLEBUTTON, self.OnPortConnect, self.toggle_serial_connect)
+        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged1, id=100)
+        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged2, id=200)
         # end wxGlade
+
+    def OnPageChanged1(self, event):
+        new = event.GetSelection()
+
+    def OnPageChanged2(self, event):
+        new = event.GetSelection()
+        self.window_2.grid_control.changeChoices(int(new))
+        print "Note2,",new
 
     def __set_properties(self):
         # begin wxGlade: MyFrame.__set_properties
