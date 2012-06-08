@@ -1675,10 +1675,6 @@ _PID                    'Read the PID values from hub memory, starting with the 
 						'else if(ITerm < outMin) ITerm= outMin;
 						mov		fnumB, foutMin
 						call	#_FLimitMin
-
-'						mov		fnumB, foutMax 'TODO: WTF is going on here?
-'						xor		fnumB, bit31 'Negate
-'						call	#_FLimitMin
 						
 						mov		fITerm, fnumA
 						

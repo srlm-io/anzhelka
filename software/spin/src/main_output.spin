@@ -75,8 +75,8 @@ VAR
 	long	accel_proc_z
 	long	mag_proc_xy
 	long	mag_proc_z
-	long	euler_phi_theta
-	long	euler_psi
+	long	euler_phi_theta_um6
+	long	euler_psi_um6
 
 	long	quat_ab
 	long	quat_cd
@@ -85,6 +85,11 @@ VAR
 	long	quat_b
 	long	quat_c
 	long	quat_d
+	
+	long 	euler_phi, euler_theta, euler_psi
+	long 	euler_phi_int, euler_theta_int, euler_psi_int
+	
+	long	fp_clkfreq
 
 
 PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cnt, debug_count
@@ -112,8 +117,8 @@ PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cn
 	imu.add_register($5F, @accel_proc_z)
 	imu.add_register($60, @mag_proc_xy)
 	imu.add_register($61, @mag_proc_z)
-	imu.add_register($62, @euler_phi_theta)
-	imu.add_register($63, @euler_psi)
+	imu.add_register($62, @euler_phi_theta_um6)
+	imu.add_register($63, @euler_psi_um6)
 	imu.add_register($64, @quat_ab)
 	imu.add_register($65, @quat_cd)
 	imu.start(IMU_RX_PIN, IMU_TX_PIN, 0, 115200)
@@ -146,6 +151,9 @@ PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cn
 	actual_time := cnt
 	
 	debug_count := 0
+	
+	fp_clkfreq := fp.FFloat(clkfreq)
+	
 	repeat	
 		debug_count ++
 		if debug_count == 10
@@ -153,23 +161,48 @@ PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cn
 			q_d_1 := q_1
 			q_d_2 := q_2
 			q_d_3 := q_3
+			
 	
 '***************** Inputs **************************
 		n_1_int := 0 #> rpm.getrps(0) <# 250 'Min < rps < Max
 		n_2_int := 0 #> rpm.getrps(1) <# 250 'Min < rps < Max
 		n_3_int := 0 #> rpm.getrps(2) <# 250 'Min < rps < Max
 		n_4_int := 0 #> rpm.getrps(3) <# 250 'Min < rps < Max
+'		n_1_int := rpm.gettime(0)
+'		n_2_int := rpm.gettime(1)
+'		n_3_int := rpm.gettime(2)
+'		n_4_int := rpm.gettime(3)
 
 		quat_a :=  quat_ab ~> 16
 		quat_b := (quat_ab << 16) ~> 16
 		quat_c :=  quat_cd ~> 16
 		quat_d := (quat_cd << 16) ~> 16
+		
+		euler_phi :=  euler_phi_theta_um6 ~> 16
+		euler_theta := (euler_phi_theta_um6 << 16) ~> 16
+		euler_psi :=  euler_psi_um6 ~> 16
+'		quat_d := (quat_cd << 16) ~> 16
 	
-	
+		omega_b_x_int := gyro_proc_xy         ~> 16
+		omega_b_y_int := (gyro_proc_xy << 16) ~> 16
+		omega_b_z_int := gyro_proc_z          ~> 16
+		
+		accel_b_x_int := accel_proc_xy         ~> 16
+		accel_b_y_int := (accel_proc_xy << 16) ~> 16
+		accel_b_z_int := accel_proc_z          ~> 16
 	
 '***************** Serial **************************
 		ParseSerial
+'		if debug_count > 1
+'			serial.str(string("Euler phi, theta, psi: "))
+'			serial.str(fp.FloatToString(euler_phi))
+'			serial.str(string(", "))
+'			serial.str(fp.FloatToString(euler_theta))
+'			serial.str(string(", "))
+'			serial.str(fp.FloatToString(euler_psi))
+'			serial.str(string(10, 13))
 		
+		'TODO: Bug, if the first thing to print hasn't been calculated yet, may hang.
 		case string_to_print++
 			0: PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 			1: PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
@@ -243,6 +276,18 @@ PUB InitPID
 '	PID_M_x.setInput_addr()
 '	PID_M_X.setSetpoint_addr()
 '	
+'	fp.InitializePID(PID_M_x.getBase, @M_x, @M_x, @moment_setpoint, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
+'	fp.SetTunings(PID_M_x.getBase, K_PH_x, K_IH_y, K_DH_z)
+'	PID_M_x_base := PID_M_x.getBase
+'	
+'	fp.InitializePID(PID_M_y.getBase, @M_y, @M_y, @moment_setpoint, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
+'	fp.SetTunings(PID_M_y.getBase, K_PH_y, K_IH_y, K_DH_y)
+'	PID_M_y_base := PID_M_y.getBase
+'	
+'	fp.InitializePID(PID_M_z.getBase, @M_z, @M_z, @moment_setpoint, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
+'	fp.SetTunings(PID_M_z.getBase, K_PH_z, K_IH_z, K_DH_z)
+'	PID_M_z_base := PID_M_z.getBase
+
 '	PID_M_y.setOutput_addr()
 '	PID_M_y.setInput_addr()
 '	PID_M_y.setSetpoint_addr()
@@ -257,19 +302,19 @@ PUB InitPID
 	
 	
 	fp.InitializePID(PID_n_1.getBase, @n_1, @PID_n_1_output, @n_d_1, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_1.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_1.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_1_base := PID_n_1.getBase
 	
 	fp.InitializePID(PID_n_2.getBase, @n_2, @PID_n_2_output, @n_d_2, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_2.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_2.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_2_base := PID_n_2.getBase
 	
 	fp.InitializePID(PID_n_3.getBase, @n_3, @PID_n_3_output, @n_d_3, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_3.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_3.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_3_base := PID_n_3.getBase
 	
 	fp.InitializePID(PID_n_4.getBase, @n_4, @PID_n_4_output, @n_d_4, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_4.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_4.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_4_base := PID_n_4.getBase
 	
 
@@ -324,7 +369,7 @@ CON
 	CONTROL_LOOP_INDEX = 0
 
 VAR
-	long CONTROL_LOOP_INSTRUCTIONS[(4 * 243) + 1]
+	long CONTROL_LOOP_INSTRUCTIONS[(4 * 264) + 1]
 	long azm_temp_0
 	long azm_temp_1
 	long azm_temp_2
@@ -346,7 +391,11 @@ PUB Init_Instructions
 	const_1 := float(1)
 	const_2 := float(2)
 	const_4 := float(4)
-	const_pi := pi
+	const_pi := pi'n_1 = fp_clkfreq / ((n_1_int ffloat 0) * 6)
+'n_2 = fp_clkfreq / ((n_2_int ffloat 0) * 6)
+'n_3 = fp_clkfreq / ((n_3_int ffloat 0) * 6)
+'n_4 = fp_clkfreq / ((n_4_int ffloat 0) * 6)
+
 '------------
 '' n_1 = n_1_int ffloat 0
 	'n_1 = @n_1_int ffloat @const_0
@@ -395,6 +444,69 @@ PUB Init_Instructions
 	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @quat_d, @const_0, @azm_temp_0)
 	'q_3 = @azm_temp_0 * @quat_scalar
 	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @quat_scalar, @q_3)
+
+'------------
+'' omega_b_x = (omega_b_x_int ffloat 0) * gyro_scalar
+	'azm_temp_0 = @omega_b_x_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @omega_b_x_int, @const_0, @azm_temp_0)
+	'omega_b_x = @azm_temp_0 * @gyro_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @gyro_scalar, @omega_b_x)
+
+'------------
+'' omega_b_y = (omega_b_x_int ffloat 0) * gyro_scalar
+	'azm_temp_0 = @omega_b_x_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @omega_b_x_int, @const_0, @azm_temp_0)
+	'omega_b_y = @azm_temp_0 * @gyro_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @gyro_scalar, @omega_b_y)
+
+'------------
+'' omega_b_z = (omega_b_x_int ffloat 0) * gyro_scalar
+	'azm_temp_0 = @omega_b_x_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @omega_b_x_int, @const_0, @azm_temp_0)
+	'omega_b_z = @azm_temp_0 * @gyro_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @gyro_scalar, @omega_b_z)
+
+'------------
+'' accel_b_x = (accel_b_x_int ffloat 0) * accel_scalar
+	'azm_temp_0 = @accel_b_x_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @accel_b_x_int, @const_0, @azm_temp_0)
+	'accel_b_x = @azm_temp_0 * @accel_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @accel_scalar, @accel_b_x)
+
+'------------
+'' accel_b_y = (accel_b_x_int ffloat 0) * accel_scalar
+	'azm_temp_0 = @accel_b_x_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @accel_b_x_int, @const_0, @azm_temp_0)
+	'accel_b_y = @azm_temp_0 * @accel_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @accel_scalar, @accel_b_y)
+
+'------------
+'' accel_b_z = (accel_b_x_int ffloat 0) * accel_scalar
+	'azm_temp_0 = @accel_b_x_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @accel_b_x_int, @const_0, @azm_temp_0)
+	'accel_b_z = @azm_temp_0 * @accel_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @accel_scalar, @accel_b_z)
+
+'------------
+'' euler_phi   = (euler_phi_int   ffloat 0) * euler_scalar
+	'azm_temp_0 = @euler_phi_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @euler_phi_int, @const_0, @azm_temp_0)
+	'euler_phi = @azm_temp_0 * @euler_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @euler_scalar, @euler_phi)
+
+'------------
+'' euler_theta = (euler_theta_int ffloat 0) * euler_scalar
+	'azm_temp_0 = @euler_theta_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @euler_theta_int, @const_0, @azm_temp_0)
+	'euler_theta = @azm_temp_0 * @euler_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @euler_scalar, @euler_theta)
+
+'------------
+'' euler_psi   = (euler_psi_int   ffloat 0) * euler_scalar
+	'azm_temp_0 = @euler_psi_int ffloat @const_0
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPFloat, @euler_psi_int, @const_0, @azm_temp_0)
+	'euler_psi = @azm_temp_0 * @euler_scalar
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @euler_scalar, @euler_psi)
 'Normalize measured quaternion:
 
 '------------
@@ -886,27 +998,40 @@ PUB Init_Instructions
 'TODO: need to add a derivative term, at least.
 
 '------------
-'' M_x = (K_PH_x * alpha_H) * (beta_H cos 0)
+'' M_x = ((K_PH_x * alpha_H) * (beta_H cos 0)) - (K_DH_x * omega_b_x)
 	'azm_temp_0 = @K_PH_x * @alpha_H
 	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_PH_x, @alpha_H, @azm_temp_0)
 	'azm_temp_1 = @beta_H cos @const_0
 	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPCos, @beta_H, @const_0, @azm_temp_1)
-	'M_x = @azm_temp_0 * @azm_temp_1
-	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @azm_temp_1, @M_x)
+	'azm_temp_2 = @azm_temp_0 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @K_DH_x * @omega_b_x
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_DH_x, @omega_b_x, @azm_temp_3)
+	'M_x = @azm_temp_2 - @azm_temp_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_3, @M_x)
 
 '------------
-'' M_y = (K_PH_y * alpha_H) * (beta_H sin 0)
+'' M_y = ((K_PH_y * alpha_H) * (beta_H sin 0)) - (K_DH_y * omega_b_y)
 	'azm_temp_0 = @K_PH_y * @alpha_H
 	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_PH_y, @alpha_H, @azm_temp_0)
 	'azm_temp_1 = @beta_H sin @const_0
 	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSin, @beta_H, @const_0, @azm_temp_1)
-	'M_y = @azm_temp_0 * @azm_temp_1
-	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @azm_temp_1, @M_y)
-
-'------------
-'' M_z = K_P_z * phi
-	'M_z = @K_P_z * @phi
-	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_P_z, @phi, @M_z)
+	'azm_temp_2 = @azm_temp_0 * @azm_temp_1
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @azm_temp_0, @azm_temp_1, @azm_temp_2)
+	'azm_temp_3 = @K_DH_y * @omega_b_y
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPMul, @K_DH_y, @omega_b_y, @azm_temp_3)
+	'M_y = @azm_temp_2 - @azm_temp_3
+	fp.AddInstruction(CONTROL_LOOP_INDEX, fp#FPSub, @azm_temp_2, @azm_temp_3, @M_y)
+'M_x = (FNeg1 * alpha_H) * (beta_H cos 0)
+'M_y = (FNeg1 * alpha_H) * (beta_H sin 0)
+'M_x = alpha_H * (beta_H cos 0)
+'M_y = alpha_H * (beta_H sin 0)
+'M_z = 0 + 0
+'t_1 = PID_M_x_base ~ 0
+'t_2 = PID_M_y_base ~ 0
+'t_3 = PID_M_z_base ~ 0
+'M_z = (K_P_z * phi) - (K_DH_z * omega_b_z)
+'M_z = 0 * 0
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
@@ -1173,9 +1298,10 @@ PUB Init_Instructions
 '	long @F_3
 '	long @F_4
 '	long @F_z
+'	long @K_DH_x
+'	long @K_DH_y
 '	long @K_PH_x
 '	long @K_PH_y
-'	long @K_P_z
 '	long @K_Q
 '	long @K_T
 '	long @MAX_PWM
@@ -1191,6 +1317,8 @@ PUB Init_Instructions
 '	long @PID_n_3_output
 '	long @PID_n_4_base
 '	long @PID_n_4_output
+'	long @accel_b_x_int
+'	long @accel_scalar
 '	long @alpha
 '	long @alpha_H
 '	long @azm_temp_0
@@ -1208,6 +1336,11 @@ PUB Init_Instructions
 '	long @const_4
 '	long @const_pi
 '	long @diameter
+'	long @euler_phi_int
+'	long @euler_psi_int
+'	long @euler_scalar
+'	long @euler_theta_int
+'	long @gyro_scalar
 '	long @motor_intercept
 '	long @motor_slope
 '	long @n_1_int
@@ -1219,6 +1352,9 @@ PUB Init_Instructions
 '	long @n_d_3
 '	long @n_d_4
 '	long @offset
+'	long @omega_b_x
+'	long @omega_b_x_int
+'	long @omega_b_y
 '	long @omega_d_1
 '	long @omega_d_2
 '	long @omega_d_3
@@ -1273,7 +1409,9 @@ PUB Init_Instructions
 '	long F_4
 '	long M_x
 '	long M_y
-'	long M_z
+'	long accel_b_x
+'	long accel_b_y
+'	long accel_b_z
 '	long alpha
 '	long alpha_H
 '	long azm_temp_0
@@ -1286,6 +1424,9 @@ PUB Init_Instructions
 '	long beta_H
 '	long c
 '	long const_2_pi
+'	long euler_phi
+'	long euler_psi
+'	long euler_theta
 '	long motor_pwm_1
 '	long motor_pwm_2
 '	long motor_pwm_3
@@ -1298,6 +1439,9 @@ PUB Init_Instructions
 '	long n_d_2
 '	long n_d_3
 '	long n_d_4
+'	long omega_b_x
+'	long omega_b_y
+'	long omega_b_z
 '	long omega_d_1
 '	long omega_d_2
 '	long omega_d_3
@@ -1441,12 +1585,13 @@ CON
 	sSDR = ("S" << 16) | ("D" << 8) | "R"
 	sRDR = ("R" << 16) | ("D" << 8) | "R"
 	sSTP = ("S" << 16) | ("T" << 8) | "P"
-	
+	sSTR = ("S" << 16) | ("T" << 8) | "R"
 	
 	sSTP_EMG = ("E" << 16) | ("M" << 8) | "G"
 	sSTP_IMM = ("I" << 16) | ("M" << 8) | "M"
 	sSTP_CON = ("C" << 16) | ("O" << 8) | "N"
 	sSTP_RES = ("R" << 16) | ("E" << 8) | "S"
+	
 PUB ParseSerialCommand | t1, t2, t3, command
 ''Parses packets of the form "$ACXXX ...", ie command packets
 	
@@ -1470,7 +1615,13 @@ PUB ParseSerialCommand | t1, t2, t3, command
 			stop_command <<= 16 
 			stop_command |= serial.rx << 8
 			stop_command |= serial.rx
-
+		sSTR:
+			serial.rx 'Get space
+			serial.rx 'Get first "'"
+			repeat
+			until serial.rx == "'"
+			'Discard space
+			
 		OTHER:
 			PrintStrStart
 			serial.str(string("Warning: Unknown command type: "))
@@ -1496,7 +1647,12 @@ CON
 	sQDI = ("Q" << 16) | ("D" << 8) | "I"
 	sQEI = ("Q" << 16) | ("E" << 8) | "I"
 	sCLF = ("C" << 16) | ("L" << 8) | "F"
-	
+	sKPH = ("K" << 16) | ("P" << 8) | "H"
+	sKIH = ("K" << 16) | ("I" << 8) | "H"
+	sKDH = ("K" << 16) | ("D" << 8) | "H"	
+	sOMG = ("O" << 16) | ("M" << 8) | "G"	
+	sACC = ("A" << 16) | ("C" << 8) | "C"
+'	 = ("" << 16) | ("" << 8) | ""
 
 '	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
@@ -1629,6 +1785,62 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				WriteList1(@values, @control_loop_frequency)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr1(string("CLF"), @control_loop_frequency, TYPE_FLOAT)
+				
+				
+		sKPH:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @K_PH_x, @K_PH_y, @K_PH_z) 'TODO: not useful, since it's not used by PIDs
+				
+				fp.SetTunings(PID_M_x.getBase, values[0], FNeg1, FNeg1)
+				fp.SetTunings(PID_M_y.getBase, values[1], FNeg1, FNeg1)
+				fp.SetTunings(PID_M_z.getBase, values[2], FNeg1, FNeg1)
+				
+				PrintArrayAddr3(string("KPH"), @K_PH_x, @K_PH_y, @K_PH_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("KPH"), @K_PH_x, @K_PH_y, @K_PH_z, TYPE_FLOAT)
+				
+		sKIH:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @K_IH_x, @K_IH_y, @K_IH_z) 'TODO: not useful, since it's not used by PIDs
+				
+				fp.SetTunings(PID_M_x.getBase, FNeg1, values[0], FNeg1)
+				fp.SetTunings(PID_M_y.getBase, FNeg1, values[1], FNeg1)
+				fp.SetTunings(PID_M_z.getBase, FNeg1, values[2], FNeg1)
+
+				PrintArrayAddr3(string("KIH"), @K_IH_x, @K_IH_y, @K_IH_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("KIH"), @K_IH_x, @K_IH_y, @K_IH_z, TYPE_FLOAT)
+				
+		sKDH:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @K_DH_x, @K_DH_y, @K_DH_z) 'TODO: not useful, since it's not used by PIDs
+				
+				fp.SetTunings(PID_M_x.getBase, FNeg1, FNeg1, values[0])
+				fp.SetTunings(PID_M_y.getBase, FNeg1, FNeg1, values[1])
+				fp.SetTunings(PID_M_z.getBase, FNeg1, FNeg1, values[2])
+				PrintArrayAddr3(string("KDH"), @K_DH_x, @K_DH_y, @K_DH_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("KDH"), @K_DH_x, @K_DH_y, @K_DH_z, TYPE_FLOAT)
+		
+		sOMG:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @omega_b_x, @omega_b_y, @omega_b_z)
+				PrintArrayAddr3(string("OMG"), @omega_b_x, @omega_b_y, @omega_b_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("OMG"), @omega_b_x, @omega_b_y, @omega_b_z, TYPE_FLOAT)
+		sACC:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @accel_b_x, @accel_b_y, @accel_b_z)
+				PrintArrayAddr3(string("ACC"), @accel_b_x, @accel_b_y, @accel_b_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("ACC"), @accel_b_x, @accel_b_y, @accel_b_z, TYPE_FLOAT)
+		
+		
 				
 		OTHER:
 			PrintStrStart
@@ -2012,6 +2224,20 @@ control_loop_frequency long 0.0 'Frequency in Hz of the control loop.
 
 stop_command long 0
 
+
+'***************************************************
+'*********** CONTROLLER VARIABLES ******************
+'***************************************************
+
+r_d_e_0 long 0
+r_d_e_1 long 0
+r_d_e_2 long 0
+
+theta long 0
+
+K_s long 0.5
+
+
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
@@ -2036,6 +2262,20 @@ PID_n_4_base long 0
 omega_b_x	long 0
 omega_b_y	long 0
 omega_b_z	long 0
+
+omega_b_x_int	long 0
+omega_b_y_int	long 0
+omega_b_z_int	long 0
+
+			long 0, 0
+accel_b_x	long 0
+accel_b_y	long 0
+accel_b_z	long 0
+
+accel_b_x_int	long 0
+accel_b_y_int	long 0
+accel_b_z_int	long 0
+
 	
 			long 0, 0
 q_0			long 0
@@ -2066,6 +2306,9 @@ alpha_H		long 0
 
 			long 0, 0
 beta_h		long 0
+
+			long 0, 0
+gamma_h		long 0
 
 
 			long 0, 0
@@ -2106,9 +2349,21 @@ r_e_3		long 0
 r_x			long 0
 r_y			long 0
 
-K_PH_x		long 0.4
-K_PH_y		long 0.4
-K_P_z		long 0.0
+K_PH_x		long 0.0 'TODO: not useful, since it's not used by PIDs
+K_PH_y		long 0.0
+K_PH_z		long 0.0
+
+K_IH_x		long 0.0 'TODO: not useful, since it's not used by PIDs
+K_IH_y		long 0.0
+K_IH_z		long 0.0
+
+K_DH_x		long 0.0000 'TODO: not useful, since it's not used by PIDs
+K_DH_y		long 0.0000
+K_DH_z		long 0.0
+
+moment_setpoint long 0.0
+
+
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
@@ -2246,7 +2501,16 @@ MIN_PWM long 1000.0
 MAX_PWM long 1800.0
 
 
-quat_scalar long 0.0000335693 'From the UM6 datasheet
+motor_kp long 1.0'12.0
+motor_ki long 0.259' 9.0
+motor_kd long 0.0'0.1
+
+
+quat_scalar  long 0.0000335693 'From the UM6 datasheet
+accel_scalar long 0.000183105
+gyro_scalar  long 0.0610352
+euler_scalar long 0.0109863
+
 
 '***************************************************
 '*********** WORKING VARIABLES *********************

@@ -75,8 +75,8 @@ VAR
 	long	accel_proc_z
 	long	mag_proc_xy
 	long	mag_proc_z
-	long	euler_phi_theta
-	long	euler_psi
+	long	euler_phi_theta_um6
+	long	euler_psi_um6
 
 	long	quat_ab
 	long	quat_cd
@@ -85,6 +85,11 @@ VAR
 	long	quat_b
 	long	quat_c
 	long	quat_d
+	
+	long 	euler_phi, euler_theta, euler_psi
+	long 	euler_phi_int, euler_theta_int, euler_psi_int
+	
+	long	fp_clkfreq
 
 
 PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cnt, debug_count
@@ -112,8 +117,8 @@ PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cn
 	imu.add_register($5F, @accel_proc_z)
 	imu.add_register($60, @mag_proc_xy)
 	imu.add_register($61, @mag_proc_z)
-	imu.add_register($62, @euler_phi_theta)
-	imu.add_register($63, @euler_psi)
+	imu.add_register($62, @euler_phi_theta_um6)
+	imu.add_register($63, @euler_psi_um6)
 	imu.add_register($64, @quat_ab)
 	imu.add_register($65, @quat_cd)
 	imu.start(IMU_RX_PIN, IMU_TX_PIN, 0, 115200)
@@ -146,6 +151,9 @@ PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cn
 	actual_time := cnt
 	
 	debug_count := 0
+	
+	fp_clkfreq := fp.FFloat(clkfreq)
+	
 	repeat	
 		debug_count ++
 		if debug_count == 10
@@ -153,23 +161,48 @@ PUB Main | t1, i, lastcnt, string_to_print, loop_time, actual_time, frequency_cn
 			q_d_1 := q_1
 			q_d_2 := q_2
 			q_d_3 := q_3
+			
 	
 '***************** Inputs **************************
 		n_1_int := 0 #> rpm.getrps(0) <# 250 'Min < rps < Max
 		n_2_int := 0 #> rpm.getrps(1) <# 250 'Min < rps < Max
 		n_3_int := 0 #> rpm.getrps(2) <# 250 'Min < rps < Max
 		n_4_int := 0 #> rpm.getrps(3) <# 250 'Min < rps < Max
+'		n_1_int := rpm.gettime(0)
+'		n_2_int := rpm.gettime(1)
+'		n_3_int := rpm.gettime(2)
+'		n_4_int := rpm.gettime(3)
 
 		quat_a :=  quat_ab ~> 16
 		quat_b := (quat_ab << 16) ~> 16
 		quat_c :=  quat_cd ~> 16
 		quat_d := (quat_cd << 16) ~> 16
+		
+		euler_phi :=  euler_phi_theta_um6 ~> 16
+		euler_theta := (euler_phi_theta_um6 << 16) ~> 16
+		euler_psi :=  euler_psi_um6 ~> 16
+'		quat_d := (quat_cd << 16) ~> 16
 	
-	
+		omega_b_x_int := gyro_proc_xy         ~> 16
+		omega_b_y_int := (gyro_proc_xy << 16) ~> 16
+		omega_b_z_int := gyro_proc_z          ~> 16
+		
+		accel_b_x_int := accel_proc_xy         ~> 16
+		accel_b_y_int := (accel_proc_xy << 16) ~> 16
+		accel_b_z_int := accel_proc_z          ~> 16
 	
 '***************** Serial **************************
 		ParseSerial
+'		if debug_count > 1
+'			serial.str(string("Euler phi, theta, psi: "))
+'			serial.str(fp.FloatToString(euler_phi))
+'			serial.str(string(", "))
+'			serial.str(fp.FloatToString(euler_theta))
+'			serial.str(string(", "))
+'			serial.str(fp.FloatToString(euler_psi))
+'			serial.str(string(10, 13))
 		
+		'TODO: Bug, if the first thing to print hasn't been calculated yet, may hang.
 		case string_to_print++
 			0: PrintArrayAddr4(string("NIM"), @n_1, @n_2, @n_3, @n_4, TYPE_FLOAT)
 			1: PrintArrayAddr3(string("MOM"), @M_x, @M_y, @M_z, TYPE_FLOAT)
@@ -243,6 +276,18 @@ PUB InitPID
 '	PID_M_x.setInput_addr()
 '	PID_M_X.setSetpoint_addr()
 '	
+'	fp.InitializePID(PID_M_x.getBase, @M_x, @M_x, @moment_setpoint, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
+'	fp.SetTunings(PID_M_x.getBase, K_PH_x, K_IH_y, K_DH_z)
+'	PID_M_x_base := PID_M_x.getBase
+'	
+'	fp.InitializePID(PID_M_y.getBase, @M_y, @M_y, @moment_setpoint, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
+'	fp.SetTunings(PID_M_y.getBase, K_PH_y, K_IH_y, K_DH_y)
+'	PID_M_y_base := PID_M_y.getBase
+'	
+'	fp.InitializePID(PID_M_z.getBase, @M_z, @M_z, @moment_setpoint, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
+'	fp.SetTunings(PID_M_z.getBase, K_PH_z, K_IH_z, K_DH_z)
+'	PID_M_z_base := PID_M_z.getBase
+
 '	PID_M_y.setOutput_addr()
 '	PID_M_y.setInput_addr()
 '	PID_M_y.setSetpoint_addr()
@@ -257,19 +302,19 @@ PUB InitPID
 	
 	
 	fp.InitializePID(PID_n_1.getBase, @n_1, @PID_n_1_output, @n_d_1, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_1.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_1.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_1_base := PID_n_1.getBase
 	
 	fp.InitializePID(PID_n_2.getBase, @n_2, @PID_n_2_output, @n_d_2, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_2.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_2.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_2_base := PID_n_2.getBase
 	
 	fp.InitializePID(PID_n_3.getBase, @n_3, @PID_n_3_output, @n_d_3, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_3.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_3.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_3_base := PID_n_3.getBase
 	
 	fp.InitializePID(PID_n_4.getBase, @n_4, @PID_n_4_output, @n_d_4, fp.FSub(float(0), float(300)), float(300), fp.FDiv(float(1), float(50)))
-	fp.SetTunings(PID_n_4.getBase, float(2), float(0), float(0))
+	fp.SetTunings(PID_n_4.getBase, motor_kp, motor_ki, motor_kd)
 	PID_n_4_base := PID_n_4.getBase
 	
 
@@ -295,17 +340,33 @@ PUB Calculate
 	
 {{AZM_MATH CONTROL_LOOP
 
+'n_1 = fp_clkfreq / ((n_1_int ffloat 0) * 6)
+'n_2 = fp_clkfreq / ((n_2_int ffloat 0) * 6)
+'n_3 = fp_clkfreq / ((n_3_int ffloat 0) * 6)
+'n_4 = fp_clkfreq / ((n_4_int ffloat 0) * 6)
+
 n_1 = n_1_int ffloat 0
 n_2 = n_2_int ffloat 0
 n_3 = n_3_int ffloat 0
 n_4 = n_4_int ffloat 0
-
 
 'Make sure to do the shifting before calling this routine!
 q_0 = (quat_a ffloat 0) * quat_scalar
 q_1 = (quat_b ffloat 0) * quat_scalar
 q_2 = (quat_c ffloat 0) * quat_scalar
 q_3 = (quat_d ffloat 0) * quat_scalar
+
+omega_b_x = (omega_b_x_int ffloat 0) * gyro_scalar
+omega_b_y = (omega_b_x_int ffloat 0) * gyro_scalar
+omega_b_z = (omega_b_x_int ffloat 0) * gyro_scalar
+
+accel_b_x = (accel_b_x_int ffloat 0) * accel_scalar
+accel_b_y = (accel_b_x_int ffloat 0) * accel_scalar
+accel_b_z = (accel_b_x_int ffloat 0) * accel_scalar
+
+euler_phi   = (euler_phi_int   ffloat 0) * euler_scalar
+euler_theta = (euler_theta_int ffloat 0) * euler_scalar
+euler_psi   = (euler_psi_int   ffloat 0) * euler_scalar
 
 
 'Normalize measured quaternion:
@@ -410,9 +471,21 @@ r_y = ((t_2 * q_tilde_b_1) + (t_1 * q_tilde_b_2)) / t_3
 beta_H = r_y arc_t2 r_x
 
 'TODO: need to add a derivative term, at least.
-M_x = (K_PH_x * alpha_H) * (beta_H cos 0)
-M_y = (K_PH_y * alpha_H) * (beta_H sin 0)
-M_z = K_P_z * phi
+M_x = ((K_PH_x * alpha_H) * (beta_H cos 0)) - (K_DH_x * omega_b_x)
+M_y = ((K_PH_y * alpha_H) * (beta_H sin 0)) - (K_DH_y * omega_b_y)
+
+'M_x = (FNeg1 * alpha_H) * (beta_H cos 0)
+'M_y = (FNeg1 * alpha_H) * (beta_H sin 0)
+'M_x = alpha_H * (beta_H cos 0)
+'M_y = alpha_H * (beta_H sin 0)
+'M_z = 0 + 0
+
+'t_1 = PID_M_x_base ~ 0
+'t_2 = PID_M_y_base ~ 0
+'t_3 = PID_M_z_base ~ 0
+
+'M_z = (K_P_z * phi) - (K_DH_z * omega_b_z)
+'M_z = 0 * 0
 
 '***************************************************
 '*********** MOTOR BLOCK ***************************

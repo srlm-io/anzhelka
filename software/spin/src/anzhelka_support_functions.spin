@@ -102,12 +102,13 @@ CON
 	sSDR = ("S" << 16) | ("D" << 8) | "R"
 	sRDR = ("R" << 16) | ("D" << 8) | "R"
 	sSTP = ("S" << 16) | ("T" << 8) | "P"
-	
+	sSTR = ("S" << 16) | ("T" << 8) | "R"
 	
 	sSTP_EMG = ("E" << 16) | ("M" << 8) | "G"
 	sSTP_IMM = ("I" << 16) | ("M" << 8) | "M"
 	sSTP_CON = ("C" << 16) | ("O" << 8) | "N"
 	sSTP_RES = ("R" << 16) | ("E" << 8) | "S"
+	
 PUB ParseSerialCommand | t1, t2, t3, command
 ''Parses packets of the form "$ACXXX ...", ie command packets
 	
@@ -131,7 +132,13 @@ PUB ParseSerialCommand | t1, t2, t3, command
 			stop_command <<= 16 
 			stop_command |= serial.rx << 8
 			stop_command |= serial.rx
-
+		sSTR:
+			serial.rx 'Get space
+			serial.rx 'Get first "'"
+			repeat
+			until serial.rx == "'"
+			'Discard space
+			
 		OTHER:
 			PrintStrStart
 			serial.str(string("Warning: Unknown command type: "))
@@ -157,7 +164,12 @@ CON
 	sQDI = ("Q" << 16) | ("D" << 8) | "I"
 	sQEI = ("Q" << 16) | ("E" << 8) | "I"
 	sCLF = ("C" << 16) | ("L" << 8) | "F"
-	
+	sKPH = ("K" << 16) | ("P" << 8) | "H"
+	sKIH = ("K" << 16) | ("I" << 8) | "H"
+	sKDH = ("K" << 16) | ("D" << 8) | "H"	
+	sOMG = ("O" << 16) | ("M" << 8) | "G"	
+	sACC = ("A" << 16) | ("C" << 8) | "C"
+'	 = ("" << 16) | ("" << 8) | ""
 
 '	 = ("" << 16) | ("" << 8) | ""
 '	 = ("" << 16) | ("" << 8) | ""
@@ -290,6 +302,62 @@ PUB ParseSerialXDR(TYPE) | register, values[10], i
 				WriteList1(@values, @control_loop_frequency)
 			elseif TYPE == XDR_READ	
 				PrintArrayAddr1(string("CLF"), @control_loop_frequency, TYPE_FLOAT)
+				
+				
+		sKPH:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @K_PH_x, @K_PH_y, @K_PH_z) 'TODO: not useful, since it's not used by PIDs
+				
+				fp.SetTunings(PID_M_x.getBase, values[0], FNeg1, FNeg1)
+				fp.SetTunings(PID_M_y.getBase, values[1], FNeg1, FNeg1)
+				fp.SetTunings(PID_M_z.getBase, values[2], FNeg1, FNeg1)
+				
+				PrintArrayAddr3(string("KPH"), @K_PH_x, @K_PH_y, @K_PH_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("KPH"), @K_PH_x, @K_PH_y, @K_PH_z, TYPE_FLOAT)
+				
+		sKIH:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @K_IH_x, @K_IH_y, @K_IH_z) 'TODO: not useful, since it's not used by PIDs
+				
+				fp.SetTunings(PID_M_x.getBase, FNeg1, values[0], FNeg1)
+				fp.SetTunings(PID_M_y.getBase, FNeg1, values[1], FNeg1)
+				fp.SetTunings(PID_M_z.getBase, FNeg1, values[2], FNeg1)
+
+				PrintArrayAddr3(string("KIH"), @K_IH_x, @K_IH_y, @K_IH_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("KIH"), @K_IH_x, @K_IH_y, @K_IH_z, TYPE_FLOAT)
+				
+		sKDH:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @K_DH_x, @K_DH_y, @K_DH_z) 'TODO: not useful, since it's not used by PIDs
+				
+				fp.SetTunings(PID_M_x.getBase, FNeg1, FNeg1, values[0])
+				fp.SetTunings(PID_M_y.getBase, FNeg1, FNeg1, values[1])
+				fp.SetTunings(PID_M_z.getBase, FNeg1, FNeg1, values[2])
+				PrintArrayAddr3(string("KDH"), @K_DH_x, @K_DH_y, @K_DH_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("KDH"), @K_DH_x, @K_DH_y, @K_DH_z, TYPE_FLOAT)
+		
+		sOMG:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @omega_b_x, @omega_b_y, @omega_b_z)
+				PrintArrayAddr3(string("OMG"), @omega_b_x, @omega_b_y, @omega_b_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("OMG"), @omega_b_x, @omega_b_y, @omega_b_z, TYPE_FLOAT)
+		sACC:
+			if TYPE == XDR_WRITE
+				ParseSerialList(@values, 3, TYPE_FLOAT)
+				WriteList3(@values, @accel_b_x, @accel_b_y, @accel_b_z)
+				PrintArrayAddr3(string("ACC"), @accel_b_x, @accel_b_y, @accel_b_z, TYPE_FLOAT)
+			elseif TYPE == XDR_READ	
+				PrintArrayAddr3(string("ACC"), @accel_b_x, @accel_b_y, @accel_b_z, TYPE_FLOAT)
+		
+		
 				
 		OTHER:
 			PrintStrStart

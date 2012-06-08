@@ -14,7 +14,7 @@ Notes: Original author Tim Moore, (c) 2010.
 
 TODO: Check for 80MHz hardcoded values
 TODO: in getrpm and getrps precompute 80_000_000 / 6
-
+TODO: Make the get rps and getrpm methods use the array version of previous speed
 
 
 
@@ -25,14 +25,15 @@ TODO: in getrpm and getrps precompute 80_000_000 / 6
 Con
   Mhz    = (80+10)                                      ' System clock frequency in Mhz. + init instructions
   
-  MAX_RPS = 400
+  MAX_RPS = 200
    
 VAR
   long  Cog
   long  Pins[8]
   long  PinShift                                          
   long  PinMask
-  long	previous_speed
+  long	previous_speed[8]
+  long  previous_time[8]
 
 PUB setpins(_pinmask)
 '' Set pinmask for active input pins [0..31]
@@ -73,7 +74,30 @@ PUB getrpm(i) | speed
 		return speed * 60
 	else		'Invalid number
 		return speed 
-		
+
+
+PUB gettime(i) | delta, speed
+'' Get the RPS of motor i (by index, not pin number)
+'' Valid index range is 0-7
+'' Returns -1 when no valid data
+	if i > 7 OR i < 0 'Check Range
+		return -1
+	
+	delta := Pins[i]
+	
+	if delta == 0
+		return -1
+	
+	speed := (clkfreq / (delta*6))
+
+	if speed > MAX_RPS
+		return previous_time[i]
+	
+	previous_time[i] := delta
+	
+	return delta
+	
+			
 PUB getrps(i) | delta, speed
 '' Get the RPS of motor i (by index, not pin number)
 '' Valid index range is 0-7

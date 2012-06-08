@@ -33,6 +33,20 @@ control_loop_frequency long 0.0 'Frequency in Hz of the control loop.
 
 stop_command long 0
 
+
+'***************************************************
+'*********** CONTROLLER VARIABLES ******************
+'***************************************************
+
+r_d_e_0 long 0
+r_d_e_1 long 0
+r_d_e_2 long 0
+
+theta long 0
+
+K_s long 0.5
+
+
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
@@ -57,6 +71,20 @@ PID_n_4_base long 0
 omega_b_x	long 0
 omega_b_y	long 0
 omega_b_z	long 0
+
+omega_b_x_int	long 0
+omega_b_y_int	long 0
+omega_b_z_int	long 0
+
+			long 0, 0
+accel_b_x	long 0
+accel_b_y	long 0
+accel_b_z	long 0
+
+accel_b_x_int	long 0
+accel_b_y_int	long 0
+accel_b_z_int	long 0
+
 	
 			long 0, 0
 q_0			long 0
@@ -87,6 +115,9 @@ alpha_H		long 0
 
 			long 0, 0
 beta_h		long 0
+
+			long 0, 0
+gamma_h		long 0
 
 
 			long 0, 0
@@ -127,9 +158,21 @@ r_e_3		long 0
 r_x			long 0
 r_y			long 0
 
-K_PH_x		long 0.2
-K_PH_y		long 0.2
-K_P_z		long 0.0
+K_PH_x		long 0.0 'TODO: not useful, since it's not used by PIDs
+K_PH_y		long 0.0
+K_PH_z		long 0.0
+
+K_IH_x		long 0.0 'TODO: not useful, since it's not used by PIDs
+K_IH_y		long 0.0
+K_IH_z		long 0.0
+
+K_DH_x		long 0.0000 'TODO: not useful, since it's not used by PIDs
+K_DH_y		long 0.0000
+K_DH_z		long 0.0
+
+moment_setpoint long 0.0
+
+
 '***************************************************
 '*********** MOTOR BLOCK ***************************
 '***************************************************
@@ -267,7 +310,16 @@ MIN_PWM long 1000.0
 MAX_PWM long 1800.0
 
 
-quat_scalar long 0.0000335693 'From the UM6 datasheet
+motor_kp long 1.0'12.0
+motor_ki long 0.259' 9.0
+motor_kd long 0.0'0.1
+
+
+quat_scalar  long 0.0000335693 'From the UM6 datasheet
+accel_scalar long 0.000183105
+gyro_scalar  long 0.0610352
+euler_scalar long 0.0109863
+
 
 '***************************************************
 '*********** WORKING VARIABLES *********************
