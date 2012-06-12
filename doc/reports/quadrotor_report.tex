@@ -142,28 +142,7 @@ v0.05 & Fixed some gramtical errors, added weights, cleaned up. & Luke \\
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Introduction}
-
-A quadrotor, also known as a quadrotor helicopter or quadcopter, is a mutltirotor aerial vehicle that has four rotors mounted on a rigid frame to provide lift. Quadrotor designs first appeared in the 1920s, but were abandoned because of bad performance and high pilot work load.
-
-In order to keep a quadrotor from spinning on its own axis, it must be built with counter rotating blades. Without counter rotating blades the quadrotor would create enough torque to spin in a constant direction around its' own axis.
-
-\begin{figure}[h!]
-  \centering
-	\includegraphics[scale=.05]{reference_frame_diagram.jpg}
-  \caption{Orientation of the body axis with respect to the motor numbers and rotations.}
-\end{figure}  
-
-Quadrotors are highly manoeuvrable. A quadrotor can take off and land vertically. They can translate horizontally through the air, and they can also hold altitude. With a suitable pilot(or software) behind the controls one can do amzing aerial acrobatics with the quadrotor.
-
-Quadrotors are very similar to helicopters, so what advantages do quadrotors have? Quadrotors have no mechanical gears between the motors and propellers. Each motor is directly driving its propeller. Having four propellers allows you to have a much smaller propeller than what is on the typical helicopter. This means that the propellers possess less kinetic energy while spinning allowing for a safer platform.
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-
-\subsection{Quadrotor Mathematics}
-A quadrotor is a very complex vehicle that is difficult to control. It is an under-actuated system with only one direction of force and three moment directions. The treatment of the math is too complex to include here. Instead, we have a separate document that discusses the math and theory of quadrotor flight in great detail. See citation \cite{anzhelka_math}. The rest of this paper will focus on everything else related to the quadrotor.
-
-%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
-\subsection{Executive Summary}
+\section{Executive Summary}
 \begin{figure}[h!]
   \centering
 	\includegraphics[scale=.6]{elev_8_rendering.JPG}
@@ -192,6 +171,29 @@ Testing the quadrotor is a challenge in and of itself. But before that, one of t
 The project was started without any expertise or experience with autonomous flying or quadrotors, but with a will to learn, create and develop a system that could even be understood by anyone. Software is our group expertise. Both team members have years of experience in multiple programming languages. 
 
 Hardware on the other hand is a bit more difficult. Only one team member has any experience with designing PCBs and circuits, but not nothing to the extent of this project. We believe that, based on the work we have put into the project, that we have earned the class credits that we are receiving. Approximately 30 hours per person per week were devoted to this project(terminal program).
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+\section{Introduction}
+
+A quadrotor, also known as a quadrotor helicopter or quadcopter, is a mutltirotor aerial vehicle that has four rotors mounted on a rigid frame to provide lift. Quadrotor designs first appeared in the 1920s, but were abandoned because of bad performance and high pilot work load.
+
+In order to keep a quadrotor from spinning on its own axis, it must be built with counter rotating blades. Without counter rotating blades the quadrotor would create enough torque to spin in a constant direction around its' own axis.
+
+\begin{figure}[h!]
+  \centering
+	\includegraphics[scale=.05]{reference_frame_diagram.jpg}
+  \caption{Orientation of the body axis with respect to the motor numbers and rotations.}
+\end{figure}  
+
+Quadrotors are highly manoeuvrable. A quadrotor can take off and land vertically. They can translate horizontally through the air, and they can also hold altitude. With a suitable pilot(or software) behind the controls one can do amzing aerial acrobatics with the quadrotor.
+
+Quadrotors are very similar to helicopters, so what advantages do quadrotors have? Quadrotors have no mechanical gears between the motors and propellers. Each motor is directly driving its propeller. Having four propellers allows you to have a much smaller propeller than what is on the typical helicopter. This means that the propellers possess less kinetic energy while spinning allowing for a safer platform.
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
+\subsection{Quadrotor Mathematics}
+A quadrotor is a very complex vehicle that is difficult to control. It is an under-actuated system with only one direction of force and three moment directions. The treatment of the math is too complex to include here. Instead, we have a separate document that discusses the math and theory of quadrotor flight in great detail. See citation \cite{anzhelka_math}. The rest of this paper will focus on everything else related to the quadrotor.
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -226,30 +228,30 @@ The Anzhelka project software was developed for the most part using a Linux syst
 
 The project uses the following directory structure:
 \begin{lstlisting}
- /hardware 
-    /frame 
-    /pcb 
- /software 
-    /spin 
-       /src 
-       /lib 
-       /test 
-       /tool 
-       /config 
-    /java 
-       /src 
-       /lib 
-       /test 
-       /tool 
-       /config 
  /doc 
     /datasheet 
+       /mpu60X0
     /reports 
     /figures 
+       /editorial 
+       /equations 
     /notes 
     /tests 
     /extra 
  /extra 
+ /hardware 
+    /frame 
+    /pcb 
+       /QaudPower
+          /Current
+          /REV-A
+ /software 
+    /spin 
+       /lib 
+          /bma
+       /src 
+       /test 
+       /tool
 \end{lstlisting} 
  
  
@@ -302,6 +304,14 @@ All code is compiled with the \texttt{BSTC} compiler. This is available in \cite
 All project files are hosted on the project Git repository, hosted by Google Code at \cite{anzhelka_code}. A Git repository was selected so that all developers would have equal access to the source files, changes would be logged and trackable, issues would be trackable, and so that concurrent work on files  could be easily merged. All project files are open source under the MIT license and can be downloaded freely.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Related Documents and Supporting Materials}
+TODO
+TODO
+TODO
+TODO
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Definitions and Acronyms}
 \begin{tabular}{l l}
 	AT & Anzhelka Terminal \\
@@ -333,8 +343,8 @@ In this section we define the various requirements of the quadrotor platform. Th
 
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Guiding Vision}
-Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video usually turns out shaky and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be accomplished while being as simple as powering on a couple of devices. Simply launch your quadrotor with the press of a button, and get amazing video. This is our vision for the project.
+%\subsection{Guiding Vision}
+%Have you ever mounted a camera on to your helmet and rode down a mountainous trail? What about trying to capture yourself while water skiing? Watching the video usually turns out shaky and in one perspective. Would it be nice to be able to see what you did wrong that caused you to fall of your bike? Most of the time you can't see what went wrong. What if you could do all of that while still capturing amazing views?  All this can be accomplished while being as simple as powering on a couple of devices. Simply launch your quadrotor with the press of a button, and get amazing video. This is our vision for the project.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 \subsection{Assumptions}
@@ -355,6 +365,16 @@ Finally, the system is also constrained by the mass of the vehicle. Since the qu
 
 To be able to accomplish all of these tasks there are many of interfacing between many different devices. Our main control board must control all 4 ESC's, communicate with the IMU via a serial UART, control servos via PWM signals, monitor the voltage and current of each motor via A2D circuits, and compute the control loop.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2   
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Industry Standards}
+\begin{list}{*}{}
+	\item USB
+	\item UART
+	\item USART
+	\item GPS
+\end{list}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Budget and Cost Analysis}
@@ -419,6 +439,38 @@ Several precautions are enacted to decrease the likelyhood of accidents. During 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Documentation}
+Throught the design, build and testing phase of this project we have been documenting any and all information of interesting on the Anzhelka Blog. (\cite{anzhelka_blog})
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Understanding of Professional and Ethical Responsibility}
+Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Global, Economic, Environmental and Societal Impact}
+The Anzhelka project could potentially have a large global impact. Our project can change the way things are monitored. With a quadrotor you can monitor a target from a distance without having to move around to stay at the same altitude. Quadrotors also have a greater payload capacity over helicopters because they are much lighter by design.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Contemporaray Engineering Issues}
+\begin{list}{*}{}
+	\item Power Management
+	\item Motor Control and Monitoring
+	\item Weight
+	\item Size
+	\item Safety
+	\item PCB design
+\end{list}
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Lifelong Learning}
+The Anzhelka Project is a living breathing project. It has the possiablity to be expanded in many different ways. During this project the team had discovered lots of flaws in off the self hobbiest electronics. The IMU that was used did not provide the adequate data that it said it was able to provide. The motor drivers do not have feed back to the controller to let it know RPM, Voltage, or Current. These are just some of the things that were encountered and are planned to be changed by the Anzhelka team.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Importance of Team Work}
 Being able to work in a team is both a skill and a challenge. Working on a project in a group helps you split up the work load and possibly get more work done in less time, however being able to work together with others on the project could present a greater challenge than the project itself. 
 
@@ -429,7 +481,7 @@ This was a foreseen challenge and the team set up a Git repository for all code,
 
 %clearpage %make room for the picture
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{System Design}
+\section{High Level Design}
 The system is fairly simple. The general system architecture consists of the central Propeller microcontroller interfacing with a number of different devices. Both hardware and software mimic this layout, which is shown below.
 
 %\clearpage %make room for the picture
@@ -450,8 +502,8 @@ The system is fairly simple. The general system architecture consists of the cen
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Software Introduction}
-This section describes the quadrotor software environment.
+\section{Low Level Design}
+This section describes the quadrotor's low level design.
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Propeller}
 For this project we selected the Parallax Propeller as our main embedded processor. This chip has several unique features that make it well suited to the real time requirments of quadrotoor flight. The Propeller is relatively inexpensive as well: \$8 per chip, plus approximately \$2 for support components.
@@ -884,10 +936,17 @@ This protocol could also be used to log parameters of the quadrotor as it is fly
 
  
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{User Interface}
+\section{User Interface Design}
 Currently, the only user interface is via the Anzhelka Terminal.
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Anzhelka Terminal}
+\begin{figure}[h!]
+\centering
+	\includegraphics[scale=.33]{anzhelka_terminal_data.png}
+\end{figure}
+
 The Anzhelka project uses a PC based GUI platform called Anzhelka Terminal (AT) to display realtime system states and to allow for parameter tuning. AT is written in Python and uses the WxWidgets Python branch WxPython for the GUI. AT is cross platform.
 
 The AT GUI was written in WxPython and developed in part with the WYSIWYG editor WxGlade. WxGlade was suitable for most of the general layout tools, but was insufficient in two areas. First, WxGlade could not specifically layout the dynamic graphs since the graph class is a non standard class. Secondly, WxGlade was not used to layout the motor parameter table. This table has a row for each motor (normally 4 motors, but possibly 3 or more) and a column for each parameter of interest. Since this section was hand coded, either number should be easily changeable without excessive GUI editing .
@@ -974,7 +1033,7 @@ In the event that you can not get your boards fully tested you will need to crea
 
 The physical components that will be soldered onto the PCB have usually been tested and have an acceptable failure rate that will not have a great effect on the yield. With that being said, placement of the components is essential. If a component is misplaced by 20mils this could cause a bridge between two pins causing a short rendering that board unusable.
 
-Once the PCB has been fully populated it now must be tested to ensure that all the components are in working order. One of the easiest ways to accomplish this is to develop test code that will run on the hardware and will give you a set of known outputs. Having something that will test all components several times under different inputs and outputs is key to insure that the PCB is in good working order.
+Once the PCB has been fully populated it now must be tested to ensure that all the components are in working order. One of the easiest ways to accomplish this is to develop test code that will run on the hardware and will give you a set of known outputs. Having something that will test all components several times under different inputs and outputs is key to ensure that the PCB is in good working order.
 %% S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3 S3
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
@@ -1049,24 +1108,43 @@ The thrust/torque test stand also had aesthetics in mind when it was designed. T
 \subsection{Anzhelka Marketing}
 We have worked on marketing this project as well. We selected the name "Anzhelka" (meaning angelic in Russian) and made it the core identifier of our project. We have developed the phoenix logo that is used on everything that we produce. We have developed team T-shirts and a display board to simultaneously educate and promote the project. We have a project domain (anzhelka.com) and sensible web addresses. This project now has an identity such as few senior design projects ever achieve.
 
-\subsection{Ethics}
-
-Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals.
-
-
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
-\section{Conclusions}
+\section{Conclusion and Future Work}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
+
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
+\subsection{Conclusion}
 For this project, we have developed the hardware and software frameworks necessary to fly autonomously. We have built and tested the mechanical and electrical hardware, and developed much of the associated sensor software. We have analysed current research papers on the topic of quadrotor control, and have developed a document that clearly and precisely outlines the steps necessary to fly (\cite{anzhelka_math}). We have extensively documented the entire process, and provided all of it as open source. We have created an identity for the project in the form of the name Anzhelka and our phoenix logo. With these accomplishments we are only a few small steps away from flying.
 
 We were, and are constantly surprised by the amount of work even apparently simple tasks take. We had originally anticipated being able to fly by mid January. Then mid February. Now, it is mid May. The process has been a learning experience for both of us. We have learned the value of a methodical approach and good documentation, and to respect the progress of others in our field.
 
 If we had to do it differently we would make a larger team. Specifically, it would be very beneficial to add several new roles in addition to the computer engineering and computer science roles that we already fill. A mechanical engineer would take care of the quadrotor frame, an electrical engineer would take care of the circuits, and an administration major would maintain all the documentation. With these three other people we could make the excellent project it already is absolutely outstanding.
+%% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
+\subsection{Acknowledgements}
+We have had a considerable amount of assistance with this project. We would like to thank everyone who has supported us as we work on the largest undertaking either of us has ever done.
+\begin{longtable}{l l}
+W9GFO (Rich Harman)& Laser cutting of the Derlin\textregistered  \- Frame Parts \\
+Gene Shermen & Machinist \\
+Dale Holtkamp & Machinist \\
+Elmar Palma & Workshop \\
+Dr. Philip Brisk & Consulting \\
+Dr. Ping Liang & Consulting \\
+Dr. Roman Chomko & Consulting \\
+Dr. Kastner & Consulting \\
+Tom Wypych & Consulting \\
+Frank Lewis & Algorithms \\
+Emanuel Stingu & Algorithms \\
+Texas Instraments & Samples \\
+Microchip & Samples \\
+Jack Mcbroom & Other \\
+\end{longtable}
+%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{References}
@@ -1145,28 +1223,6 @@ If we had to do it differently we would make a larger team. Specifically, it wou
 \end{thebibliography}
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1    
-
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
-\section{Acknowledgements}
-We have had a considerable amount of assistance with this project. We would like to thank everyone who has supported us as we work on the largest undertaking either of us has ever done.
-\begin{longtable}{l l}
-W9GFO (Rich Harman)& Laser cutting of the Derlin\textregistered  \- Frame Parts \\
-Gene Shermen & Machinist \\
-Dale Holtkamp & Machinist \\
-Elmar Palma & Workshop \\
-Dr. Philip Brisk & Consulting \\
-Dr. Ping Liang & Consulting \\
-Dr. Roman Chomko & Consulting \\
-Dr. Kastner & Consulting \\
-Tom Wypych & Consulting \\
-Frank Lewis & Algorithms \\
-Emanuel Stingu & Algorithms \\
-Texas Instraments & Samples \\
-Microchip & Samples \\
-Jack Mcbroom & Other \\
-\end{longtable}
-%% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 
-
 
 %% S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1 S1  
 \section{Appendices}
