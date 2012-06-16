@@ -207,7 +207,19 @@ On this project both team members share the same responsibility for all componen
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 \subsection{Current Project Status}
-As of this writing, we still have work to do in order to achieve stable autonomous hover. We are in the process of testing the thrust torque test stand, and verifying all electrical circuits on the quadrotor. Once that is complete we will be able to write the three control loop blocks, as described in detail in the Anzhelka mathematics document \cite{anzhelka_math}. It is estimated that these blocks will be able to run at up to 300Hz (section \ref{subsec:codeperformanceestimation}).  For the project schedule, see subsection \ref{subsec:maintenance_plan_10}.
+As of this writing, we still have work to do in order to achieve stable autonomous hover. We have written and tested the complete system of software, from quaternion input to motor control output. The three control loop blocks are written, and the main control loop does the following activities:
+\begin{list}{*}{}
+	\item Check for emergency stop command
+	\item Parse control loop inputs (quaternion, omega, and rotor speed)
+	\item Parse serial input (for sending commands/modifying registers)
+	\item Calculate control loop
+	\item Calculate main loop frequency, and truncate
+\end{list}
+The three control loop blocks are described in detail in the Anzhelka mathematics document. \cite{anzhelka_math}.
+
+The quadrotor can ``balance'' on the roll/pitch test stand. Due to the IMU error (see below), the orientation of the quadrotor on the test stand is not true. The quadrotor does, however, react appropriately to changes in orientation. This verifies that all of the other systems (motors, electronics, software) are acting appropriately.
+
+At this point, the quadrotor does not fly. We determined that the error was due to a faulty IMU: the CHR-UM6 IMU that we were using does not have a suitable filtering algorithm, and provides inconsistent orientation estimates. The problem persists over three different IMUs, and so future work will have to use a different IMU.
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Background and Prior Art}
@@ -445,7 +457,43 @@ Throught the design, build and testing phase of this project we have been docume
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Professional and Ethical Responsibility}
-Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals.
+%Unmanned aerial vehicles(UAVs) are a very controversial current topic. The Anzhelka project is part of a subset of UAVs; namely, vertical take and and landing (VTOL). UAVs can assist in surveillance, inspect structures, creating aerial photographs, rescuers in a disaster situation, transporting goods, and many other situations. However, UAVs can also reduce privacy and security of individuals.
+
+\subsubsection{Honesty}
+
+The team members of this project strived to have professional ethics in all works they contributed in.  We strived to maintain honesty with our professors and peers on that status and development of the project. 
+ 
+\subsubsection{Integrity}
+
+In order to have a successful project we needed to insure that we did most of our research before we had started the project. This would allow us to know what information was public domain and what we needed to manufacture on our own. It is quite easy for one to lose their integrity when they have fallen behind and have not been honest about their status. Any and all sources that were used in this project have been cited in all of our documents and code.
+
+\subsubsection{Transparency}
+
+In order to allow others to see how we developed our project we decided that we would create the project in an open environment. All of our source code, reports, designs, documents, can be found on our Git Repository page and/or Blog. All changes of the files can be seen from creation to current state by looking at the differences between each upload. You are also able to see who uploaded that rendition of the file.
+
+\subsubsection{Accountability}
+
+The members of this project always tried to keep a safe environment no matter where testing was preformed. Safety glasses were given to a guest or member of the public when wanted to view a demonstration of the project. The team members always wore safety glasses while in the same room as the project to ensure the upmost safety. Before each test demonstration an inspection of the components was given.
+
+\subsubsection{Confidentiality}
+
+Since the project was kept in an open environment all information that was obtained was shared. Had we used proprietary code or hardware we would not have had this luxury. The members of this group 
+are very serious about open source and giving back to the public.
+
+\subsubsection{Objectivity}
+
+Information that was obtained and written was read by both members of the team to ensure the neutrality of the documentation. For our project there was not much room for opinions other than what was felt to be a good material or platform. The opinions of this project were kept to a minimum.
+
+\subsubsection{Respectfulness}
+
+The members of the team kept the upmost respect for any of the people who were meet during the length of the project. We showed what we had learned at an Expo and took in information on how we might need to adapt the project in order to achieve the best results. We also visited a professor from UCSD and talked to him about his research on quadrotors and possible issues that we may have run into.
+
+\subsubsection{Obedience to the law}
+
+In the design of the project we wanted to use mainly off the self parts that were FCC certified and CE approved. By purchasing parts in this manure we had very little laws to worry about breaking. FCC regulations put a limit on how high a “hobbyist” aerial vehicle can fly and in what zones. Because full flight was never achieved we were able to stay within their regulations.
+
+
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
@@ -454,20 +502,36 @@ The Anzhelka project could potentially have a large global impact. Our project c
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
-\subsection{Contemporaray Engineering Issues}
-\begin{list}{*}{}
-	\item Power Management
-	\item Motor Control and Monitoring
-	\item Weight
-	\item Size
-	\item Safety
-	\item PCB design
-\end{list}
+\subsection{Contemporary Engineering Issues}
+%\begin{list}{*}{}
+%	\item Power Management
+%	\item Motor Control and Monitoring
+%	\item Weight
+%	\item Size
+%	\item Safety
+%	\item PCB design
+%\end{list}
+
+Quadrotor research and design is at the cutting edge of modern technology. They are still in the realm of research, and up until only a few years ago quadrotors still used tethers to send and receive data, and external camera systems to measure position. But recently, several factors have contributed to the advancement of quadrotors: new MEMS based inertial measurement unit components, faster and better processors, and widely available and inexpensive mechanical parts.
+
+The IMU uses MEMS (micro electro-mechanical systems) sensors to record acceleration in three dimensions, rate of orientation change in three dimensions, and magnetic force in three dimensions. Until about 10 years ago, to build an IMU required very expensive and physically large mechanical components to measure these forces. But with the advent of MEMS technology, the IMU can be reduced to a size roughly equivalent to a postage stamp. These smaller, lighter, and cheaper IMUs are hence viable for quadrotor application.
+
+Secondly, the advent of more powerful microcontrollers enables the necessary calculations to be made in real time onboard the quadrotor. Desktop PCs have long been able to complete the required calculations, but those systems are much too heavy for all but the largest quadrotors. Hence, previous quadrotor work required a data tether to the vehicle so that the control loop can be calculated off-board. In addition, new architectures such as the Parallax Propeller P8X32A allows for innovative and effective system design.
+
+Finally, mechanical parts have become much less expensive. Due to a rise in the Chinese marketplace of inexpensive brushless motors, propellers, and batteries a quadrotor can now be build very economically. This is particularly important for quadrotors (versus fixed wing aircraft) since a quadrotor mechanical system consists of more motors and a larger battery. These components typically have a slightly lower quality than the name brand, expensive, components. In general, though, this cost/quality tradeoff is reasonable and suitable. We selected the cheaper Chinese products for this project.
+
+Together, these three areas have enabled modern research into quadrotor flight. The new MEMS based chips allow for an IMU to be compact, efficient, and still effective while minimizing cost. The rise of faster microcontrollers with more effective architectures has allowed for all the processing to be completed onboard, and still have room for the additional overhead. And finally, the availability of cheaper Chinese components lower financial requirements to experiment with quadrotors.
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 \subsection{Lifelong Learning}
-The Anzhelka Project is a living breathing project. It has the possiablity to be expanded in many different ways. During this project the team had discovered lots of flaws in off the self hobbiest electronics. The IMU that was used did not provide the adequate data that it said it was able to provide. The motor drivers do not have feed back to the controller to let it know RPM, Voltage, or Current. These are just some of the things that were encountered and are planned to be changed by the Anzhelka team.
+This project has been influential to our professional development in a number of ways. To begin, we have recognized the need for lifelong learning. We realize that even after we graduate and leave school, that we cannot stop learning. Many of the tools and techniques that we have used in this project were developed in just the last few years. It is likely that this trend will continue: new technologies will appear on the market, and our job as professional engineers is to understand it and incorporate it into our products.
+
+For example, the main processor of our project is the Parallax Propeller. This microcontroller is relatively recent: introduced in 2006 by a small company, it is relatively unknown in the industrial world. Hence, we as students do not use or learn about this processor (instead we learn about the AVR processor). However, in order to effectively do this project we had to use a powerful processor that supports parallelism. The Propeller fit that specification, so we had to learn about the architecture and how to use the chip. This learning applies throughout our careers: instead of giving problems (I don't know such and such), we should instead give solutions (I don't know, but I can learn).
+
+As we thought about and wrote this section, we realized that we already have the ability to learn independently of school. Indeed, most of our knowledge that we have and use every day we learned on our own, tinkering around and playing with the systems.
+
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
 
 %% S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2 S2  
