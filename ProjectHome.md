@@ -1,0 +1,1 @@
+This project will use the Parallax Propeller on an Elev-8 quadcopter frame to do autonomous aerial flight, with all control software written from the ground up.
